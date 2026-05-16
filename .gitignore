@@ -1,0 +1,17 @@
+node_modules/
+backend/.env
+backend/data/
+firmware/config.h
+agents/.env
+*.log
+.DS_Store
+
+# Build artifacts
+.railway/
+.nixpacks/
+.next/
+
+# OS / Éditeurs
+*.swp
+.vscode/
+.idea/

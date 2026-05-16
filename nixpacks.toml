@@ -1,0 +1,9 @@
+# Configuration Nixpacks pour Railway (auto-détection Node.js + Python optionnel)
+[phases.setup]
+nixPkgs = ["nodejs_20", "python3", "gcc"]
+
+[phases.install]
+cmds = ["cd backend && npm install --production"]
+
+[start]
+cmd = "node backend/src/server.js"

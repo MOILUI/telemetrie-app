@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 700" font-family="ui-sans-serif, system-ui, sans-serif">
+<style>
+  .bg{fill:#fafaf9}.title{font-size:22px;font-weight:bold;fill:#0c0a09}
+  .sub{font-size:13px;fill:#57534e}.lbl{font-size:12px;fill:#0c0a09}
+  .pin{font-size:10px;fill:#525252;font-family:monospace}
+  .esp{fill:#dbeafe;stroke:#1e40af;stroke-width:2}.machine{fill:#fef3c7;stroke:#d97706;stroke-width:2}
+  .sensor{fill:#dcfce7;stroke:#15803d;stroke-width:1.5}
+  .note{font-size:11px;fill:#0c0a09}.badge{font-size:10px;fill:white;font-weight:bold}
+</style>
+<rect class="bg" width="1100" height="700"/>
+<text x="550" y="32" class="title" text-anchor="middle">⚙️ Raccordement — Machine industrielle / Pompe / Compresseur</text>
+<text x="550" y="52" class="sub" text-anchor="middle">Maintenance prédictive · Comptage cycles · Surveillance température + vibrations + courant</text>
+
+<g transform="translate(620,90)">
+  <rect class="machine" width="400" height="500" rx="8"/>
+  <text x="200" y="28" class="lbl" text-anchor="middle" font-weight="bold">MACHINE INDUSTRIELLE</text>
+  <!-- Moteur principal -->
+  <circle cx="200" cy="180" r="80" fill="#71717a"/>
+  <circle cx="200" cy="180" r="20" fill="#27272a"/>
+  <text x="200" y="290" class="note" text-anchor="middle">MOTEUR / ROTOR</text>
+  <!-- Vibration zone -->
+  <text x="80" y="160" class="note">📍 Vibrations</text>
+  <text x="80" y="175" class="note">(accéléro)</text>
+  <line x1="120" y1="170" x2="160" y2="180" stroke="#dc2626" stroke-width="1.5"/>
+  <!-- Tempo palier -->
+  <text x="290" y="160" class="note">🌡️ T° palier</text>
+  <line x1="280" y1="180" x2="240" y2="180" stroke="#dc2626" stroke-width="1.5"/>
+  <!-- Câble alim -->
+  <line x1="200" y1="260" x2="200" y2="350" stroke="#0f172a" stroke-width="6"/>
+  <rect x="160" y="350" width="80" height="60" fill="#22c55e" rx="4"/>
+  <text x="200" y="385" class="note" text-anchor="middle" fill="white">230/400V</text>
+  <text x="200" y="430" class="note" text-anchor="middle">🔌 Pince ampèremétrique</text>
+  <text x="200" y="445" class="note" text-anchor="middle">non-invasive autour du fil</text>
+  <!-- Compteur cycles -->
+  <rect x="60" y="450" width="120" height="40" fill="#0ea5e9" rx="4"/>
+  <text x="120" y="475" class="note" text-anchor="middle" fill="white">Capteur fin de course</text>
+</g>
+
+<g transform="translate(60,90)">
+  <rect class="esp" width="240" height="260" rx="8"/>
+  <text x="120" y="28" class="lbl" text-anchor="middle" font-weight="bold">ESP32 + PCB</text>
+  <text x="120" y="48" class="sub" text-anchor="middle">Sur rail DIN dans armoire</text>
+  <rect x="20" y="70" width="200" height="180" fill="#1e293b" rx="4"/>
+  <text x="120" y="95" class="badge" text-anchor="middle">BORNIERS</text>
+  <text x="35" y="115" class="pin" fill="#fbbf24">I²C (SCL/SDA)</text>
+  <text x="180" y="115" class="pin" fill="white" text-anchor="end">→ ADXL345 vibrations</text>
+  <text x="35" y="135" class="pin" fill="#fbbf24">T1, T2</text>
+  <text x="180" y="135" class="pin" fill="white" text-anchor="end">→ DS18B20 moteur/palier</text>
+  <text x="35" y="155" class="pin" fill="#fbbf24">A1 (0-10V)</text>
+  <text x="180" y="155" class="pin" fill="white" text-anchor="end">→ Pince courant</text>
+  <text x="35" y="175" class="pin" fill="#fbbf24">PULSE</text>
+  <text x="180" y="175" class="pin" fill="white" text-anchor="end">→ Compteur cycles</text>
+  <text x="35" y="195" class="pin" fill="#fbbf24">IN1, IN2 (24V)</text>
+  <text x="180" y="195" class="pin" fill="white" text-anchor="end">→ Sorties API automate</text>
+  <text x="35" y="215" class="pin" fill="#fbbf24">RS485</text>
+  <text x="180" y="215" class="pin" fill="white" text-anchor="end">→ Modbus automate</text>
+  <text x="35" y="235" class="pin" fill="#fbbf24">K1, K2</text>
+  <text x="180" y="235" class="pin" fill="white" text-anchor="end">→ Arrêt urgence dist.</text>
+</g>
+
+<g transform="translate(330,90)">
+  <rect class="sensor" width="260" height="60" rx="6"/>
+  <text x="10" y="20" class="lbl" font-weight="bold">① ADXL345 accéléromètre I²C</text>
+  <text x="10" y="38" class="note">Collé sur carcasse (zone vibrante)</text>
+  <text x="10" y="52" class="note">→ Signature vibratoire, détection roulement HS</text>
+
+  <rect class="sensor" y="75" width="260" height="60" rx="6"/>
+  <text x="10" y="95" class="lbl" font-weight="bold">② Sondes T° DS18B20 ×2</text>
+  <text x="10" y="113" class="note">Une sur moteur, une sur palier critique</text>
+  <text x="10" y="127" class="note">→ Surchauffe annonce 95% des pannes</text>
+
+  <rect class="sensor" y="150" width="260" height="60" rx="6"/>
+  <text x="10" y="170" class="lbl" font-weight="bold">③ Pince ampèremétrique SCT-013</text>
+  <text x="10" y="188" class="note">Clipse sur fil phase, AUCUNE coupure</text>
+  <text x="10" y="202" class="note">→ Marche/arrêt, sous-charge, blocage</text>
+
+  <rect class="sensor" y="225" width="260" height="60" rx="6"/>
+  <text x="10" y="245" class="lbl" font-weight="bold">④ Fin de course / compteur</text>
+  <text x="10" y="263" class="note">Capteur inductif M12 sur axe</text>
+  <text x="10" y="277" class="note">→ Compte cycles produits, heures marche</text>
+
+  <rect class="sensor" y="300" width="260" height="60" rx="6"/>
+  <text x="10" y="320" class="lbl" font-weight="bold">⑤ Modbus RTU RS485 (option)</text>
+  <text x="10" y="338" class="note">Si automate Siemens/Schneider présent</text>
+  <text x="10" y="352" class="note">→ Récupère toutes les variables process</text>
+</g>
+
+<g transform="translate(60,380)">
+  <rect fill="white" stroke="#d6d3d1" width="1000" height="310" rx="6"/>
+  <text x="20" y="30" class="lbl" font-weight="bold">🤖 Maintenance prédictive (IA)</text>
+  <text x="20" y="55" class="note">L'IA apprend la signature normale de chaque machine pendant 7 jours,</text>
+  <text x="20" y="75" class="note">puis détecte automatiquement les anomalies :</text>
+  <text x="20" y="105" class="note">• Roulement défaillant : vibrations +20% sur axe Z → alerte 2-4 semaines avant la panne</text>
+  <text x="20" y="125" class="note">• Surcharge progressive : courant moyen qui dérive de +5%/semaine</text>
+  <text x="20" y="145" class="note">• Surchauffe : ΔT entre moteur et ambiant qui augmente → ventilateur encrassé</text>
+  <text x="20" y="165" class="note">• Désynchronisation : ratio cycles/temps qui change → courroie qui patine</text>
+
+  <text x="20" y="200" class="lbl" font-weight="bold">💰 ROI Industriel</text>
+  <text x="20" y="220" class="note">• Une panne moteur évitée = 2 000 à 50 000€ (selon ligne de production)</text>
+  <text x="20" y="240" class="note">• Maintenance condition vs. calendrier : -40% de pièces consommées</text>
+  <text x="20" y="260" class="note">• Disponibilité +5-15% = chiffres d'affaires en plus</text>
+  <text x="20" y="280" class="note">• Reporting ISO 9001 / 14001 / 50001 automatique</text>
+
+  <text x="540" y="30" class="lbl" font-weight="bold">📦 Composants (machine indus)</text>
+  <text x="540" y="55" class="note">• ESP32 + PCB sur rail DIN : 80€</text>
+  <text x="540" y="75" class="note">• 2× DS18B20 inox haute T° : 16€</text>
+  <text x="540" y="95" class="note">• ADXL345 + boîtier IP65 : 12€</text>
+  <text x="540" y="115" class="note">• Pince SCT-013-100 (jusqu'à 100A) : 12€</text>
+  <text x="540" y="135" class="note">• Capteur inductif M12 NPN/PNP : 15€</text>
+  <text x="540" y="155" class="note">• Carte SIM 4G + boîtier : 20€</text>
+  <text x="540" y="183" class="note" font-weight="bold">TOTAL : ~155€ / machine</text>
+
+  <text x="540" y="220" class="lbl" font-weight="bold">⚡ Cibles clients</text>
+  <text x="540" y="240" class="note">• PME industrielles 5-50 machines</text>
+  <text x="540" y="260" class="note">• Sociétés de maintenance externalisée</text>
+  <text x="540" y="280" class="note">• Loueurs d'équipement (BTP, agricole)</text>
+  <text x="540" y="300" class="note">• Bailleurs industriels</text>
+</g>
+</svg>

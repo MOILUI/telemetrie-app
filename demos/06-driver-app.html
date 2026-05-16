@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#0f172a" />
+<title>📱 Driver App — Techniciens & Refillers</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  * { -webkit-tap-highlight-color: transparent; }
+  body { font-family: -apple-system, 'Inter', sans-serif; overscroll-behavior-y: none; background: #f1f5f9; }
+  .phone-frame { max-width: 440px; margin: 0 auto; background: white; min-height: 100vh; box-shadow: 0 0 40px rgba(0,0,0,0.1); position: relative; }
+  .tab.active { color: #2563eb; }
+  .tab.active .icon { transform: scale(1.1); }
+  .icon { transition: transform 0.15s; font-size: 22px; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .fade-in { animation: fadeIn 0.2s ease-out; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .pulse-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .online{background:#10b981;animation:pulse 2s infinite}.offline{background:#9ca3af}.warn{background:#f59e0b}
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.5} }
+</style>
+</head>
+<body>
+
+<div class="bg-purple-600 text-white text-xs py-2 text-center">
+  📱 App Driver (technicien/refiller) · concurrent direct de MoMa Nayax + Vendon Mobile
+</div>
+
+<div class="phone-frame">
+
+  <!-- STATUS BAR -->
+  <div class="bg-slate-900 text-white px-5 py-3 flex items-center justify-between text-xs">
+    <div class="flex items-center gap-2">
+      <div class="w-9 h-9 bg-amber-500 rounded-xl flex items-center justify-center">🚐</div>
+      <div>
+        <div class="font-semibold">Jean D. <span class="text-amber-300 text-[10px] ml-1">TECHNICIEN</span></div>
+        <div class="text-[10px] text-slate-400 leading-3">Tournée du 15 mai</div>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="bg-emerald-500/20 text-emerald-300 text-[10px] px-2 py-1 rounded-full">🟢 En route</span>
+    </div>
+  </div>
+
+  <!-- ============== HOME / TOUR ============== -->
+  <div id="page-tour" class="page active fade-in">
+    <div class="px-5 pt-4 pb-3">
+      <div class="text-xs text-slate-500 uppercase">Tournée d'aujourd'hui</div>
+      <h1 class="text-2xl font-bold">5 stops · 32 km</h1>
+      <div class="flex items-center gap-3 mt-2 text-sm">
+        <span class="text-slate-600">⏱ Temps estimé : 2h45</span>
+        <span class="text-slate-600">·</span>
+        <span class="text-emerald-600 font-semibold">2/5 faits</span>
+      </div>
+      <div class="h-2 bg-slate-200 rounded-full mt-3 overflow-hidden">
+        <div class="h-full bg-emerald-500" style="width:40%"></div>
+      </div>
+    </div>
+
+    <!-- Carte mini -->
+    <div class="px-5 mb-3">
+      <div class="bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl p-4 relative overflow-hidden">
+        <div class="text-xs text-slate-600 mb-2">📍 Prochaine étape</div>
+        <div class="font-semibold">Distributeur Lyon Part-Dieu</div>
+        <div class="text-xs text-slate-600 mt-1">12 rue Garibaldi, 69003 Lyon · ~8 min</div>
+        <button class="mt-3 bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-xl">🧭 Ouvrir GPS</button>
+      </div>
+    </div>
+
+    <!-- Liste stops -->
+    <div class="px-5 space-y-2 pb-24">
+      <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-bold">✓</div>
+            <div>
+              <div class="font-semibold text-sm">Café République Paris</div>
+              <div class="text-xs text-emerald-700">Terminé · 9:45</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-bold">✓</div>
+            <div>
+              <div class="font-semibold text-sm">Frigo Boucher Lyon 6e</div>
+              <div class="text-xs text-emerald-700">Terminé · 10:32</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="bg-blue-50 border-2 border-blue-500 rounded-2xl p-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold">3</div>
+            <div>
+              <div class="font-semibold text-sm">Distri Lyon Part-Dieu</div>
+              <div class="text-xs text-blue-700">🔄 Réassort + vidange · 11:15</div>
+            </div>
+          </div>
+          <button onclick="goTo('stop-detail')" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg">Démarrer →</button>
+        </div>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-2xl p-4">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full bg-slate-300 text-white flex items-center justify-center text-xs font-bold">4</div>
+          <div>
+            <div class="font-semibold text-sm text-slate-700">Distri Toulouse #4</div>
+            <div class="text-xs text-slate-500">⏱ ETA 13:30 · 87 km</div>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-2xl p-4">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full bg-slate-300 text-white flex items-center justify-center text-xs font-bold">5</div>
+          <div>
+            <div class="font-semibold text-sm text-slate-700">Indus Strasbourg #7</div>
+            <div class="text-xs text-slate-500">⏱ ETA 16:45 · 🔧 Maintenance prédictive</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== STOP DETAIL (workflow refill) ============== -->
+  <div id="page-stop-detail" class="page fade-in">
+    <div class="px-5 pt-4">
+      <button onclick="goTo('tour')" class="text-xs text-slate-500 mb-2">← Retour tournée</button>
+      <div class="flex items-center gap-2 mb-1">
+        <span class="pulse-dot online"></span>
+        <h1 class="text-xl font-bold">Distri Lyon Part-Dieu</h1>
+      </div>
+      <p class="text-sm text-slate-500">12 rue Garibaldi · Lyon 69003</p>
+
+      <!-- Workflow steps -->
+      <div class="mt-4 space-y-2 pb-24">
+        <!-- Étape 1 : Arrivée -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-4">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2"><div class="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold">1</div><span class="font-semibold text-sm">Scan QR machine</span></div>
+            <span class="bg-slate-100 text-slate-600 text-[10px] px-2 py-0.5 rounded-full">À faire</span>
+          </div>
+          <button class="mt-2 w-full bg-blue-600 text-white font-medium py-3 rounded-xl">📷 Scanner le QR code</button>
+        </div>
+
+        <!-- Étape 2 : Photo avant -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-4">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2"><div class="w-7 h-7 rounded-full bg-slate-300 text-white flex items-center justify-center text-xs font-bold">2</div><span class="font-semibold text-sm">Photo "avant"</span></div>
+            <span class="bg-slate-100 text-slate-600 text-[10px] px-2 py-0.5 rounded-full">En attente</span>
+          </div>
+          <button class="mt-2 w-full bg-slate-100 text-slate-700 font-medium py-3 rounded-xl">📸 Prendre photo</button>
+        </div>
+
+        <!-- Étape 3 : Picklist -->
+        <div class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2"><div class="w-7 h-7 rounded-full bg-amber-500 text-white flex items-center justify-center text-xs font-bold">3</div><span class="font-semibold text-sm">Picklist — produits à charger</span></div>
+            <span class="bg-amber-200 text-amber-800 text-[10px] px-2 py-0.5 rounded-full">À cocher</span>
+          </div>
+          <div class="space-y-2 text-sm">
+            <label class="flex items-center gap-3 p-2 bg-white rounded-lg cursor-pointer">
+              <input type="checkbox" class="w-4 h-4 accent-emerald-600" />
+              <span class="text-lg">🥤</span>
+              <span class="flex-1">Coca 33cl</span>
+              <span class="font-bold">×8</span>
+            </label>
+            <label class="flex items-center gap-3 p-2 bg-white rounded-lg cursor-pointer">
+              <input type="checkbox" class="w-4 h-4 accent-emerald-600" checked />
+              <span class="text-lg line-through opacity-50">🍫</span>
+              <span class="flex-1 line-through text-slate-500">KitKat 4F</span>
+              <span class="font-bold text-emerald-600">×6 ✓</span>
+            </label>
+            <label class="flex items-center gap-3 p-2 bg-white rounded-lg cursor-pointer">
+              <input type="checkbox" class="w-4 h-4 accent-emerald-600" />
+              <span class="text-lg">💧</span>
+              <span class="flex-1">Cristaline 50cl</span>
+              <span class="font-bold">×4</span>
+            </label>
+            <label class="flex items-center gap-3 p-2 bg-white rounded-lg cursor-pointer">
+              <input type="checkbox" class="w-4 h-4 accent-emerald-600" />
+              <span class="text-lg">🥨</span>
+              <span class="flex-1">Chips Lays</span>
+              <span class="font-bold">×3</span>
+            </label>
+          </div>
+          <div class="text-xs text-slate-600 mt-2">1/4 chargé · 21 unités au total</div>
+        </div>
+
+        <!-- Étape 4 : Encaissement -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-4">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2"><div class="w-7 h-7 rounded-full bg-slate-300 text-white flex items-center justify-center text-xs font-bold">4</div><span class="font-semibold text-sm">Vidange caisse + tubes</span></div>
+            <span class="bg-slate-100 text-slate-600 text-[10px] px-2 py-0.5 rounded-full">En attente</span>
+          </div>
+          <div class="mt-2 grid grid-cols-2 gap-2 text-xs">
+            <div class="bg-slate-50 rounded p-2"><div class="text-slate-500">Cash collecté</div><input type="text" placeholder="0,00€" class="font-bold border-0 bg-transparent w-full" /></div>
+            <div class="bg-slate-50 rounded p-2"><div class="text-slate-500">Tubes refill</div><div class="font-bold">5/10/50cts ?</div></div>
+          </div>
+        </div>
+
+        <!-- Étape 5 : Photo après -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-4">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2"><div class="w-7 h-7 rounded-full bg-slate-300 text-white flex items-center justify-center text-xs font-bold">5</div><span class="font-semibold text-sm">Photo "après"</span></div>
+          </div>
+          <button class="mt-2 w-full bg-slate-100 text-slate-700 font-medium py-3 rounded-xl">📸 Prendre photo</button>
+        </div>
+
+        <!-- Étape 6 : Signature -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-4">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2"><div class="w-7 h-7 rounded-full bg-slate-300 text-white flex items-center justify-center text-xs font-bold">6</div><span class="font-semibold text-sm">Signature client (si présent)</span></div>
+          </div>
+          <div class="mt-2 bg-slate-50 rounded-lg h-24 flex items-center justify-center text-slate-400 text-xs">
+            ✍️ Touchez ici pour signer
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <textarea placeholder="Notes / observations (optionnel)..." class="w-full bg-white border border-slate-200 rounded-2xl p-3 text-sm" rows="3"></textarea>
+
+        <!-- VALIDATION -->
+        <button class="w-full bg-emerald-600 text-white font-bold py-4 rounded-2xl shadow-lg">
+          ✅ Valider l'intervention
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== TICKETS ============== -->
+  <div id="page-tickets" class="page fade-in">
+    <div class="px-5 pt-4 pb-3 bg-white border-b border-slate-200">
+      <h1 class="text-xl font-bold">Tickets assignés</h1>
+      <p class="text-xs text-slate-500">3 ouverts · 12 résolus 30j</p>
+    </div>
+    <div class="px-5 py-3 space-y-2 pb-24">
+      <div class="bg-red-50 border-l-4 border-red-500 rounded-r-2xl p-4">
+        <div class="flex items-start justify-between">
+          <div>
+            <div class="text-xs text-red-700 font-semibold">🔥 CRITIQUE · #233</div>
+            <div class="font-semibold text-sm mt-1">Frigo Marseille #3</div>
+            <div class="text-xs text-slate-700 mt-1">Température 12°C depuis 30 min</div>
+            <div class="text-[10px] text-slate-500 mt-1">il y a 45 min</div>
+          </div>
+          <button class="bg-red-600 text-white text-xs px-3 py-1.5 rounded-lg">Intervenir →</button>
+        </div>
+      </div>
+      <div class="bg-amber-50 border-l-4 border-amber-500 rounded-r-2xl p-4">
+        <div class="flex items-start justify-between">
+          <div>
+            <div class="text-xs text-amber-700 font-semibold">⚠️ MOYEN · #234</div>
+            <div class="font-semibold text-sm mt-1">Distri Lyon Part-Dieu</div>
+            <div class="text-xs text-slate-700 mt-1">Stock < 15%, urgence réassort</div>
+            <div class="text-[10px] text-slate-500 mt-1">il y a 2h</div>
+          </div>
+          <button class="bg-amber-600 text-white text-xs px-3 py-1.5 rounded-lg">Voir →</button>
+        </div>
+      </div>
+      <div class="bg-blue-50 border-l-4 border-blue-500 rounded-r-2xl p-4">
+        <div class="flex items-start justify-between">
+          <div>
+            <div class="text-xs text-blue-700 font-semibold">📅 PROGRAMMÉ · #230</div>
+            <div class="font-semibold text-sm mt-1">Indus Strasbourg #7</div>
+            <div class="text-xs text-slate-700 mt-1">🤖 IA : roulement HS dans 8-12j</div>
+            <div class="text-[10px] text-slate-500 mt-1">prévu 18 mai</div>
+          </div>
+          <button class="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg">Voir →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== INVENTORY VEHICLE ============== -->
+  <div id="page-stock" class="page fade-in">
+    <div class="px-5 pt-4 pb-3 bg-white border-b border-slate-200">
+      <h1 class="text-xl font-bold">Mon véhicule</h1>
+      <p class="text-xs text-slate-500">Stock à bord · 87 unités · valeur 142€</p>
+    </div>
+    <div class="px-5 py-3 space-y-2 pb-24">
+      <div class="bg-white rounded-2xl p-4 shadow-sm">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3"><span class="text-2xl">🥤</span><div><div class="font-semibold text-sm">Coca-Cola 33cl</div><div class="text-xs text-slate-500">Sortie : 8 sur 24</div></div></div>
+          <div class="text-right"><div class="font-bold">16</div><div class="text-[10px] text-slate-500">restantes</div></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl p-4 shadow-sm opacity-60">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3"><span class="text-2xl">🍫</span><div><div class="font-semibold text-sm line-through">KitKat 4F</div><div class="text-xs text-emerald-600">✓ Distribué : 6/6</div></div></div>
+          <div class="text-right"><div class="font-bold text-slate-400">0</div><div class="text-[10px] text-slate-400">épuisé</div></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl p-4 shadow-sm">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3"><span class="text-2xl">💧</span><div><div class="font-semibold text-sm">Cristaline 50cl</div><div class="text-xs text-slate-500">Sortie : 0 sur 18</div></div></div>
+          <div class="text-right"><div class="font-bold">18</div><div class="text-[10px] text-slate-500">restantes</div></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl p-4 shadow-sm">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3"><span class="text-2xl">🥨</span><div><div class="font-semibold text-sm">Chips Lays</div><div class="text-xs text-slate-500">Sortie : 0 sur 10</div></div></div>
+          <div class="text-right"><div class="font-bold">10</div><div class="text-[10px] text-slate-500">restantes</div></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl p-4 shadow-sm">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3"><span class="text-2xl">🥪</span><div><div class="font-semibold text-sm">Sandwich poulet</div><div class="text-xs text-slate-500">Sortie : 0 sur 8</div></div></div>
+          <div class="text-right"><div class="font-bold">8</div><div class="text-[10px] text-slate-500">restantes</div></div>
+        </div>
+      </div>
+      <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-xs text-amber-800">
+        ⚠️ Tu n'as pas chargé : Snickers (×2 demandé), Twix (×3 demandé). Vérifie l'entrepôt avant le prochain départ.
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== ACCOUNT ============== -->
+  <div id="page-account" class="page fade-in">
+    <div class="px-5 pt-4">
+      <h1 class="text-xl font-bold mb-3">Mon compte</h1>
+
+      <div class="bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-2xl p-4 mb-3">
+        <div class="text-xs opacity-80">Aujourd'hui</div>
+        <div class="text-3xl font-bold mt-1">2 interventions</div>
+        <div class="text-xs opacity-90">⏱ 1h47 sur le terrain</div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-2 mb-4">
+        <div class="bg-white rounded-2xl p-3 shadow-sm text-center">
+          <div class="text-xs text-slate-500">Cette sem.</div>
+          <div class="text-xl font-bold mt-1">12</div>
+        </div>
+        <div class="bg-white rounded-2xl p-3 shadow-sm text-center">
+          <div class="text-xs text-slate-500">Ce mois</div>
+          <div class="text-xl font-bold mt-1">47</div>
+        </div>
+        <div class="bg-white rounded-2xl p-3 shadow-sm text-center">
+          <div class="text-xs text-slate-500">Note moy.</div>
+          <div class="text-xl font-bold mt-1">4,8 ⭐</div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-sm divide-y divide-slate-100">
+        <button class="w-full px-4 py-3 flex items-center justify-between text-sm">
+          <span class="flex items-center gap-3"><span>📍</span> Partager position en temps réel</span>
+          <input type="checkbox" checked class="w-10 h-6 accent-blue-600" />
+        </button>
+        <button class="w-full px-4 py-3 flex items-center justify-between text-sm">
+          <span class="flex items-center gap-3"><span>🔔</span> Notifications</span>
+          <span class="text-slate-400">→</span>
+        </button>
+        <button class="w-full px-4 py-3 flex items-center justify-between text-sm">
+          <span class="flex items-center gap-3"><span>📊</span> Mes statistiques</span>
+          <span class="text-slate-400">→</span>
+        </button>
+        <button class="w-full px-4 py-3 flex items-center justify-between text-sm">
+          <span class="flex items-center gap-3"><span>💬</span> Support</span>
+          <span class="text-slate-400">→</span>
+        </button>
+      </div>
+
+      <button class="w-full text-red-600 text-sm py-3 mt-4">Se déconnecter</button>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="fixed bottom-0 left-0 right-0 max-w-[440px] mx-auto bg-white border-t border-slate-200 grid grid-cols-4">
+    <button class="tab active py-2 flex flex-col items-center gap-0.5 text-slate-500" data-page="tour">
+      <span class="icon">🚐</span><span class="text-[10px]">Tournée</span>
+    </button>
+    <button class="tab py-2 flex flex-col items-center gap-0.5 text-slate-500 relative" data-page="tickets">
+      <span class="icon">🎫</span><span class="text-[10px]">Tickets</span>
+      <span class="absolute top-1 right-7 bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full">3</span>
+    </button>
+    <button class="tab py-2 flex flex-col items-center gap-0.5 text-slate-500" data-page="stock">
+      <span class="icon">📦</span><span class="text-[10px]">Stock</span>
+    </button>
+    <button class="tab py-2 flex flex-col items-center gap-0.5 text-slate-500" data-page="account">
+      <span class="icon">👤</span><span class="text-[10px]">Compte</span>
+    </button>
+  </nav>
+</div>
+
+<script>
+window.goTo = function(p) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`[data-page="${p}"]`)?.classList.add('active');
+  document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+  document.getElementById('page-' + p).classList.add('active');
+  window.scrollTo(0, 0);
+};
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => goTo(t.dataset.page)));
+</script>
+</body>
+</html>

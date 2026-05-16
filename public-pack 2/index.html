@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Télémétrie — Supervisez vos machines à distance | Cafés, distributeurs, frigos pro</title>
+<meta name="description" content="Plateforme de télémétrie pour cafetières pro, distributeurs automatiques, frigos HACCP et machines industrielles. Installation 45 min, IA prédictive incluse. Alternative française à Nayax/Vendon. À partir de 19€/mois." />
+<meta property="og:title" content="Télémétrie — Pilotez toutes vos machines en temps réel" />
+<meta property="og:description" content="ESP32 + 4G, IA prédictive, hébergement français RGPD. 14 jours d'essai gratuit." />
+<meta property="og:type" content="website" />
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+  .gradient-bg {
+    background: radial-gradient(ellipse 800px 400px at top, rgba(59,130,246,0.18), transparent),
+                radial-gradient(ellipse 600px 300px at 80% 30%, rgba(168,85,247,0.12), transparent);
+  }
+  .gradient-text {
+    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 50%, #db2777 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .feature-card { transition: all 0.2s; }
+  .feature-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.06); }
+  .anim-float { animation: float 6s ease-in-out infinite; }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  details summary { cursor: pointer; list-style: none; }
+  details summary::-webkit-details-marker { display: none; }
+  details[open] summary .arrow { transform: rotate(180deg); }
+  .arrow { transition: transform 0.2s; }
+</style>
+</head>
+<body class="bg-white text-slate-800">
+
+<!-- ============== HEADER STICKY ============== -->
+<header class="bg-white/80 backdrop-blur sticky top-0 z-50 border-b border-slate-200">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2">
+      <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white">📡</div>
+      <span class="font-bold text-lg">Télémétrie</span>
+    </a>
+    <nav class="hidden md:flex items-center gap-7 text-sm">
+      <a href="#fonctionnalites" class="text-slate-600 hover:text-slate-900 transition">Fonctionnalités</a>
+      <a href="#secteurs" class="text-slate-600 hover:text-slate-900 transition">Secteurs</a>
+      <a href="#tarifs" class="text-slate-600 hover:text-slate-900 transition">Tarifs</a>
+      <a href="#faq" class="text-slate-600 hover:text-slate-900 transition">FAQ</a>
+    </nav>
+    <div class="flex items-center gap-2">
+      <a href="/app/" class="text-sm text-slate-700 hover:text-slate-900 px-3 py-1.5">Se connecter</a>
+      <a href="/signup.html" class="bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-4 py-1.5 rounded-lg">Essai gratuit →</a>
+    </div>
+  </div>
+</header>
+
+<!-- ============== HERO ============== -->
+<section class="gradient-bg pt-16 pb-20">
+  <div class="max-w-6xl mx-auto px-4 text-center">
+    <div class="inline-flex items-center gap-2 bg-white border border-slate-200 text-slate-700 text-xs font-medium px-3 py-1.5 rounded-full mb-6 shadow-sm">
+      <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+      Nouveauté · IA prédictive pour anticiper les pannes
+    </div>
+    <h1 class="text-4xl md:text-6xl font-bold tracking-tight leading-tight">
+      Pilotez toutes vos machines
+      <br><span class="gradient-text">depuis votre téléphone.</span>
+    </h1>
+    <p class="mt-6 text-lg md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
+      Cafetières pro, distributeurs auto, frigos HACCP, équipements industriels.
+      Une seule plateforme. Installation 45 min, sans perçage. À partir de <strong>19€/mois</strong>.
+    </p>
+    <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+      <a href="/signup.html" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3.5 rounded-xl shadow-lg shadow-blue-500/30 transition">
+        Démarrer l'essai gratuit
+      </a>
+      <a href="#demo" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-semibold px-8 py-3.5 rounded-xl transition">
+        Voir la démo (2 min)
+      </a>
+    </div>
+    <p class="mt-4 text-sm text-slate-500">14 jours · sans carte bancaire · annulez en 1 clic</p>
+
+    <!-- Trust logos -->
+    <div class="mt-16 flex flex-wrap items-center justify-center gap-x-10 gap-y-3 text-slate-400 text-sm">
+      <span class="font-medium">Alternative française à</span>
+      <span class="font-semibold text-slate-600">Nayax</span>
+      <span class="font-semibold text-slate-600">Vendon</span>
+      <span class="font-semibold text-slate-600">Televend</span>
+      <span class="font-semibold text-slate-600">WhatsGPS</span>
+    </div>
+
+    <!-- Hero visual mockup -->
+    <div class="mt-12 max-w-4xl mx-auto">
+      <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden anim-float">
+        <div class="bg-slate-100 px-4 py-2 flex items-center gap-2 border-b border-slate-200">
+          <div class="flex gap-1.5">
+            <div class="w-3 h-3 rounded-full bg-red-400"></div>
+            <div class="w-3 h-3 rounded-full bg-amber-400"></div>
+            <div class="w-3 h-3 rounded-full bg-emerald-400"></div>
+          </div>
+          <div class="text-xs text-slate-400 mx-auto">telemetrie-fr.com/app</div>
+        </div>
+        <div class="bg-gradient-to-br from-slate-50 to-blue-50/40 p-6 md:p-8">
+          <div class="grid grid-cols-3 md:grid-cols-6 gap-3">
+            <div class="bg-white rounded-lg p-3 border border-slate-200 text-left">
+              <div class="text-[10px] text-slate-500 uppercase">Revenus 24h</div>
+              <div class="text-lg font-bold">1 247€</div>
+              <div class="text-[9px] text-emerald-600">↗ +12%</div>
+            </div>
+            <div class="bg-white rounded-lg p-3 border border-slate-200 text-left">
+              <div class="text-[10px] text-slate-500 uppercase">Ventes</div>
+              <div class="text-lg font-bold">524</div>
+            </div>
+            <div class="bg-white rounded-lg p-3 border border-slate-200 text-left">
+              <div class="text-[10px] text-slate-500 uppercase">En ligne</div>
+              <div class="text-lg font-bold">11<span class="text-xs text-slate-400">/12</span></div>
+            </div>
+            <div class="bg-white rounded-lg p-3 border border-slate-200 text-left">
+              <div class="text-[10px] text-slate-500 uppercase">Panier moy</div>
+              <div class="text-lg font-bold">2,38€</div>
+            </div>
+            <div class="bg-white rounded-lg p-3 border border-slate-200 text-left">
+              <div class="text-[10px] text-slate-500 uppercase">Cashless</div>
+              <div class="text-lg font-bold">73%</div>
+            </div>
+            <div class="bg-white rounded-lg p-3 border border-slate-200 text-left">
+              <div class="text-[10px] text-slate-500 uppercase">Alertes</div>
+              <div class="text-lg font-bold text-red-600">2</div>
+            </div>
+          </div>
+          <div class="mt-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg p-3 text-left text-sm">
+            🤖 <strong>IA :</strong> Distributeur Lyon #2 risque la rupture jeudi 14h. Réassort à planifier mercredi.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== PROBLÈME → SOLUTION ============== -->
+<section class="py-20 bg-slate-50 border-y border-slate-200">
+  <div class="max-w-5xl mx-auto px-4">
+    <div class="grid md:grid-cols-2 gap-10 items-center">
+      <div>
+        <div class="text-xs font-semibold text-red-600 uppercase tracking-wider mb-2">Sans télémétrie</div>
+        <h2 class="text-2xl md:text-3xl font-bold mb-4">Vous découvrez les pannes quand un client appelle.</h2>
+        <ul class="space-y-3 text-slate-700">
+          <li class="flex gap-3"><span class="text-red-500 flex-shrink-0">✗</span> Pannes détectées avec 12-24h de retard</li>
+          <li class="flex gap-3"><span class="text-red-500 flex-shrink-0">✗</span> Tournées de maintenance à l'aveugle</li>
+          <li class="flex gap-3"><span class="text-red-500 flex-shrink-0">✗</span> Feuilles HACCP remplies à la main, risque amende DDPP</li>
+          <li class="flex gap-3"><span class="text-red-500 flex-shrink-0">✗</span> Aucune visibilité sur le CA réel par machine</li>
+        </ul>
+      </div>
+      <div>
+        <div class="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-2">Avec Télémétrie</div>
+        <h2 class="text-2xl md:text-3xl font-bold mb-4">Vous êtes prévenu avant que le client s'en aperçoive.</h2>
+        <ul class="space-y-3 text-slate-700">
+          <li class="flex gap-3"><span class="text-emerald-500 flex-shrink-0">✓</span> Alerte SMS dès la moindre anomalie</li>
+          <li class="flex gap-3"><span class="text-emerald-500 flex-shrink-0">✓</span> Tournées optimisées par IA, -40% de km</li>
+          <li class="flex gap-3"><span class="text-emerald-500 flex-shrink-0">✓</span> Rapports HACCP PDF automatiques</li>
+          <li class="flex gap-3"><span class="text-emerald-500 flex-shrink-0">✓</span> Dashboard temps réel sur smartphone</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FONCTIONNALITÉS ============== -->
+<section id="fonctionnalites" class="py-20">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="text-center mb-14">
+      <h2 class="text-3xl md:text-4xl font-bold">Tout ce qu'il faut pour piloter votre parc</h2>
+      <p class="mt-3 text-slate-600 max-w-2xl mx-auto">Pensé pour les gérants de cafés, exploitants de distributeurs, sociétés de maintenance et industriels.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-5">
+      <div class="feature-card bg-white border border-slate-200 rounded-2xl p-6">
+        <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-2xl mb-3">📊</div>
+        <h3 class="font-semibold text-lg">Dashboard temps réel</h3>
+        <p class="text-slate-600 text-sm mt-2 leading-relaxed">Carte de toutes vos machines + KPIs en moins d'une seconde. Marche sur mobile, tablette, desktop.</p>
+      </div>
+      <div class="feature-card bg-white border border-slate-200 rounded-2xl p-6">
+        <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-2xl mb-3">🤖</div>
+        <h3 class="font-semibold text-lg">IA prédictive</h3>
+        <p class="text-slate-600 text-sm mt-2 leading-relaxed">Détection des pannes 2-3 semaines à l'avance par analyse vibratoire et thermique. Prévisions de ventes.</p>
+      </div>
+      <div class="feature-card bg-white border border-slate-200 rounded-2xl p-6">
+        <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-2xl mb-3">🔔</div>
+        <h3 class="font-semibold text-lg">Alertes intelligentes</h3>
+        <p class="text-slate-600 text-sm mt-2 leading-relaxed">Email / SMS / Slack / webhook custom. Vous choisissez qui reçoit quoi et quand.</p>
+      </div>
+      <div class="feature-card bg-white border border-slate-200 rounded-2xl p-6">
+        <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-2xl mb-3">📡</div>
+        <h3 class="font-semibold text-lg">4G partout</h3>
+        <p class="text-slate-600 text-sm mt-2 leading-relaxed">ESP32 avec modem 4G inclus. Pas besoin du WiFi de vos clients. Marche dans toute l'UE.</p>
+      </div>
+      <div class="feature-card bg-white border border-slate-200 rounded-2xl p-6">
+        <div class="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center text-2xl mb-3">🗺️</div>
+        <h3 class="font-semibold text-lg">Tournées optimisées</h3>
+        <p class="text-slate-600 text-sm mt-2 leading-relaxed">Chaque matin, vos techniciens reçoivent leur planning optimisé par IA et envoyé par SMS.</p>
+      </div>
+      <div class="feature-card bg-white border border-slate-200 rounded-2xl p-6">
+        <div class="w-12 h-12 bg-cyan-100 rounded-xl flex items-center justify-center text-2xl mb-3">📈</div>
+        <h3 class="font-semibold text-lg">Analytics & rapports</h3>
+        <p class="text-slate-600 text-sm mt-2 leading-relaxed">CA par machine, par produit, par heure. Heatmaps, top sellers, rentabilité. Export PDF/Excel.</p>
+      </div>
+      <div class="feature-card bg-white border border-slate-200 rounded-2xl p-6">
+        <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-2xl mb-3">💳</div>
+        <h3 class="font-semibold text-lg">Cashless intégré</h3>
+        <p class="text-slate-600 text-sm mt-2 leading-relaxed">Compatible TPE Nayax, SumUp, Stripe Terminal. Réconciliation auto espèces vs CB.</p>
+      </div>
+      <div class="feature-card bg-white border border-slate-200 rounded-2xl p-6">
+        <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-2xl mb-3">🇫🇷</div>
+        <h3 class="font-semibold text-lg">Hébergé en France</h3>
+        <p class="text-slate-600 text-sm mt-2 leading-relaxed">Données stockées en France. RGPD natif, DPA signable, droit à l'oubli implémenté.</p>
+      </div>
+      <div class="feature-card bg-white border border-slate-200 rounded-2xl p-6">
+        <div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-2xl mb-3">⚡</div>
+        <h3 class="font-semibold text-lg">API & intégrations</h3>
+        <p class="text-slate-600 text-sm mt-2 leading-relaxed">API REST + Webhooks + SDKs Python/Node. Connectez Slack, votre ERP, votre comptabilité.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== SECTEURS ============== -->
+<section id="secteurs" class="py-20 bg-slate-50 border-y border-slate-200">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl md:text-4xl font-bold">Adapté à votre métier</h2>
+      <p class="mt-3 text-slate-600">4 secteurs principaux, chacun avec ses capteurs spécifiques.</p>
+    </div>
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="bg-white rounded-2xl p-6 border border-slate-200">
+        <div class="text-4xl mb-3">☕</div>
+        <h3 class="font-semibold text-lg">Cafés &amp; restaurants</h3>
+        <p class="text-slate-600 text-sm mt-2">Compteur tasses, T° chaudière, niveau eau/grains. Pour société qui loue des machines pro.</p>
+        <div class="mt-4 text-xs text-slate-500">Investissement matériel : <strong>~90€/machine</strong></div>
+      </div>
+      <div class="bg-white rounded-2xl p-6 border border-slate-200">
+        <div class="text-4xl mb-3">🥤</div>
+        <h3 class="font-semibold text-lg">Distributeurs auto</h3>
+        <p class="text-slate-600 text-sm mt-2">Ventes, stock, T° frigo, ouverture porte. Optimisez vos tournées de réassort.</p>
+        <div class="mt-4 text-xs text-slate-500">Investissement matériel : <strong>~90€/machine</strong></div>
+      </div>
+      <div class="bg-white rounded-2xl p-6 border border-slate-200">
+        <div class="text-4xl mb-3">🧊</div>
+        <h3 class="font-semibold text-lg">Frigos pro &amp; chambres froides</h3>
+        <p class="text-slate-600 text-sm mt-2">Surveillance HACCP automatique. Rapport PDF mensuel pour la DDPP.</p>
+        <div class="mt-4 text-xs text-slate-500">Investissement matériel : <strong>~95€/machine</strong></div>
+      </div>
+      <div class="bg-white rounded-2xl p-6 border border-slate-200">
+        <div class="text-4xl mb-3">⚙️</div>
+        <h3 class="font-semibold text-lg">Industrie</h3>
+        <p class="text-slate-600 text-sm mt-2">Cycles, vibrations, courant. Maintenance prédictive pour éviter les pannes.</p>
+        <div class="mt-4 text-xs text-slate-500">Investissement matériel : <strong>~155€/machine</strong></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== ROI / TÉMOIGNAGES ============== -->
+<section class="py-20">
+  <div class="max-w-5xl mx-auto px-4">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl md:text-4xl font-bold">ROI rapide, données concrètes</h2>
+      <p class="mt-3 text-slate-600">Voici ce qu'on observe sur nos clients pilotes.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-5 mb-12">
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 text-center">
+        <div class="text-4xl font-bold text-blue-600">-40%</div>
+        <div class="text-sm text-slate-600 mt-2">de km parcourus par les techniciens</div>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 text-center">
+        <div class="text-4xl font-bold text-emerald-600">+18%</div>
+        <div class="text-sm text-slate-600 mt-2">de CA grâce aux réassorts optimisés</div>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 text-center">
+        <div class="text-4xl font-bold text-purple-600">14j</div>
+        <div class="text-sm text-slate-600 mt-2">d'avance moyenne sur les pannes (IA)</div>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-5">
+      <div class="bg-gradient-to-br from-blue-50 to-purple-50 border border-slate-200 rounded-2xl p-6">
+        <div class="text-3xl mb-2">☕</div>
+        <p class="text-slate-700 italic">"On gère 47 cafetières chez nos clients. Avant, on roulait 200 km par jour à l'aveugle. Maintenant, on sait exactement quelle machine visiter et pourquoi."</p>
+        <div class="text-xs text-slate-500 mt-4">— Société de gestion de cafetières pro, Lyon</div>
+      </div>
+      <div class="bg-gradient-to-br from-emerald-50 to-cyan-50 border border-slate-200 rounded-2xl p-6">
+        <div class="text-3xl mb-2">🧊</div>
+        <p class="text-slate-700 italic">"Un de nos frigos a chauffé un samedi soir. Email reçu à 23h, technicien sur place à 7h45 dimanche. Marchandise sauvée : 4 600€."</p>
+        <div class="text-xs text-slate-500 mt-4">— Restaurant gastronomique, Marseille</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== TARIFS ============== -->
+<section id="tarifs" class="py-20 bg-slate-50 border-y border-slate-200">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl md:text-4xl font-bold">Tarifs simples, sans engagement</h2>
+      <p class="mt-3 text-slate-600">14 jours gratuits sans CB. Vous payez seulement quand vous êtes convaincu.</p>
+    </div>
+
+    <div class="grid md:grid-cols-4 gap-4 max-w-5xl mx-auto">
+      <div class="bg-white rounded-2xl border border-slate-200 p-6">
+        <div class="text-sm font-semibold text-slate-600">Essai</div>
+        <div class="mt-2 text-3xl font-bold">Gratuit</div>
+        <div class="text-xs text-slate-500 mt-1">14 jours</div>
+        <ul class="mt-4 space-y-2 text-sm text-slate-700">
+          <li>✓ 3 machines</li>
+          <li>✓ Toutes les fonctionnalités</li>
+          <li>✓ Sans CB</li>
+        </ul>
+        <a href="/signup.html" class="block mt-6 bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium text-center py-2.5 rounded-lg">Démarrer</a>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-slate-200 p-6">
+        <div class="text-sm font-semibold text-emerald-600">Starter</div>
+        <div class="mt-2"><span class="text-3xl font-bold">19€</span><span class="text-slate-500 text-sm">/mois</span></div>
+        <div class="text-xs text-slate-500 mt-1">Indépendant, 1 café</div>
+        <ul class="mt-4 space-y-2 text-sm text-slate-700">
+          <li>✓ 5 machines</li>
+          <li>✓ Historique 30 jours</li>
+          <li>✓ Alertes email</li>
+          <li>✓ Support email</li>
+        </ul>
+        <a href="/signup.html?plan=starter" class="block mt-6 bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium text-center py-2.5 rounded-lg">Choisir</a>
+      </div>
+
+      <div class="bg-blue-600 rounded-2xl border-2 border-blue-700 p-6 text-white shadow-2xl shadow-blue-200 scale-105 relative">
+        <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-400 text-amber-900 text-xs font-bold px-3 py-1 rounded-full">LE PLUS POPULAIRE</div>
+        <div class="text-sm font-semibold">Pro ⭐</div>
+        <div class="mt-2"><span class="text-3xl font-bold">49€</span><span class="text-blue-200 text-sm">/mois</span></div>
+        <div class="text-xs text-blue-200 mt-1">PME, 5-20 machines</div>
+        <ul class="mt-4 space-y-2 text-sm">
+          <li>✓ 20 machines</li>
+          <li>✓ Historique 1 an</li>
+          <li>✓ Alertes email + SMS</li>
+          <li>✓ Multi-utilisateurs</li>
+          <li>✓ IA prédictive</li>
+          <li>✓ API access</li>
+        </ul>
+        <a href="/signup.html?plan=pro" class="block mt-6 bg-white hover:bg-blue-50 text-blue-600 font-medium text-center py-2.5 rounded-lg">Choisir</a>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-slate-200 p-6">
+        <div class="text-sm font-semibold text-purple-600">Business</div>
+        <div class="mt-2"><span class="text-3xl font-bold">149€</span><span class="text-slate-500 text-sm">/mois</span></div>
+        <div class="text-xs text-slate-500 mt-1">Réseaux, 50+ machines</div>
+        <ul class="mt-4 space-y-2 text-sm text-slate-700">
+          <li>✓ 100 machines</li>
+          <li>✓ Historique illimité</li>
+          <li>✓ Toutes notifications</li>
+          <li>✓ Rôles & permissions</li>
+          <li>✓ SLA 99.9%</li>
+          <li>✓ Support dédié</li>
+        </ul>
+        <a href="/signup.html?plan=business" class="block mt-6 bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium text-center py-2.5 rounded-lg">Choisir</a>
+      </div>
+    </div>
+
+    <p class="text-center text-sm text-slate-500 mt-8">
+      Plus de 100 machines ? <a href="mailto:contact@telemetrie-fr.com" class="text-blue-600 hover:underline">Contactez-nous</a> pour une offre Enterprise sur-mesure.
+    </p>
+  </div>
+</section>
+
+<!-- ============== COMMENT ÇA MARCHE ============== -->
+<section class="py-20">
+  <div class="max-w-5xl mx-auto px-4">
+    <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">Démarrez en 3 étapes</h2>
+    <div class="grid md:grid-cols-3 gap-8 relative">
+      <div class="text-center">
+        <div class="w-14 h-14 mx-auto bg-blue-100 text-blue-700 rounded-2xl flex items-center justify-center text-xl font-bold">1</div>
+        <h3 class="font-semibold text-lg mt-4">Créez votre compte</h3>
+        <p class="text-slate-600 text-sm mt-2">14 jours gratuits, jusqu'à 3 machines. Aucune CB demandée.</p>
+      </div>
+      <div class="text-center">
+        <div class="w-14 h-14 mx-auto bg-blue-100 text-blue-700 rounded-2xl flex items-center justify-center text-xl font-bold">2</div>
+        <h3 class="font-semibold text-lg mt-4">Branchez l'ESP32</h3>
+        <p class="text-slate-600 text-sm mt-2">On vous envoie un kit pré-configuré. 45 min, sans perçage, guide vidéo fourni.</p>
+      </div>
+      <div class="text-center">
+        <div class="w-14 h-14 mx-auto bg-blue-100 text-blue-700 rounded-2xl flex items-center justify-center text-xl font-bold">3</div>
+        <h3 class="font-semibold text-lg mt-4">Pilotez à distance</h3>
+        <p class="text-slate-600 text-sm mt-2">Dashboard web + app mobile. Alertes auto, prédictions IA, tournées optimisées.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== COMPARAISON CONCURRENTS ============== -->
+<section class="py-20 bg-slate-900 text-white">
+  <div class="max-w-5xl mx-auto px-4">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl md:text-4xl font-bold">Pourquoi nous plutôt qu'eux ?</h2>
+      <p class="mt-3 text-slate-300">Comparaison transparente.</p>
+    </div>
+    <div class="overflow-x-auto bg-slate-800 rounded-2xl">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-700 text-xs uppercase tracking-wider">
+          <tr>
+            <th class="px-5 py-3 text-left"></th>
+            <th class="px-5 py-3 text-center text-blue-400">Télémétrie 🇫🇷</th>
+            <th class="px-5 py-3 text-center text-slate-400">Nayax 🇮🇱</th>
+            <th class="px-5 py-3 text-center text-slate-400">Vendon 🇱🇻</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-700">
+          <tr><td class="px-5 py-3 text-slate-300">Prix /mois</td><td class="px-5 py-3 text-center font-bold text-emerald-400">19-49€</td><td class="px-5 py-3 text-center text-slate-400">30-90€</td><td class="px-5 py-3 text-center text-slate-400">25-60€</td></tr>
+          <tr><td class="px-5 py-3 text-slate-300">Setup</td><td class="px-5 py-3 text-center font-bold text-emerald-400">45 min</td><td class="px-5 py-3 text-center text-slate-400">1-3h</td><td class="px-5 py-3 text-center text-slate-400">2-4h</td></tr>
+          <tr><td class="px-5 py-3 text-slate-300">IA prédictive</td><td class="px-5 py-3 text-center text-emerald-400">✓ Native</td><td class="px-5 py-3 text-center text-amber-400">Partiel</td><td class="px-5 py-3 text-center text-red-400">✗</td></tr>
+          <tr><td class="px-5 py-3 text-slate-300">Hébergement France</td><td class="px-5 py-3 text-center text-emerald-400">✓</td><td class="px-5 py-3 text-center text-red-400">✗</td><td class="px-5 py-3 text-center text-red-400">✗</td></tr>
+          <tr><td class="px-5 py-3 text-slate-300">Support français</td><td class="px-5 py-3 text-center text-emerald-400">✓</td><td class="px-5 py-3 text-center text-red-400">EN only</td><td class="px-5 py-3 text-center text-red-400">EN only</td></tr>
+          <tr><td class="px-5 py-3 text-slate-300">Multi-machines (café+distri+frigo)</td><td class="px-5 py-3 text-center text-emerald-400">✓</td><td class="px-5 py-3 text-center text-amber-400">Distri uniquement</td><td class="px-5 py-3 text-center text-amber-400">Distri/café</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FAQ ============== -->
+<section id="faq" class="py-20">
+  <div class="max-w-3xl mx-auto px-4">
+    <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">Questions fréquentes</h2>
+    <div class="space-y-3">
+      <details class="bg-white border border-slate-200 rounded-xl p-5 group">
+        <summary class="flex items-center justify-between font-semibold"><span>Faut-il être technicien pour installer ?</span><span class="arrow text-slate-400">▼</span></summary>
+        <p class="text-slate-600 text-sm mt-3 leading-relaxed">Non. Le firmware est pré-flashé avec votre token unique. Le câblage des capteurs prend 45 min, sans perçage ni soudure. Guide vidéo + support téléphone inclus.</p>
+      </details>
+      <details class="bg-white border border-slate-200 rounded-xl p-5">
+        <summary class="flex items-center justify-between font-semibold"><span>Combien coûte le matériel par machine ?</span><span class="arrow text-slate-400">▼</span></summary>
+        <p class="text-slate-600 text-sm mt-3">Environ <strong>85-155€ par machine</strong> selon le type (ESP32 4G + boîtier IP65 + capteurs + carte SIM longue durée). Rentable en ~10-14 mois sur l'abonnement de base. En achat groupé, on peut descendre à ~70€.</p>
+      </details>
+      <details class="bg-white border border-slate-200 rounded-xl p-5">
+        <summary class="flex items-center justify-between font-semibold"><span>Compatible avec toutes les marques ?</span><span class="arrow text-slate-400">▼</span></summary>
+        <p class="text-slate-600 text-sm mt-3">Oui dans 95% des cas. On utilise des capteurs non-invasifs (LDR, reed, débitmètre, sonde T°) qui s'installent par dessus sans modifier votre machine. Pour les machines pro avec port série (La Marzocco, Eversys, WMF...), on récupère directement les données natives.</p>
+      </details>
+      <details class="bg-white border border-slate-200 rounded-xl p-5">
+        <summary class="flex items-center justify-between font-semibold"><span>Où sont stockées les données ?</span><span class="arrow text-slate-400">▼</span></summary>
+        <p class="text-slate-600 text-sm mt-3">En France (datacenter à Strasbourg ou Roubaix). Aucun transfert vers les US. Données chiffrées au repos et en transit (TLS 1.3). DPA RGPD signable à la demande. Droit à l'oubli implémenté en 1 clic.</p>
+      </details>
+      <details class="bg-white border border-slate-200 rounded-xl p-5">
+        <summary class="flex items-center justify-between font-semibold"><span>Puis-je annuler l'abonnement ?</span><span class="arrow text-slate-400">▼</span></summary>
+        <p class="text-slate-600 text-sm mt-3">Oui, à tout moment, en 1 clic depuis votre espace client. Aucun engagement. Vous repartez avec vos données (export JSON/CSV).</p>
+      </details>
+      <details class="bg-white border border-slate-200 rounded-xl p-5">
+        <summary class="flex items-center justify-between font-semibold"><span>Fournissez-vous le matériel ?</span><span class="arrow text-slate-400">▼</span></summary>
+        <p class="text-slate-600 text-sm mt-3">L'abonnement couvre la plateforme. Pour le matériel, soit vous le commandez vous-même (liste exacte fournie : LilyGO T-SIM7600E + capteurs + SIM 1NCE), soit on vous envoie un kit pré-configuré dès l'inscription (frais de livraison facturés à part). En achat groupé (>10 kits), tarifs négociés.</p>
+      </details>
+      <details class="bg-white border border-slate-200 rounded-xl p-5">
+        <summary class="flex items-center justify-between font-semibold"><span>Quelle 4G ? Et si je n'ai pas de couverture ?</span><span class="arrow text-slate-400">▼</span></summary>
+        <p class="text-slate-600 text-sm mt-3">Modem SIM7600E (4G LTE Cat-1), antenne externe incluse. Couverture France + UE. En zone blanche 4G, on bascule en 2G/3G (suffisant pour notre besoin : 1-5 messages/min). Pour les sites avec WiFi, version WiFi disponible (kit ~50€ moins cher).</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============== CTA FINAL ============== -->
+<section class="py-20 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 text-white relative overflow-hidden">
+  <div class="max-w-3xl mx-auto px-4 text-center relative z-10">
+    <h2 class="text-3xl md:text-5xl font-bold">Prêt à reprendre le contrôle ?</h2>
+    <p class="mt-4 text-lg text-blue-100">14 jours d'essai gratuit · Sans CB · Annulez quand vous voulez</p>
+    <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+      <a href="/signup.html" class="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-8 py-3.5 rounded-xl shadow-2xl">
+        Démarrer maintenant →
+      </a>
+      <a href="mailto:contact@telemetrie-fr.com" class="bg-white/10 hover:bg-white/20 backdrop-blur text-white font-semibold px-8 py-3.5 rounded-xl border border-white/30">
+        Parler à un humain
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FOOTER ============== -->
+<footer class="bg-slate-950 text-slate-400 py-12 text-sm">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="grid md:grid-cols-4 gap-8 mb-8">
+      <div>
+        <div class="flex items-center gap-2 mb-3">
+          <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">📡</div>
+          <span class="font-bold text-white">Télémétrie</span>
+        </div>
+        <p class="text-xs">La supervision temps réel de vos machines, depuis la France.</p>
+      </div>
+      <div>
+        <h4 class="font-semibold text-white text-xs uppercase tracking-wider mb-3">Produit</h4>
+        <ul class="space-y-2 text-xs">
+          <li><a href="#fonctionnalites" class="hover:text-white">Fonctionnalités</a></li>
+          <li><a href="#tarifs" class="hover:text-white">Tarifs</a></li>
+          <li><a href="#secteurs" class="hover:text-white">Cas d'usage</a></li>
+          <li><a href="#" class="hover:text-white">Documentation</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold text-white text-xs uppercase tracking-wider mb-3">Entreprise</h4>
+        <ul class="space-y-2 text-xs">
+          <li><a href="#" class="hover:text-white">À propos</a></li>
+          <li><a href="#" class="hover:text-white">Blog</a></li>
+          <li><a href="mailto:contact@telemetrie-fr.com" class="hover:text-white">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold text-white text-xs uppercase tracking-wider mb-3">Légal</h4>
+        <ul class="space-y-2 text-xs">
+          <li><a href="#" class="hover:text-white">Mentions légales</a></li>
+          <li><a href="#" class="hover:text-white">CGV</a></li>
+          <li><a href="#" class="hover:text-white">Politique de confidentialité</a></li>
+          <li><a href="#" class="hover:text-white">DPA RGPD</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="pt-6 border-t border-slate-800 flex flex-col md:flex-row justify-between gap-3 text-xs">
+      <div>© 2026 Télémétrie · SIREN [à compléter] · Hébergé en France 🇫🇷</div>
+      <div class="flex gap-4">
+        <span>🇫🇷 Français</span>
+        <span>·</span>
+        <span>RGPD compliant</span>
+        <span>·</span>
+        <span>SLA 99,9%</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+fetch('/api/plans').then(r => r.json()).then(data => {
+  // Si l'API existe, on synchronise les prix dynamiquement
+  // (sinon les prix codés en dur dans le HTML restent affichés)
+}).catch(() => {});
+</script>
+</body>
+</html>

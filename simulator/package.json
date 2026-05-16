@@ -1,0 +1,13 @@
+{
+  "name": "telemetry-simulator",
+  "version": "1.0.0",
+  "description": "Simulateur d'ESP32 pour tester le dashboard sans matériel",
+  "main": "simulate.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node simulate.js"
+  },
+  "dependencies": {
+    "mqtt": "^5.10.1"
+  }
+}

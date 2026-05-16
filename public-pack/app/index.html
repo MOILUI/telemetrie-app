@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Télémétrie — Tableau de bord</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <style>
+    body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    .pulse-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .online  { background:#10b981; box-shadow:0 0 0 0 rgba(16,185,129,0.6); animation:pulse 2s infinite; }
+    .offline { background:#9ca3af; }
+    .stale   { background:#f59e0b; }
+    @keyframes pulse {
+      0%   { box-shadow: 0 0 0 0 rgba(16,185,129,0.6); }
+      70%  { box-shadow: 0 0 0 10px rgba(16,185,129,0); }
+      100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800">
+
+<!-- =================== LOGIN =================== -->
+<div id="login" class="hidden min-h-screen flex items-center justify-center px-4">
+  <form id="loginForm" class="bg-white shadow-xl rounded-2xl p-8 w-full max-w-sm space-y-4 border border-slate-200">
+    <div class="text-center">
+      <div class="text-3xl">📡</div>
+      <h1 class="text-2xl font-bold mt-2">Espace client</h1>
+      <p class="text-sm text-slate-500">Connecte-toi à ton compte</p>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1">Email</label>
+      <input id="email" type="email" required class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1">Mot de passe</label>
+      <input id="password" type="password" required class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+    </div>
+    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition">
+      Se connecter
+    </button>
+    <div id="loginError" class="hidden text-sm text-red-600 text-center"></div>
+    <div class="text-center text-sm text-slate-600 pt-2 border-t border-slate-200">
+      Pas encore de compte ? <a href="/signup.html" class="text-blue-600 hover:underline">S'inscrire</a>
+    </div>
+  </form>
+</div>
+
+<!-- =================== APP =================== -->
+<div id="app" class="hidden">
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-10">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="text-2xl">📡</div>
+        <div>
+          <div class="font-bold">Télémétrie</div>
+          <div class="text-xs text-slate-500" id="connStatus">Connexion…</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="openAIChat()" class="px-3 py-1.5 text-sm bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg">
+          🤖 Demander à l'IA
+        </button>
+        <button id="billingBtn" class="hidden px-3 py-1.5 text-sm bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg border border-emerald-200">
+          💳 <span id="planBadge">Plan</span>
+        </button>
+        <button id="alertsBtn" class="relative px-3 py-1.5 text-sm bg-slate-100 hover:bg-slate-200 rounded-lg">
+          🔔 Alertes <span id="alertCount" class="hidden ml-1 inline-flex items-center justify-center w-5 h-5 text-xs bg-red-500 text-white rounded-full">0</span>
+        </button>
+        <button id="logoutBtn" class="text-sm text-slate-600 hover:text-slate-900">Se déconnecter</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+    <!-- Banner abonnement -->
+    <div id="trialBanner" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center justify-between">
+      <div>
+        <div class="font-semibold text-amber-900">🎁 <span id="trialText">Essai en cours</span></div>
+        <div class="text-sm text-amber-800" id="trialSub">—</div>
+      </div>
+      <button id="upgradeBtn" class="bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
+        Choisir un plan →
+      </button>
+    </div>
+
+    <!-- Token MQTT (pour configurer les ESP32) -->
+    <details class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+      <summary class="cursor-pointer font-semibold text-blue-900">🔑 Connecter un nouvel ESP32 — voir le token</summary>
+      <div class="mt-3 text-sm text-blue-900 space-y-2">
+        <p>Dans le fichier <code class="bg-blue-100 px-1 rounded">firmware/config.h</code> de ton ESP32, mets :</p>
+        <pre class="bg-white rounded p-2 text-xs overflow-x-auto"><code id="configSnippet">— charge en cours —</code></pre>
+        <p class="text-xs text-blue-700">Chaque ESP32 doit avoir un <code>DEVICE_ID</code> unique. Le <code>MQTT_PASSWORD</code> ci-dessus est celui de ton compte (ne le partage pas).</p>
+      </div>
+    </details>
+
+    <!-- KPIs -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
+        <div class="text-xs text-slate-500 uppercase">Machines</div>
+        <div class="text-2xl font-bold" id="kpiTotal">0</div>
+      </div>
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
+        <div class="text-xs text-slate-500 uppercase">En ligne</div>
+        <div class="text-2xl font-bold text-emerald-600" id="kpiOnline">0</div>
+      </div>
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
+        <div class="text-xs text-slate-500 uppercase">Hors ligne</div>
+        <div class="text-2xl font-bold text-slate-600" id="kpiOffline">0</div>
+      </div>
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
+        <div class="text-xs text-slate-500 uppercase">Alertes actives</div>
+        <div class="text-2xl font-bold text-red-600" id="kpiAlerts">0</div>
+      </div>
+    </div>
+
+    <!-- Devices grid -->
+    <section>
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-lg font-bold">Machines</h2>
+        <input id="search" type="text" placeholder="Rechercher…" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm" />
+      </div>
+      <div id="devicesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Cards générées dynamiquement -->
+      </div>
+      <div id="emptyState" class="hidden text-center py-16 text-slate-500">
+        Aucune machine n'a encore envoyé de données. Configure un ESP32 avec le firmware pour le voir apparaître ici.
+      </div>
+    </section>
+  </main>
+
+  <!-- =================== DETAIL MODAL =================== -->
+  <div id="detailModal" class="hidden fixed inset-0 bg-black/50 z-20 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div class="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+        <div>
+          <h3 class="text-lg font-bold" id="dmName">—</h3>
+          <p class="text-sm text-slate-500" id="dmMeta">—</p>
+        </div>
+        <button id="dmClose" class="text-slate-400 hover:text-slate-600 text-2xl">×</button>
+      </div>
+      <div class="p-6 space-y-6">
+        <!-- Status + edit -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-slate-50 rounded-xl p-4">
+            <div class="text-xs text-slate-500 uppercase">État</div>
+            <div class="flex items-center gap-2 mt-1">
+              <span id="dmStatusDot" class="pulse-dot offline"></span>
+              <span class="font-semibold" id="dmStatus">—</span>
+              <span class="text-xs text-slate-500" id="dmLastSeen">—</span>
+            </div>
+          </div>
+          <div class="bg-slate-50 rounded-xl p-4">
+            <div class="text-xs text-slate-500 uppercase">Identifiant</div>
+            <div class="font-mono text-sm mt-1" id="dmId">—</div>
+          </div>
+        </div>
+
+        <!-- Edit form -->
+        <details class="bg-slate-50 rounded-xl p-4">
+          <summary class="cursor-pointer font-semibold text-sm">⚙️ Modifier la machine</summary>
+          <form id="dmEditForm" class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+            <input id="dmEditName"     placeholder="Nom" class="border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+            <input id="dmEditType"     placeholder="Type (ex: espresso)" class="border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+            <input id="dmEditLocation" placeholder="Emplacement" class="border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+            <button type="submit" class="md:col-span-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 rounded-lg">Enregistrer</button>
+          </form>
+        </details>
+
+        <!-- Live metrics -->
+        <div>
+          <h4 class="font-semibold mb-2">Métriques en direct</h4>
+          <div id="dmMetrics" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+        </div>
+
+        <!-- Chart -->
+        <div>
+          <h4 class="font-semibold mb-2">Historique (dernières 24h)</h4>
+          <select id="dmMetricSelect" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm mb-2"></select>
+          <div class="bg-slate-50 rounded-xl p-4">
+            <canvas id="dmChart" height="120"></canvas>
+          </div>
+        </div>
+
+        <!-- Events -->
+        <div>
+          <h4 class="font-semibold mb-2">Évènements récents</h4>
+          <div id="dmEvents" class="space-y-2 max-h-64 overflow-y-auto"></div>
+        </div>
+
+        <!-- Commands -->
+        <div>
+          <h4 class="font-semibold mb-2">Envoyer une commande</h4>
+          <form id="dmCmdForm" class="flex gap-2">
+            <input id="dmCmdName"   placeholder="ex: restart, refill, set_threshold" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+            <input id="dmCmdParams" placeholder='Paramètres JSON (ex: {"val":5})' class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono" />
+            <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white text-sm font-medium px-4 rounded-lg">Envoyer</button>
+          </form>
+          <p class="text-xs text-slate-500 mt-1">La commande est transmise à la machine via MQTT.</p>
+        </div>
+
+        <div class="pt-3 border-t border-slate-200">
+          <button id="dmDelete" class="text-sm text-red-600 hover:underline">Supprimer cette machine</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== AI CHAT MODAL =================== -->
+  <div id="aiChatModal" class="hidden fixed bottom-4 right-4 w-96 bg-white rounded-2xl shadow-2xl z-40 flex flex-col" style="max-height: 600px;">
+    <div class="bg-gradient-to-r from-purple-600 to-indigo-700 text-white px-4 py-3 rounded-t-2xl flex items-center justify-between">
+      <div><div class="font-semibold text-sm">🤖 Assistant IA</div><div class="text-[10px] opacity-80">Mistral · Powered by AI</div></div>
+      <button onclick="document.getElementById('aiChatModal').classList.add('hidden')" class="text-white/70 hover:text-white text-xl">×</button>
+    </div>
+    <div id="aiChatLog" class="flex-1 overflow-y-auto p-4 text-sm" style="min-height: 250px;">
+      <div class="text-left my-2"><span class="bg-slate-100 rounded-2xl rounded-tl-sm px-3 py-2 inline-block">Bonjour ! Posez-moi une question sur vos machines.</span></div>
+    </div>
+    <form onsubmit="event.preventDefault(); const v=this.q.value.trim(); if(v){sendAIQuestion(v); this.q.value='';}" class="border-t border-slate-200 p-3 flex gap-2">
+      <input name="q" type="text" placeholder="ex: machines en alerte ?" class="flex-1 border border-slate-300 rounded-xl px-3 py-2 text-sm" />
+      <button class="bg-purple-600 text-white px-4 py-2 rounded-xl text-sm">→</button>
+    </form>
+  </div>
+
+  <!-- =================== UPGRADE MODAL =================== -->
+  <div id="upgradeModal" class="hidden fixed inset-0 bg-black/50 z-30 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div class="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+        <h3 class="text-lg font-bold">Choisis ton plan</h3>
+        <button id="upgradeClose" class="text-slate-400 hover:text-slate-600 text-2xl">×</button>
+      </div>
+      <div id="plansContainer" class="p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- généré -->
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== ALERTS DRAWER =================== -->
+  <div id="alertsDrawer" class="hidden fixed top-0 right-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-30 overflow-y-auto">
+    <div class="sticky top-0 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+      <h3 class="font-bold">🔔 Alertes</h3>
+      <button id="alertsClose" class="text-slate-400 hover:text-slate-600 text-2xl">×</button>
+    </div>
+    <div id="alertsList" class="divide-y divide-slate-200"></div>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>

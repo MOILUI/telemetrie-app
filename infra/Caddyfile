@@ -1,0 +1,62 @@
+# Reverse proxy HTTPS automatique (Let's Encrypt gratuit)
+# À placer dans /etc/caddy/Caddyfile ou monter dans le conteneur Caddy.
+# Remplace `telemetrie-fr.com` par ton domaine.
+
+{
+    email contact@telemetrie-fr.com
+}
+
+# Site marketing + app (redirige HTTP → HTTPS automatiquement)
+telemetrie-fr.com, www.telemetrie-fr.com {
+    encode zstd gzip
+
+    # Headers de sécurité durcis
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "geolocation=(), camera=(), microphone=()"
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; img-src 'self' data: https://*.tile.openstreetmap.org; connect-src 'self' wss://telemetrie-fr.com https://api.stripe.com; frame-ancestors 'none'; base-uri 'self';"
+        -Server
+    }
+
+    # Limite la taille des requêtes (anti-DoS)
+    request_body {
+        max_size 5MB
+    }
+
+    # Webhook Stripe : le raw body est requis, on transmet tel quel
+    @stripe path /api/stripe/webhook
+    reverse_proxy @stripe localhost:3000
+
+    # API + WebSocket Socket.io
+    reverse_proxy localhost:3000 {
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    # Log d'accès (rotation auto par Caddy)
+    log {
+        output file /var/log/caddy/access.log {
+            roll_size 100MB
+            roll_keep 10
+        }
+        format json
+    }
+}
+
+# API séparée sur un sous-domaine (pour la doc et les SDK)
+api.telemetrie-fr.com {
+    reverse_proxy localhost:3000
+    header {
+        Access-Control-Allow-Origin "*"
+        Strict-Transport-Security "max-age=31536000"
+    }
+}
+
+# Page de statut publique (utilise Better Stack ou Uptime Kuma)
+status.telemetrie-fr.com {
+    reverse_proxy localhost:3001
+}

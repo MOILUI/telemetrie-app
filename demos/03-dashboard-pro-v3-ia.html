@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Télémétrie Pro v3 — Dashboard complet</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<style>
+  body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+  .sidebar-link.active { background: rgb(30 41 59); color: white; }
+  .sidebar-link.active .icon { color: rgb(96 165 250); }
+  .pulse-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .online{background:#10b981;animation:pulse 2s infinite}.offline{background:#9ca3af}.warn{background:#f59e0b}.error{background:#ef4444}
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.5} }
+  .page { display: none; }
+  .page.active { display: block; }
+  #map { height: calc(100vh - 64px); }
+  .leaflet-popup-content { margin: 12px 16px; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+  .machine-marker { width:14px;height:14px;border-radius:50%;border:2px solid white }
+  .machine-marker.green{background:#10b981;box-shadow:0 0 0 2px #10b981}
+  .machine-marker.red{background:#ef4444;box-shadow:0 0 0 2px #ef4444}
+  .machine-marker.amber{background:#f59e0b;box-shadow:0 0 0 2px #f59e0b}
+  .ai-card { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%); }
+  .code-block { font-family: 'Menlo', 'Monaco', monospace; }
+</style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased">
+
+<div class="flex min-h-screen">
+
+  <!-- SIDEBAR -->
+  <aside class="w-60 bg-slate-900 text-slate-300 flex flex-col flex-shrink-0">
+    <div class="px-5 py-4 border-b border-slate-800 flex items-center gap-2">
+      <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">📡</div>
+      <div>
+        <div class="text-white font-semibold text-sm">Télémétrie</div>
+        <div class="text-xs text-slate-500">v3.0 · IA</div>
+      </div>
+    </div>
+
+    <nav class="flex-1 p-3 space-y-1 text-sm overflow-y-auto">
+      <div class="px-3 text-[10px] text-slate-500 uppercase mb-1 mt-1">Pilotage</div>
+      <a class="sidebar-link active flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer" data-page="overview"><span class="icon">⊞</span> Vue d'ensemble</a>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="ai"><span class="icon">🤖</span> IA Insights <span class="ml-auto bg-purple-600 text-white text-[9px] px-1.5 py-0.5 rounded-full">NEW</span></a>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="map"><span class="icon">🌍</span> Carte</a>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="machines"><span class="icon">🏷️</span> Machines <span class="ml-auto bg-blue-600 text-white text-[9px] px-1.5 py-0.5 rounded-full">12</span></a>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="hierarchy"><span class="icon">🏢</span> Régions / Sites</a>
+
+      <div class="px-3 text-[10px] text-slate-500 uppercase mb-1 mt-3">Commerce</div>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="sales"><span class="icon">💰</span> Ventes &amp; analytics</a>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="cashless"><span class="icon">💳</span> Cashless &amp; TPE</a>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="loyalty"><span class="icon">⭐</span> Fidélité &amp; clients</a>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="promos"><span class="icon">🏷️</span> Promotions</a>
+
+      <div class="px-3 text-[10px] text-slate-500 uppercase mb-1 mt-3">Opérations</div>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="inventory"><span class="icon">📦</span> Inventaire</a>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="routes"><span class="icon">🗺️</span> Routes techniciens</a>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="alerts"><span class="icon">🔔</span> Alertes <span class="ml-auto bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full" id="alertsCount">6</span></a>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="reports"><span class="icon">📊</span> Rapports</a>
+
+      <div class="px-3 text-[10px] text-slate-500 uppercase mb-1 mt-3">Compte</div>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="developer"><span class="icon">⚡</span> API &amp; intégrations</a>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="billing"><span class="icon">💼</span> Abonnement</a>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="team"><span class="icon">👥</span> Équipe</a>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="settings"><span class="icon">⚙️</span> Paramètres</a>
+    </nav>
+
+    <div class="p-3 border-t border-slate-800">
+      <div class="flex items-center gap-2 p-2 rounded-lg">
+        <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs">SR</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-xs text-white truncate">Salih R.</div>
+          <div class="text-[10px] text-slate-500">Plan Pro · 12/20</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="flex-1 flex flex-col min-w-0">
+
+    <header class="bg-white border-b border-slate-200 h-16 flex items-center px-6 justify-between flex-shrink-0">
+      <div class="flex items-center gap-4">
+        <h1 class="text-lg font-semibold" id="pageTitle">Vue d'ensemble</h1>
+        <span class="text-xs text-slate-500 hidden md:inline" id="pageSubtitle">Tableau de bord — données en temps réel</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="bg-purple-100 text-purple-700 text-sm font-medium px-3 py-1.5 rounded-lg" onclick="document.getElementById('aiChatOverlay').classList.remove('hidden')">
+          🤖 Demander à l'IA
+        </button>
+        <select class="text-sm border border-slate-300 rounded-lg px-3 py-1.5 bg-white">
+          <option>Aujourd'hui</option><option>7 derniers jours</option><option>30 derniers jours</option><option>Trimestre</option>
+        </select>
+        <button class="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg">+ Ajouter machine</button>
+      </div>
+    </header>
+
+    <!-- =================== PAGES =================== -->
+
+    <!-- OVERVIEW -->
+    <div id="page-overview" class="page active flex-1 overflow-y-auto p-6 bg-slate-100">
+      <!-- Bandeau IA résumé -->
+      <div class="ai-card rounded-2xl p-5 text-white mb-6 shadow-lg">
+        <div class="flex items-start justify-between">
+          <div>
+            <div class="text-xs opacity-80 uppercase tracking-wider">🤖 Synthèse IA — Aujourd'hui</div>
+            <div class="font-semibold mt-1 text-lg">3 alertes critiques · 2 réassorts urgents · 1 prédiction de panne</div>
+            <div class="text-sm opacity-90 mt-2">
+              Distributeur Lyon #2 hors ligne depuis 45 min — probable coupure SIM (déjà arrivé 2× ce mois).
+              Tournée recommandée demain matin pour 3 machines en stock bas.
+            </div>
+          </div>
+          <button class="bg-white/20 hover:bg-white/30 text-sm px-4 py-2 rounded-lg whitespace-nowrap">Voir détails →</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-6">
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-[11px] text-slate-500 uppercase">Revenus 24h</div><div class="text-2xl font-bold mt-1" id="kpiRev">—</div><div class="text-[11px] text-emerald-600 mt-0.5">↗ +12,4%</div></div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-[11px] text-slate-500 uppercase">Ventes</div><div class="text-2xl font-bold mt-1" id="kpiSales">—</div><div class="text-[11px] text-emerald-600 mt-0.5">↗ +8,1%</div></div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-[11px] text-slate-500 uppercase">Actives</div><div class="text-2xl font-bold mt-1"><span id="kpiOnline">—</span><span class="text-sm text-slate-400">/12</span></div><div class="text-[11px] text-slate-500 mt-0.5">98% uptime</div></div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-[11px] text-slate-500 uppercase">Panier moyen</div><div class="text-2xl font-bold mt-1">2,38 €</div><div class="text-[11px] text-amber-600 mt-0.5">↘ -1,2%</div></div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-[11px] text-slate-500 uppercase">Cashless</div><div class="text-2xl font-bold mt-1">73%</div><div class="text-[11px] text-emerald-600 mt-0.5">↗ +5%</div></div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-[11px] text-slate-500 uppercase">Alertes</div><div class="text-2xl font-bold mt-1 text-red-600" id="kpiAlerts">—</div><div class="text-[11px] text-slate-500 mt-0.5">2 critiques</div></div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div class="lg:col-span-2 bg-white rounded-xl p-5 border border-slate-200">
+          <div class="flex items-center justify-between mb-4">
+            <div><h3 class="font-semibold">Revenus &amp; prédiction IA</h3><p class="text-xs text-slate-500">30 jours passés + 7 jours prédits</p></div>
+            <div class="flex gap-2 text-xs">
+              <span class="flex items-center gap-1"><span class="w-3 h-3 bg-blue-600 rounded"></span> Réel</span>
+              <span class="flex items-center gap-1"><span class="w-3 h-3 bg-purple-400 rounded border border-dashed border-purple-500"></span> IA prédiction</span>
+            </div>
+          </div>
+          <canvas id="chartRevenue" height="100"></canvas>
+        </div>
+        <div class="bg-white rounded-xl p-5 border border-slate-200">
+          <h3 class="font-semibold mb-1">Top 5 machines</h3>
+          <p class="text-xs text-slate-500 mb-3">par revenus 7j</p>
+          <div class="space-y-2" id="topMachines"></div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="bg-white rounded-xl p-5 border border-slate-200">
+          <h3 class="font-semibold mb-1">Heures de pointe</h3>
+          <p class="text-xs text-slate-500 mb-3">Distribution des ventes par heure</p>
+          <canvas id="chartHeatmap" height="80"></canvas>
+        </div>
+        <div class="bg-white rounded-xl p-5 border border-slate-200">
+          <h3 class="font-semibold mb-1">Mix produits</h3>
+          <p class="text-xs text-slate-500 mb-3">Répartition des ventes (7j)</p>
+          <canvas id="chartProducts" height="80"></canvas>
+        </div>
+        <div class="bg-white rounded-xl p-5 border border-slate-200">
+          <h3 class="font-semibold mb-1">Types de paiement</h3>
+          <p class="text-xs text-slate-500 mb-3">CB / NFC / espèces</p>
+          <canvas id="chartPayments" height="80"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- IA INSIGHTS -->
+    <div id="page-ai" class="page flex-1 overflow-y-auto p-6 bg-slate-100">
+
+      <!-- Maintenance prédictive -->
+      <div class="bg-white rounded-xl p-5 border border-slate-200 mb-6">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="font-semibold">🔧 Maintenance prédictive</h3>
+              <span class="bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded-full">IA</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">Détection précoce des pannes par analyse des signatures vibratoires et thermiques</p>
+          </div>
+          <button class="text-sm text-purple-600 hover:underline">Réentraîner le modèle →</button>
+        </div>
+        <div class="space-y-3">
+          <div class="border border-red-200 bg-red-50 rounded-xl p-4 flex items-start gap-4">
+            <div class="text-2xl">🔥</div>
+            <div class="flex-1">
+              <div class="font-semibold text-red-900">Risque PANNE ÉLEVÉ — Industriel Strasbourg #7</div>
+              <div class="text-sm text-red-800 mt-1">Signature vibratoire dégradée +24% sur axe Z depuis 5 jours. Modèle prédit défaillance roulement <strong>dans 8-12 jours</strong>. Confiance : 87%.</div>
+              <div class="flex gap-2 mt-3 flex-wrap">
+                <button class="text-xs bg-red-600 text-white px-3 py-1.5 rounded-lg">Planifier maintenance</button>
+                <button class="text-xs bg-white border border-red-300 text-red-700 px-3 py-1.5 rounded-lg">Voir le graphique IA</button>
+                <button class="text-xs bg-white border border-slate-300 text-slate-700 px-3 py-1.5 rounded-lg">Ignorer</button>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-2xl font-bold text-red-600">87%</div>
+              <div class="text-[10px] text-red-700">CONFIANCE</div>
+            </div>
+          </div>
+          <div class="border border-amber-200 bg-amber-50 rounded-xl p-4 flex items-start gap-4">
+            <div class="text-2xl">⚠️</div>
+            <div class="flex-1">
+              <div class="font-semibold text-amber-900">Risque modéré — Café République</div>
+              <div class="text-sm text-amber-800 mt-1">2150 tasses depuis dernier détartrage. Modèle suggère détartrage <strong>dans 2-3 semaines</strong> avant baisse de qualité d'extraction.</div>
+              <div class="flex gap-2 mt-3 flex-wrap">
+                <button class="text-xs bg-amber-600 text-white px-3 py-1.5 rounded-lg">Planifier intervention</button>
+                <button class="text-xs bg-white border border-amber-300 text-amber-700 px-3 py-1.5 rounded-lg">Voir le rythme</button>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-2xl font-bold text-amber-600">64%</div>
+              <div class="text-[10px] text-amber-700">CONFIANCE</div>
+            </div>
+          </div>
+          <div class="border border-blue-200 bg-blue-50 rounded-xl p-4 flex items-start gap-4">
+            <div class="text-2xl">💡</div>
+            <div class="flex-1">
+              <div class="font-semibold text-blue-900">Anomalie de consommation — Frigo Bordeaux #5</div>
+              <div class="text-sm text-blue-800 mt-1">Courant compresseur +18% sur 7 jours par rapport à la baseline. Possible fuite frigorigène débutante ou condenseur encrassé.</div>
+              <div class="flex gap-2 mt-3 flex-wrap">
+                <button class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg">Inspection</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Prévision ventes IA -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div class="bg-white rounded-xl p-5 border border-slate-200">
+          <h3 class="font-semibold mb-3">📈 Prévision de ventes (7 jours)</h3>
+          <canvas id="aiForecast" height="120"></canvas>
+          <div class="mt-3 text-xs text-slate-600 bg-purple-50 rounded-lg p-3">
+            <strong>Confiance modèle : 91%</strong> · Basé sur 90 jours d'historique + saisonnalité + météo + jours fériés.
+            Pic prévu jeudi 22 mai (+18% vs moyenne).
+          </div>
+        </div>
+        <div class="bg-white rounded-xl p-5 border border-slate-200">
+          <h3 class="font-semibold mb-3">🎯 Recommandations de prix dynamiques</h3>
+          <div class="space-y-2">
+            <div class="flex items-center justify-between p-3 bg-emerald-50 rounded-lg">
+              <div><div class="font-medium text-sm">Distributeur Lyon Part-Dieu</div><div class="text-xs text-slate-600">Coca-Cola 33cl</div></div>
+              <div class="text-right">
+                <div class="text-xs text-slate-500">2,00€ → <span class="font-bold text-emerald-700">2,20€</span></div>
+                <div class="text-[10px] text-emerald-700">+9,5% CA estimé</div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
+              <div><div class="font-medium text-sm">Distri Bordeaux Gare</div><div class="text-xs text-slate-600">Sandwich froid</div></div>
+              <div class="text-right">
+                <div class="text-xs text-slate-500">3,50€ → <span class="font-bold text-amber-700">3,20€</span></div>
+                <div class="text-[10px] text-amber-700">+22 ventes/sem</div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+              <div><div class="font-medium text-sm">Café République</div><div class="text-xs text-slate-600">Happy hour 14h-16h</div></div>
+              <div class="text-right">
+                <div class="text-xs text-blue-700 font-medium">Activer -20% café</div>
+                <div class="text-[10px] text-blue-700">+15% trafic creux</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Anomaly detection + Smart restock -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div class="bg-white rounded-xl p-5 border border-slate-200">
+          <h3 class="font-semibold mb-3">🔍 Anomalies détectées (24h)</h3>
+          <div class="space-y-2 text-sm">
+            <div class="flex items-start gap-3 p-3 bg-red-50 rounded-lg">
+              <span>🚨</span>
+              <div class="flex-1"><div class="font-medium">Chute de ventes -65%</div><div class="text-xs text-slate-600">Distri Lille #6 · vs même heure semaine passée</div></div>
+              <span class="text-xs text-red-700">il y a 1h</span>
+            </div>
+            <div class="flex items-start gap-3 p-3 bg-amber-50 rounded-lg">
+              <span>⚠️</span>
+              <div class="flex-1"><div class="font-medium">Pic d'ouvertures porte (×4)</div><div class="text-xs text-slate-600">Distri Marseille #4 · 16 ouvertures en 1h (vs 4 normal)</div></div>
+              <span class="text-xs text-amber-700">il y a 3h</span>
+            </div>
+            <div class="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
+              <span>💡</span>
+              <div class="flex-1"><div class="font-medium">Nouveau pattern d'usage</div><div class="text-xs text-slate-600">Café Toulouse #3 · activité nocturne inhabituelle 23h-2h</div></div>
+              <span class="text-xs text-blue-700">il y a 8h</span>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl p-5 border border-slate-200">
+          <h3 class="font-semibold mb-3">📦 Smart restock — réassort optimal</h3>
+          <p class="text-xs text-slate-500 mb-3">Mix prévu par produit en fonction de l'historique 90j</p>
+          <div class="space-y-2 text-sm">
+            <div class="flex items-center justify-between"><span>🥤 Coca-Cola 33cl</span><span class="font-semibold">24 unités</span></div>
+            <div class="flex items-center justify-between"><span>💧 Eau Cristaline 50cl</span><span class="font-semibold">18 unités</span></div>
+            <div class="flex items-center justify-between"><span>🍫 KitKat 4 finger</span><span class="font-semibold">12 unités</span></div>
+            <div class="flex items-center justify-between"><span>🥨 Chips Lays</span><span class="font-semibold">10 unités</span></div>
+            <div class="flex items-center justify-between"><span>🥤 Orangina 33cl</span><span class="font-semibold">8 unités</span></div>
+          </div>
+          <button class="mt-4 w-full bg-blue-600 text-white text-sm font-medium py-2 rounded-lg">📋 Générer bon de commande</button>
+        </div>
+      </div>
+
+      <!-- Customer segmentation -->
+      <div class="bg-white rounded-xl p-5 border border-slate-200 mb-6">
+        <h3 class="font-semibold mb-3">👥 Segmentation clientèle (machines avec CB/NFC)</h3>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div class="bg-purple-50 rounded-lg p-4">
+            <div class="text-xs text-purple-700">VIP fidèles</div>
+            <div class="text-2xl font-bold text-purple-900 mt-1">142</div>
+            <div class="text-xs text-purple-600 mt-1">&gt;15 achats/mois · 31% du CA</div>
+          </div>
+          <div class="bg-blue-50 rounded-lg p-4">
+            <div class="text-xs text-blue-700">Réguliers</div>
+            <div class="text-2xl font-bold text-blue-900 mt-1">387</div>
+            <div class="text-xs text-blue-600 mt-1">5-15/mois · 44% du CA</div>
+          </div>
+          <div class="bg-emerald-50 rounded-lg p-4">
+            <div class="text-xs text-emerald-700">Occasionnels</div>
+            <div class="text-2xl font-bold text-emerald-900 mt-1">812</div>
+            <div class="text-xs text-emerald-600 mt-1">1-4/mois · 22% du CA</div>
+          </div>
+          <div class="bg-slate-50 rounded-lg p-4">
+            <div class="text-xs text-slate-700">Nouveaux (7j)</div>
+            <div class="text-2xl font-bold text-slate-900 mt-1">68</div>
+            <div class="text-xs text-slate-600 mt-1">Première transaction</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat assistant -->
+      <div class="bg-gradient-to-br from-purple-600 to-indigo-700 rounded-xl p-5 text-white">
+        <h3 class="font-semibold mb-2">💬 Assistant IA — parle-lui en langage naturel</h3>
+        <p class="text-sm opacity-90 mb-4">Pose-lui n'importe quelle question sur tes machines, ventes, ou opérations.</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+          <button class="bg-white/15 hover:bg-white/25 rounded-lg p-3 text-left">"Quelles machines ont chuté en ventes ?"</button>
+          <button class="bg-white/15 hover:bg-white/25 rounded-lg p-3 text-left">"Génère un rapport HACCP du mois"</button>
+          <button class="bg-white/15 hover:bg-white/25 rounded-lg p-3 text-left">"Top 3 produits Coca cette semaine"</button>
+          <button class="bg-white/15 hover:bg-white/25 rounded-lg p-3 text-left">"Optimise ma tournée demain"</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAP -->
+    <div id="page-map" class="page flex-1"><div id="map"></div></div>
+
+    <!-- MACHINES -->
+    <div id="page-machines" class="page flex-1 overflow-y-auto p-6 bg-slate-100">
+      <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div class="px-5 py-3 border-b border-slate-200 flex items-center justify-between">
+          <input type="text" placeholder="🔍 Rechercher…" id="machineSearch" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm w-64" />
+          <div class="text-xs text-slate-500"><span id="mFilteredCount">12</span> machines</div>
+        </div>
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 text-slate-600 text-xs uppercase">
+            <tr><th class="px-5 py-2 text-left font-medium">Machine</th><th class="px-5 py-2 text-left font-medium">Type</th><th class="px-5 py-2 text-left font-medium">Emplacement</th><th class="px-5 py-2 text-right font-medium">Ventes</th><th class="px-5 py-2 text-right font-medium">CA</th><th class="px-5 py-2 text-right font-medium">Stock</th><th class="px-5 py-2 text-center font-medium">État</th></tr>
+          </thead>
+          <tbody id="machineRows" class="divide-y divide-slate-200"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- HIERARCHY -->
+    <div id="page-hierarchy" class="page flex-1 overflow-y-auto p-6 bg-slate-100">
+      <div class="bg-white rounded-xl p-5 border border-slate-200">
+        <h3 class="font-semibold mb-4">Organisation hiérarchique multi-niveaux</h3>
+        <div class="space-y-3 font-mono text-sm">
+          <details open class="border border-slate-200 rounded-lg">
+            <summary class="px-4 py-3 cursor-pointer bg-slate-50 font-semibold">🌍 France <span class="ml-2 text-xs text-slate-500 font-normal">12 machines · 12 840€/30j</span></summary>
+            <div class="p-3 space-y-2">
+              <details class="border border-slate-200 rounded-lg ml-4">
+                <summary class="px-4 py-2 cursor-pointer bg-slate-50 font-semibold">🏙️ Île-de-France <span class="ml-2 text-xs text-slate-500 font-normal">3 machines</span></summary>
+                <div class="p-3 ml-4 text-xs space-y-1">
+                  <div>• ☕ Café Place République (Paris 11e)</div>
+                  <div>• 🥤 Distri Gare du Nord</div>
+                  <div>• 🥤 Distri La Défense</div>
+                </div>
+              </details>
+              <details class="border border-slate-200 rounded-lg ml-4">
+                <summary class="px-4 py-2 cursor-pointer bg-slate-50 font-semibold">🏙️ AURA <span class="ml-2 text-xs text-slate-500 font-normal">2 machines · 1 client</span></summary>
+                <div class="p-3 ml-4 text-xs space-y-1">
+                  <div>• 🥤 Distri Gare Lyon Part-Dieu</div>
+                  <div>• 🧊 Frigo Restaurant Lyon 2e</div>
+                </div>
+              </details>
+              <details class="border border-slate-200 rounded-lg ml-4">
+                <summary class="px-4 py-2 cursor-pointer bg-slate-50 font-semibold">🏙️ PACA <span class="ml-2 text-xs text-slate-500 font-normal">2 machines</span></summary>
+              </details>
+            </div>
+          </details>
+        </div>
+        <button class="mt-4 text-sm text-blue-600 hover:underline">+ Ajouter une région / un site</button>
+      </div>
+    </div>
+
+    <!-- SALES -->
+    <div id="page-sales" class="page flex-1 overflow-y-auto p-6 bg-slate-100">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-[11px] text-slate-500 uppercase">CA 30j</div><div class="text-2xl font-bold mt-1">12 840 €</div><div class="text-[11px] text-emerald-600">↗ +18%</div></div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-[11px] text-slate-500 uppercase">Transactions</div><div class="text-2xl font-bold mt-1">5 396</div></div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-[11px] text-slate-500 uppercase">Panier moyen</div><div class="text-2xl font-bold mt-1">2,38 €</div></div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-[11px] text-slate-500 uppercase">Top machine</div><div class="text-lg font-bold mt-1">Café Rép.</div></div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 bg-white rounded-xl p-5 border border-slate-200">
+          <h3 class="font-semibold mb-3">CA par jour (30j)</h3>
+          <canvas id="chartSalesDaily" height="100"></canvas>
+        </div>
+        <div class="bg-white rounded-xl p-5 border border-slate-200">
+          <h3 class="font-semibold mb-3">Top produits</h3>
+          <div class="space-y-2 text-sm" id="topProducts"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CASHLESS -->
+    <div id="page-cashless" class="page flex-1 overflow-y-auto p-6 bg-slate-100">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6">
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-[11px] text-slate-500 uppercase">CA cashless 30j</div><div class="text-2xl font-bold mt-1">9 372 €</div><div class="text-[11px] text-emerald-600">73% du CA</div></div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-[11px] text-slate-500 uppercase">Trans. CB</div><div class="text-2xl font-bold mt-1">2 845</div></div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-[11px] text-slate-500 uppercase">Trans. NFC</div><div class="text-2xl font-bold mt-1">1 412</div></div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-[11px] text-slate-500 uppercase">Espèces</div><div class="text-2xl font-bold mt-1">1 139</div><div class="text-[11px] text-amber-600">↘ -8%</div></div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div class="bg-white rounded-xl p-5 border border-slate-200">
+          <h3 class="font-semibold mb-3">Réconciliation espèces vs ventes</h3>
+          <table class="w-full text-sm">
+            <thead class="text-xs uppercase text-slate-500 border-b">
+              <tr><th class="py-2 text-left">Machine</th><th class="text-right">Vendu</th><th class="text-right">Collecté</th><th class="text-right">Écart</th></tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr><td class="py-2">Distri Lyon #2</td><td class="text-right tabular-nums">487,50€</td><td class="text-right tabular-nums">485,20€</td><td class="text-right tabular-nums text-amber-600">-2,30€</td></tr>
+              <tr><td class="py-2">Distri Marseille #4</td><td class="text-right tabular-nums">312,00€</td><td class="text-right tabular-nums">312,00€</td><td class="text-right tabular-nums text-emerald-600">0,00€</td></tr>
+              <tr><td class="py-2">Distri Toulouse #6</td><td class="text-right tabular-nums">298,75€</td><td class="text-right tabular-nums">280,50€</td><td class="text-right tabular-nums text-red-600">-18,25€</td></tr>
+              <tr><td class="py-2">Distri Bordeaux #8</td><td class="text-right tabular-nums">412,25€</td><td class="text-right tabular-nums">412,25€</td><td class="text-right tabular-nums text-emerald-600">0,00€</td></tr>
+            </tbody>
+          </table>
+          <button class="mt-3 text-sm text-blue-600 hover:underline">Export comptable →</button>
+        </div>
+        <div class="bg-white rounded-xl p-5 border border-slate-200">
+          <h3 class="font-semibold mb-3">TPE / cashless integration</h3>
+          <div class="space-y-3 text-sm">
+            <div class="flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+              <div class="text-2xl">💳</div>
+              <div class="flex-1"><div class="font-medium">Nayax VPOS</div><div class="text-xs text-slate-600">8 distributeurs équipés</div></div>
+              <span class="text-emerald-700 text-xs">Connecté</span>
+            </div>
+            <div class="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-lg">
+              <div class="text-2xl">📱</div>
+              <div class="flex-1"><div class="font-medium">SumUp Solo</div><div class="text-xs text-slate-600">Pour cafés et frigos pro</div></div>
+              <button class="text-blue-600 text-xs hover:underline">Configurer →</button>
+            </div>
+            <div class="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-lg">
+              <div class="text-2xl">🏧</div>
+              <div class="flex-1"><div class="font-medium">Stripe Terminal</div><div class="text-xs text-slate-600">Pour ton TPE existant</div></div>
+              <button class="text-blue-600 text-xs hover:underline">Configurer →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOYALTY -->
+    <div id="page-loyalty" class="page flex-1 overflow-y-auto p-6 bg-slate-100">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6">
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-[11px] text-slate-500 uppercase">Membres</div><div class="text-2xl font-bold mt-1">1 409</div><div class="text-[11px] text-emerald-600">+128 (30j)</div></div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-[11px] text-slate-500 uppercase">CA moyen/membre</div><div class="text-2xl font-bold mt-1">14,80€</div><div class="text-[11px] text-slate-500">+22% vs anonyme</div></div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-[11px] text-slate-500 uppercase">Points distribués</div><div class="text-2xl font-bold mt-1">38 412</div></div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-[11px] text-slate-500 uppercase">Récompenses</div><div class="text-2xl font-bold mt-1">312</div><div class="text-[11px] text-slate-500">28% taux conv.</div></div>
+      </div>
+      <div class="bg-white rounded-xl p-5 border border-slate-200 mb-6">
+        <h3 class="font-semibold mb-3">Programmes actifs</h3>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+            <div class="flex items-center gap-3"><div class="text-2xl">☕</div><div><div class="font-medium">10 cafés achetés = 1 offert</div><div class="text-xs text-slate-500">Toutes cafetières · 312 cartes actives</div></div></div>
+            <button class="text-sm text-blue-600 hover:underline">Configurer</button>
+          </div>
+          <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+            <div class="flex items-center gap-3"><div class="text-2xl">🥤</div><div><div class="font-medium">Achetez 5, le 6e à -50%</div><div class="text-xs text-slate-500">Distributeurs · 128 cartes actives</div></div></div>
+            <button class="text-sm text-blue-600 hover:underline">Configurer</button>
+          </div>
+        </div>
+        <button class="mt-4 bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-lg">+ Créer un programme</button>
+      </div>
+    </div>
+
+    <!-- PROMOS -->
+    <div id="page-promos" class="page flex-1 overflow-y-auto p-6 bg-slate-100">
+      <div class="bg-white rounded-xl p-5 border border-slate-200 mb-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold">Promotions actives</h3>
+          <button class="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg">+ Nouvelle promo</button>
+        </div>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+            <div class="flex items-center gap-3"><div class="text-2xl">🎉</div><div><div class="font-medium">Happy Hour Café -20%</div><div class="text-xs text-slate-600">14h-16h · Tous les jours · 3 cafetières</div></div></div>
+            <div class="text-right"><div class="text-xs text-emerald-700 font-medium">+47% ventes 14h-16h</div><label class="inline-flex items-center mt-1"><input type="checkbox" checked class="mr-1"><span class="text-xs">Actif</span></label></div>
+          </div>
+          <div class="flex items-center justify-between p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div class="flex items-center gap-3"><div class="text-2xl">🥤</div><div><div class="font-medium">2 Coca pour 3€ (au lieu de 4€)</div><div class="text-xs text-slate-600">Weekends · 4 distributeurs · jusqu'au 30 juin</div></div></div>
+            <div class="text-right"><div class="text-xs text-blue-700">+28% panier moyen</div><label class="inline-flex items-center mt-1"><input type="checkbox" checked class="mr-1"><span class="text-xs">Actif</span></label></div>
+          </div>
+          <div class="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-lg opacity-60">
+            <div class="flex items-center gap-3"><div class="text-2xl">🧊</div><div><div class="font-medium">Promo Fête des Mères</div><div class="text-xs text-slate-600">Programmée pour le 25 mai</div></div></div>
+            <span class="text-xs text-slate-500">Programmée</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INVENTORY -->
+    <div id="page-inventory" class="page flex-1 overflow-y-auto p-6 bg-slate-100">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white rounded-xl p-5 border border-slate-200"><div class="text-xs text-slate-500 uppercase">Stock global</div><div class="text-3xl font-bold mt-1">71%</div><div class="h-2 bg-slate-200 rounded mt-2 overflow-hidden"><div class="h-full bg-blue-600" style="width:71%"></div></div></div>
+        <div class="bg-white rounded-xl p-5 border border-slate-200"><div class="text-xs text-slate-500 uppercase">Machines à réapprovisionner</div><div class="text-3xl font-bold mt-1 text-amber-600">3</div></div>
+        <div class="bg-white rounded-xl p-5 border border-slate-200"><div class="text-xs text-slate-500 uppercase">Valeur stock</div><div class="text-3xl font-bold mt-1">2 840 €</div></div>
+      </div>
+      <div class="bg-white rounded-xl p-5 border border-slate-200">
+        <h3 class="font-semibold mb-3">État stock par machine</h3>
+        <div id="inventoryGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+      </div>
+    </div>
+
+    <!-- ROUTES -->
+    <div id="page-routes" class="page flex-1 overflow-y-auto p-6 bg-slate-100">
+      <div class="bg-white rounded-xl p-5 border border-slate-200 mb-6">
+        <div class="flex items-center justify-between mb-3">
+          <div><h3 class="font-semibold">Route optimale — Demain matin</h3><p class="text-xs text-slate-500">5 machines · 32 km · ~2h15 · Optimisée IA</p></div>
+          <button class="bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-lg">📱 Envoyer au tech</button>
+        </div>
+        <div class="space-y-3" id="routeList"></div>
+      </div>
+    </div>
+
+    <!-- ALERTS -->
+    <div id="page-alerts" class="page flex-1 overflow-y-auto p-6 bg-slate-100">
+      <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div class="px-5 py-3 border-b border-slate-200 flex items-center justify-between">
+          <h3 class="font-semibold">Toutes les alertes</h3>
+        </div>
+        <div id="alertsList" class="divide-y divide-slate-200"></div>
+      </div>
+    </div>
+
+    <!-- REPORTS -->
+    <div id="page-reports" class="page flex-1 overflow-y-auto p-6 bg-slate-100">
+      <h3 class="font-semibold mb-4">Rapports automatiques</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="reportsGrid"></div>
+    </div>
+
+    <!-- DEVELOPER / API -->
+    <div id="page-developer" class="page flex-1 overflow-y-auto p-6 bg-slate-100">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white rounded-xl p-5 border border-slate-200">
+          <h3 class="font-semibold mb-3">🔑 Clés API</h3>
+          <p class="text-xs text-slate-500 mb-3">Donne accès à ton API à tes clients ou intégrations tierces. Ne partage que les clés `read_only` si possible.</p>
+          <div class="space-y-2">
+            <div class="border border-slate-200 rounded-lg p-3 flex items-center justify-between">
+              <div><div class="text-xs text-slate-500 mb-0.5">Production (read+write)</div><code class="code-block text-sm">sk_live_a8f3...d72b</code></div>
+              <div class="flex gap-1"><button class="text-xs text-slate-500">📋</button><button class="text-xs text-red-600">🗑</button></div>
+            </div>
+            <div class="border border-slate-200 rounded-lg p-3 flex items-center justify-between">
+              <div><div class="text-xs text-slate-500 mb-0.5">Lecture seule</div><code class="code-block text-sm">sk_read_b1e4...9c0a</code></div>
+              <div class="flex gap-1"><button class="text-xs text-slate-500">📋</button><button class="text-xs text-red-600">🗑</button></div>
+            </div>
+            <div class="border border-slate-200 rounded-lg p-3 flex items-center justify-between">
+              <div><div class="text-xs text-slate-500 mb-0.5">Sandbox (test)</div><code class="code-block text-sm">sk_test_x3p9...7d11</code></div>
+              <div class="flex gap-1"><button class="text-xs text-slate-500">📋</button><button class="text-xs text-red-600">🗑</button></div>
+            </div>
+          </div>
+          <button class="mt-3 bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-lg">+ Générer une clé</button>
+        </div>
+
+        <div class="bg-white rounded-xl p-5 border border-slate-200">
+          <h3 class="font-semibold mb-3">🪝 Webhooks</h3>
+          <p class="text-xs text-slate-500 mb-3">Notifie tes systèmes (ERP, Slack, CRM…) à chaque évènement.</p>
+          <div class="space-y-2">
+            <div class="border border-slate-200 rounded-lg p-3">
+              <div class="flex items-center justify-between mb-1">
+                <code class="code-block text-xs">https://mon-erp.example.com/webhook</code>
+                <span class="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded-full">Actif</span>
+              </div>
+              <div class="text-xs text-slate-500">📦 Évènements : sale.completed, stock.low, alert.created</div>
+            </div>
+            <div class="border border-slate-200 rounded-lg p-3">
+              <div class="flex items-center justify-between mb-1">
+                <code class="code-block text-xs">https://hooks.slack.com/services/T0...</code>
+                <span class="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded-full">Actif</span>
+              </div>
+              <div class="text-xs text-slate-500">🔔 Évènements : alert.critical</div>
+            </div>
+          </div>
+          <button class="mt-3 bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-lg">+ Ajouter un webhook</button>
+        </div>
+
+        <div class="lg:col-span-2 bg-white rounded-xl p-5 border border-slate-200">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold">📚 Démarrer avec l'API</h3>
+            <a href="#" class="text-sm text-blue-600 hover:underline">Documentation complète →</a>
+          </div>
+
+          <div class="bg-slate-900 rounded-xl p-4 text-slate-100 overflow-x-auto mb-4">
+            <div class="text-xs text-slate-400 mb-2 flex items-center justify-between">
+              <span># Récupérer toutes les machines (cURL)</span>
+              <button class="text-slate-400 hover:text-white text-xs">📋 Copier</button>
+            </div>
+            <pre class="code-block text-xs leading-relaxed"><code>curl https://api.telemetrie.fr/v1/devices \
+  -H "Authorization: Bearer sk_live_a8f3...d72b"
+
+# Réponse :
+[
+  {
+    "id": "cafe-paris-01",
+    "name": "Café République",
+    "status": "online",
+    "last_seen": 1715680800,
+    "telemetry": { "tasses": 142, "temp_c": 92.4, ... }
+  },
+  ...
+]</code></pre>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="border border-slate-200 rounded-xl p-4">
+              <div class="text-2xl">🐍</div>
+              <div class="font-semibold mt-1">Python SDK</div>
+              <code class="code-block text-xs block bg-slate-100 rounded p-2 mt-2">pip install telemetrie-fr</code>
+            </div>
+            <div class="border border-slate-200 rounded-xl p-4">
+              <div class="text-2xl">📦</div>
+              <div class="font-semibold mt-1">Node.js SDK</div>
+              <code class="code-block text-xs block bg-slate-100 rounded p-2 mt-2">npm i telemetrie-fr</code>
+            </div>
+            <div class="border border-slate-200 rounded-xl p-4">
+              <div class="text-2xl">📡</div>
+              <div class="font-semibold mt-1">Arduino lib</div>
+              <code class="code-block text-xs block bg-slate-100 rounded p-2 mt-2">Library Manager</code>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-2 bg-white rounded-xl p-5 border border-slate-200">
+          <h3 class="font-semibold mb-3">🤝 Auto-intégration client (mode self-service)</h3>
+          <p class="text-sm text-slate-700 mb-4">
+            Tes clients peuvent intégrer leur propre matériel (ESP32, automates, etc.) en autonomie via ce parcours :
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="text-center"><div class="w-10 h-10 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center mx-auto">1</div><div class="text-sm font-semibold mt-2">Crée son compte</div><div class="text-xs text-slate-600">Sur ton site, 14j d'essai gratuit</div></div>
+            <div class="text-center"><div class="w-10 h-10 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center mx-auto">2</div><div class="text-sm font-semibold mt-2">Reçoit son token</div><div class="text-xs text-slate-600">Affiché dans le dashboard</div></div>
+            <div class="text-center"><div class="w-10 h-10 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center mx-auto">3</div><div class="text-sm font-semibold mt-2">Flash son ESP32</div><div class="text-xs text-slate-600">Firmware fourni, ou via SDK</div></div>
+            <div class="text-center"><div class="w-10 h-10 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center mx-auto">4</div><div class="text-sm font-semibold mt-2">Machine apparaît</div><div class="text-xs text-slate-600">Auto-discovery, plug & play</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BILLING -->
+    <div id="page-billing" class="page flex-1 overflow-y-auto p-6 bg-slate-100">
+      <div class="max-w-3xl">
+        <div class="bg-white rounded-xl p-6 border border-slate-200 mb-6">
+          <div class="flex items-center justify-between mb-4">
+            <div><h3 class="font-semibold text-lg">Plan Pro</h3><p class="text-sm text-slate-500">49 € / mois</p></div>
+            <span class="bg-emerald-100 text-emerald-700 text-xs px-3 py-1 rounded-full">Actif</span>
+          </div>
+          <button class="bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-lg">Gérer l'abonnement</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEAM -->
+    <div id="page-team" class="page flex-1 overflow-y-auto p-6 bg-slate-100">
+      <div class="bg-white rounded-xl border border-slate-200 p-5">Équipe : 3 membres</div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="page-settings" class="page flex-1 overflow-y-auto p-6 bg-slate-100">
+      <div class="bg-white rounded-xl border border-slate-200 p-5">Paramètres généraux</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- =================== AI CHAT OVERLAY =================== -->
+<div id="aiChatOverlay" class="hidden fixed inset-0 bg-black/50 z-50 flex items-end justify-end p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md h-[600px] flex flex-col">
+    <div class="bg-gradient-to-r from-purple-600 to-indigo-700 text-white px-5 py-4 rounded-t-2xl flex items-center justify-between">
+      <div><div class="font-semibold">🤖 Assistant IA</div><div class="text-xs opacity-80">Posez votre question</div></div>
+      <button onclick="document.getElementById('aiChatOverlay').classList.add('hidden')" class="text-white/70 hover:text-white text-2xl">×</button>
+    </div>
+    <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50">
+      <div class="flex gap-2"><div class="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center text-xs">🤖</div><div class="bg-white rounded-2xl rounded-tl-sm p-3 text-sm max-w-xs">Bonjour Salih, comment puis-je vous aider aujourd'hui ?</div></div>
+      <div class="flex gap-2 justify-end"><div class="bg-blue-600 text-white rounded-2xl rounded-tr-sm p-3 text-sm max-w-xs">Quelle est ma machine la plus rentable ce mois ?</div></div>
+      <div class="flex gap-2"><div class="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center text-xs">🤖</div><div class="bg-white rounded-2xl rounded-tl-sm p-3 text-sm max-w-xs">Sur les 30 derniers jours, votre <strong>Café République (Paris)</strong> a généré <strong>2 320€ de CA</strong> avec 1547 tasses servies. Marge nette estimée : 1 624€. Voulez-vous voir le détail ?</div></div>
+    </div>
+    <div class="p-4 border-t border-slate-200">
+      <div class="flex gap-2">
+        <input type="text" placeholder="Posez votre question…" class="flex-1 border border-slate-300 rounded-xl px-4 py-2 text-sm" />
+        <button class="bg-purple-600 text-white px-4 py-2 rounded-xl">→</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============== DATA ==============
+const cities = [
+  {n:'Paris',lat:48.8566,lng:2.3522},
+  {n:'Lyon',lat:45.7640,lng:4.8357},
+  {n:'Marseille',lat:43.2965,lng:5.3698},
+  {n:'Toulouse',lat:43.6047,lng:1.4442},
+  {n:'Bordeaux',lat:44.8378,lng:-0.5792},
+  {n:'Nice',lat:43.7102,lng:7.2620},
+  {n:'Strasbourg',lat:48.5734,lng:7.7521},
+  {n:'Lille',lat:50.6292,lng:3.0573},
+];
+const types = [
+  {id:'espresso',name:'☕ Cafetière',rev:1.5},
+  {id:'vending',name:'🥤 Distributeur',rev:2.5},
+  {id:'frigo',name:'🧊 Frigo pro',rev:0},
+  {id:'indus',name:'⚙️ Industriel',rev:0},
+];
+const products = ['☕ Espresso','☕ Cappuccino','🥤 Coca','🥤 Orangina','💧 Eau','🍫 KitKat','🥨 Chips'];
+function makeMachines(){
+  const out=[]; for(let i=0;i<12;i++){const c=cities[i%cities.length],t=types[i%types.length];const s=Math.floor(Math.random()*80)+(t.rev>0?20:0);const stk=Math.floor(Math.random()*100);let st='online';if(Math.random()<0.15)st=stk<20?'warn':'error';if(Math.random()<0.05)st='offline';out.push({id:`${t.id}-${c.n.slice(0,3).toLowerCase()}-${i+1}`,name:`${t.name.split(' ')[1]||t.name} ${c.n} #${i+1}`,type:t.id,typeLabel:t.name,location:c.n,lat:c.lat+(Math.random()-0.5)*0.05,lng:c.lng+(Math.random()-0.5)*0.05,sales:s,rev:+(s*t.rev).toFixed(2),stock:stk,status:st,lastSeen:Date.now()-Math.floor(Math.random()*3600*1000)});}return out;
+}
+const machines = makeMachines();
+const alerts = [
+  {level:'error',code:'temp_high',message:'Température frigo 12°C',machine:'Frigo Marseille #3',ts:Date.now()-12*60*1000},
+  {level:'error',code:'offline',message:'Hors ligne 45 min',machine:'Distri Lyon #2',ts:Date.now()-45*60*1000},
+  {level:'warn',code:'low_stock',message:'Stock < 20%',machine:'Distri Toulouse #4',ts:Date.now()-2*3600*1000},
+  {level:'warn',code:'low_water',message:'Niveau eau bas',machine:'Cafetière Paris #1',ts:Date.now()-3*3600*1000},
+  {level:'warn',code:'vibration',message:'Vibrations moteur',machine:'Indus Strasbourg #7',ts:Date.now()-6*3600*1000},
+  {level:'info',code:'maintenance',message:'Détartrage dans 3j',machine:'Cafetière Bordeaux #5',ts:Date.now()-5*3600*1000},
+];
+
+// ============== NAV ==============
+document.querySelectorAll('.sidebar-link').forEach(link => {
+  link.addEventListener('click', () => {
+    const page = link.dataset.page;
+    document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+    link.classList.add('active');
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    const titles = {
+      overview:["Vue d'ensemble","Données temps réel"],ai:['IA Insights','Maintenance prédictive · prévisions · anomalies'],
+      map:['Carte','12 machines géolocalisées'],machines:['Machines','Inventaire des machines'],
+      hierarchy:['Régions / Sites','Organisation multi-niveaux'],sales:['Ventes & analytics','Performance commerciale'],
+      cashless:['Cashless & TPE','Paiements & réconciliation'],loyalty:['Fidélité & clients','CRM & programmes'],
+      promos:['Promotions','Campagnes en cours'],inventory:['Inventaire','État du stock'],
+      routes:['Routes techniciens','Tournées optimisées IA'],alerts:['Alertes','Évènements & incidents'],
+      reports:['Rapports','Exports automatiques'],developer:['API & intégrations','Pour développeurs'],
+      billing:['Abonnement','Plan & facturation'],team:['Équipe','Membres'],settings:['Paramètres','Configuration'],
+    }[page]||[page,''];
+    document.getElementById('pageTitle').textContent = titles[0];
+    document.getElementById('pageSubtitle').textContent = titles[1];
+    if (page === 'map') setTimeout(() => map && map.invalidateSize(), 100);
+  });
+});
+
+// ============== RENDER ==============
+function totalRev(){return machines.reduce((s,m)=>s+m.rev,0).toFixed(2);}
+function totalSales(){return machines.reduce((s,m)=>s+m.sales,0);}
+function nbOnline(){return machines.filter(m=>m.status==='online').length;}
+
+function renderKpis(){
+  document.getElementById('kpiRev').textContent = totalRev().replace('.', ',') + ' €';
+  document.getElementById('kpiSales').textContent = totalSales().toLocaleString('fr-FR');
+  document.getElementById('kpiOnline').textContent = nbOnline();
+  document.getElementById('kpiAlerts').textContent = alerts.filter(a=>a.level==='error'||a.level==='warn').length;
+  document.getElementById('alertsCount').textContent = alerts.length;
+}
+function renderTopMachines(){
+  const el=document.getElementById('topMachines');
+  const top=[...machines].sort((a,b)=>b.rev-a.rev).slice(0,5);
+  el.innerHTML=top.map((m,i)=>`<div class="flex items-center gap-3"><div class="text-xs text-slate-400 w-4">${i+1}</div><div class="flex-1 min-w-0"><div class="text-sm font-medium truncate">${m.name}</div><div class="h-1 bg-slate-100 rounded mt-1 overflow-hidden"><div class="h-full bg-blue-500" style="width:${(m.rev/top[0].rev*100).toFixed(0)}%"></div></div></div><div class="text-sm font-semibold">${m.rev.toFixed(2).replace('.',',')} €</div></div>`).join('');
+}
+function renderMachineTable(){
+  const t=document.getElementById('machineRows'),q=(document.getElementById('machineSearch').value||'').toLowerCase();
+  const f=machines.filter(m=>!q||m.name.toLowerCase().includes(q)||m.location.toLowerCase().includes(q));
+  document.getElementById('mFilteredCount').textContent=f.length;
+  t.innerHTML=f.map(m=>{const cls={online:'online',offline:'offline',warn:'warn',error:'error'}[m.status],lbl={online:'En ligne',offline:'Hors ligne',warn:'Stock bas',error:'En alerte'}[m.status],sc=m.stock<20?'text-red-600':m.stock<50?'text-amber-600':'text-emerald-600';return `<tr class="hover:bg-slate-50 cursor-pointer"><td class="px-5 py-3 font-medium">${m.name}<div class="text-xs text-slate-500 font-mono">${m.id}</div></td><td class="px-5 py-3">${m.typeLabel}</td><td class="px-5 py-3">${m.location}</td><td class="px-5 py-3 text-right tabular-nums">${m.sales}</td><td class="px-5 py-3 text-right tabular-nums font-medium">${m.rev.toFixed(2).replace('.',',')} €</td><td class="px-5 py-3 text-right tabular-nums ${sc}">${m.stock}%</td><td class="px-5 py-3 text-center"><span class="pulse-dot ${cls}"></span> <span class="text-xs">${lbl}</span></td></tr>`;}).join('');
+}
+document.getElementById('machineSearch').addEventListener('input', renderMachineTable);
+
+function renderInventory(){
+  document.getElementById('inventoryGrid').innerHTML=machines.filter(m=>['vending','espresso'].includes(m.type)).map(m=>{const c=m.stock<20?'bg-red-500':m.stock<50?'bg-amber-500':'bg-emerald-500';return `<div class="border border-slate-200 rounded-lg p-3"><div class="flex items-center justify-between mb-2"><div class="text-sm font-medium truncate">${m.name}</div><div class="text-xs ${m.stock<20?'text-red-600 font-semibold':'text-slate-500'}">${m.stock}%</div></div><div class="h-2 bg-slate-100 rounded overflow-hidden"><div class="h-full ${c}" style="width:${m.stock}%"></div></div>${m.stock<30?'<div class="mt-2 text-xs text-amber-700">⚠️ Réassort recommandé</div>':''}</div>`;}).join('');
+}
+function renderRoutes(){
+  const stops=[...machines].filter(m=>m.stock<30).slice(0,5);
+  document.getElementById('routeList').innerHTML=stops.map((m,i)=>`<div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg"><div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold">${i+1}</div><div class="flex-1"><div class="font-medium">${m.name}</div><div class="text-xs text-slate-500">${m.location} · Stock ${m.stock}%</div></div><div class="text-right"><div class="text-xs text-slate-500">~${Math.floor(Math.random()*40+10)} min</div><div class="text-xs font-medium">Réassort</div></div></div>`).join('');
+}
+function renderAlerts(){
+  document.getElementById('alertsList').innerHTML=alerts.map(a=>{const c=a.level==='error'?'border-l-red-500':a.level==='warn'?'border-l-amber-500':'border-l-slate-400';const ago=Math.floor((Date.now()-a.ts)/60000);const ag=ago<60?`${ago} min`:`${Math.floor(ago/60)}h ${ago%60}m`;return `<div class="p-4 border-l-4 ${c}"><div class="flex items-center justify-between"><div><div class="flex items-center gap-2"><span class="font-semibold text-sm">${a.machine}</span><span class="text-xs px-2 py-0.5 rounded-full ${a.level==='error'?'bg-red-100 text-red-700':a.level==='warn'?'bg-amber-100 text-amber-700':'bg-slate-100 text-slate-700'}">${a.code}</span></div><div class="text-sm text-slate-700 mt-1">${a.message}</div><div class="text-xs text-slate-500 mt-0.5">il y a ${ag}</div></div><div class="flex gap-2"><button class="text-xs px-3 py-1 bg-white border border-slate-300 rounded hover:bg-slate-50">Acquitter</button><button class="text-xs px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Intervenir →</button></div></div></div>`;}).join('');
+}
+function renderTopProducts(){
+  const list=['☕ Espresso','🥤 Coca-Cola','🍫 KitKat','💧 Eau plate','☕ Cappuccino','🥨 Chips','🥤 Orangina'];
+  const counts=[1248,982,756,684,543,421,387];
+  document.getElementById('topProducts').innerHTML=list.map((p,i)=>`<div class="flex items-center justify-between"><span>${p}</span><span class="font-semibold">${counts[i]}</span></div>`).join('');
+}
+function renderReports(){
+  const items=[['📈','Rapport mensuel CA','Synthèse du mois, PDF / Excel'],['🧊','Traçabilité HACCP','Historique T° conforme'],['🔧','Journal pannes','Toutes pannes + interventions'],['💰','Rentabilité/machine','CA/coût/marge nette'],['📋','Inventaire détaillé','Stock par produit/machine'],['🗺️','Routes optimisées','Tournée du jour']];
+  document.getElementById('reportsGrid').innerHTML=items.map(([icn,t,d])=>`<div class="bg-white rounded-xl p-5 border border-slate-200 hover:border-blue-300 cursor-pointer"><div class="text-3xl">${icn}</div><h4 class="font-semibold mt-2">${t}</h4><p class="text-sm text-slate-600 mt-1">${d}</p><button class="text-blue-600 text-sm mt-3 hover:underline">Télécharger →</button></div>`).join('');
+}
+
+let map=null;
+function initMap(){
+  if (map) return;
+  map=L.map('map').setView([46.7,2.5],6);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM',maxZoom:18}).addTo(map);
+  for(const m of machines){const cls=m.status==='online'?'green':(m.status==='error'||m.status==='warn')?'red':'amber';const ic=L.divIcon({className:'',html:`<div class="machine-marker ${cls}"></div>`,iconSize:[14,14],iconAnchor:[7,7]});L.marker([m.lat,m.lng],{icon:ic}).addTo(map).bindPopup(`<div style="font-weight:600;font-size:14px">${m.name}</div><div style="font-size:11px;color:#64748b">${m.typeLabel} • ${m.location}</div><div style="margin-top:8px;font-size:12px"><div>Ventes 24h : <b>${m.sales}</b></div><div>Revenus : <b>${m.rev.toFixed(2).replace('.',',')}€</b></div><div>Stock : <b>${m.stock}%</b></div></div>`);}
+}
+
+function initCharts(){
+  const days=Array.from({length:30},(_,i)=>`J-${29-i}`);
+  const forecast=Array.from({length:7},(_,i)=>`J+${i+1}`);
+  const rev=days.map(()=>Math.floor(Math.random()*800)+800);
+  const revF=forecast.map(()=>Math.floor(Math.random()*200)+1100);
+  new Chart(document.getElementById('chartRevenue'),{type:'line',data:{labels:[...days,...forecast],datasets:[{label:'Réel',data:[...rev,...Array(7).fill(null)],borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.1)',fill:true,tension:0.3,pointRadius:0},{label:'Prédiction IA',data:[...Array(30).fill(null),...revF],borderColor:'#a855f7',borderDash:[5,5],backgroundColor:'rgba(168,85,247,0.1)',fill:true,tension:0.3,pointRadius:0}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{maxTicksLimit:8}}}}});
+
+  const hours=Array.from({length:24},(_,i)=>`${String(i).padStart(2,'0')}h`);
+  const peak=[2,1,1,1,1,2,8,18,32,28,22,30,38,32,28,22,24,20,16,12,8,6,4,3];
+  new Chart(document.getElementById('chartHeatmap'),{type:'bar',data:{labels:hours,datasets:[{data:peak,backgroundColor:'#3b82f6'}]},options:{plugins:{legend:{display:false}}}});
+  new Chart(document.getElementById('chartProducts'),{type:'doughnut',data:{labels:products,datasets:[{data:products.map(()=>Math.floor(Math.random()*200)+100),backgroundColor:['#2563eb','#7c3aed','#db2777','#f59e0b','#10b981','#06b6d4','#64748b'],borderWidth:0}]},options:{plugins:{legend:{position:'right',labels:{font:{size:11}}}}}});
+  new Chart(document.getElementById('chartPayments'),{type:'doughnut',data:{labels:['CB','NFC sans contact','Espèces','Mobile (Apple/Google Pay)'],datasets:[{data:[2845,1412,1139,852],backgroundColor:['#2563eb','#7c3aed','#94a3b8','#10b981'],borderWidth:0}]},options:{plugins:{legend:{position:'right',labels:{font:{size:11}}}}}});
+  new Chart(document.getElementById('chartSalesDaily'),{type:'bar',data:{labels:days,datasets:[{data:rev,backgroundColor:'#2563eb'}]},options:{plugins:{legend:{display:false}}}});
+
+  const fLabels=[...Array(14).fill(0).map((_,i)=>`J-${13-i}`),...Array(7).fill(0).map((_,i)=>`J+${i+1}`)];
+  const past=Array.from({length:14},()=>Math.floor(Math.random()*100)+50);
+  const fut=Array.from({length:7},()=>Math.floor(Math.random()*100)+70);
+  new Chart(document.getElementById('aiForecast'),{type:'line',data:{labels:fLabels,datasets:[{label:'Réel',data:[...past,...Array(7).fill(null)],borderColor:'#2563eb',fill:false,tension:0.3,pointRadius:3},{label:'Prédiction IA',data:[...Array(14).fill(null),past[13],...fut],borderColor:'#a855f7',borderDash:[5,5],fill:false,tension:0.3,pointRadius:3}]},options:{plugins:{legend:{display:false}}}});
+}
+
+renderKpis();renderTopMachines();renderMachineTable();renderInventory();renderRoutes();renderAlerts();renderTopProducts();renderReports();initMap();initCharts();
+setInterval(()=>{for(const m of machines){if(m.status==='online'&&Math.random()<0.4){m.sales+=Math.floor(Math.random()*3);m.rev=+(m.sales*types.find(t=>t.id===m.type).rev).toFixed(2);}}renderKpis();renderTopMachines();},5000);
+</script>
+</body>
+</html>

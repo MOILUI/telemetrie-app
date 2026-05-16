@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🚀 Démarrer le projet — Checklist interactive</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+  .step { transition: all 0.15s; }
+  .step.done { background: #f0fdf4; opacity: 0.7; }
+  .step.done .step-content { text-decoration: line-through; color: #6b7280; }
+  .step.in-progress { background: #fef3c7; border-color: #f59e0b; }
+  details summary { cursor: pointer; list-style: none; }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::after { content: '▶'; transition: transform 0.2s; }
+  details[open] summary::after { transform: rotate(90deg); display: inline-block; }
+  .gradient-cta {
+    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  }
+  .progress-ring circle { transition: stroke-dashoffset 0.4s; }
+</style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+<!-- ============== HEADER ============== -->
+<header class="bg-white border-b border-slate-200 sticky top-0 z-10">
+  <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <a href="INDEX.html" class="text-slate-500 hover:text-slate-900">←</a>
+      <div>
+        <h1 class="font-bold">🚀 Lancer le projet</h1>
+        <p class="text-xs text-slate-500">Checklist interactive · ta progression est sauvée automatiquement</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <svg class="progress-ring" width="44" height="44">
+        <circle cx="22" cy="22" r="18" stroke="#e2e8f0" stroke-width="3" fill="none"/>
+        <circle id="progressCircle" cx="22" cy="22" r="18" stroke="#10b981" stroke-width="3" fill="none"
+                stroke-linecap="round" stroke-dasharray="113" stroke-dashoffset="113" transform="rotate(-90 22 22)"/>
+      </svg>
+      <div class="text-right">
+        <div class="text-xs text-slate-500">Progression</div>
+        <div class="font-bold text-emerald-600"><span id="progressPct">0</span>%</div>
+      </div>
+      <button onclick="resetProgress()" class="text-xs text-slate-400 hover:text-red-600">↺ reset</button>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-5xl mx-auto px-4 py-6 space-y-6">
+
+  <!-- ============== INTRO ============== -->
+  <section class="gradient-cta rounded-2xl p-6 text-white shadow-xl">
+    <h2 class="text-2xl font-bold mb-2">⚡ Le plan en 6 semaines</h2>
+    <p class="text-blue-100 mb-3">De zéro à 1er client payant. Coche les étapes au fur et à mesure.</p>
+    <div class="grid grid-cols-3 md:grid-cols-6 gap-2 text-center text-xs">
+      <div class="bg-white/15 rounded-lg p-2"><div class="font-semibold">S1</div><div class="text-blue-100 mt-1">Admin</div></div>
+      <div class="bg-white/15 rounded-lg p-2"><div class="font-semibold">S2</div><div class="text-blue-100 mt-1">Test local</div></div>
+      <div class="bg-white/15 rounded-lg p-2"><div class="font-semibold">S3</div><div class="text-blue-100 mt-1">Hardware</div></div>
+      <div class="bg-white/15 rounded-lg p-2"><div class="font-semibold">S4</div><div class="text-blue-100 mt-1">Production</div></div>
+      <div class="bg-white/15 rounded-lg p-2"><div class="font-semibold">S5</div><div class="text-blue-100 mt-1">Prospects</div></div>
+      <div class="bg-white/15 rounded-lg p-2"><div class="font-semibold">S6</div><div class="text-blue-100 mt-1">1er client</div></div>
+    </div>
+    <div class="mt-4 bg-white/10 rounded-lg p-3 text-sm">
+      💰 <strong>Budget total :</strong> ~830€ (admin + matos + 3 mois VPS)
+      · <strong>Temps :</strong> ~40h sur 6 semaines (10h/sem max)
+    </div>
+  </section>
+
+  <!-- ============== JOUR 0 — TOUT DE SUITE ============== -->
+  <section class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-6">
+    <h2 class="text-xl font-bold mb-3 flex items-center gap-2">⚡ Aujourd'hui — 30 minutes</h2>
+    <p class="text-amber-800 text-sm mb-4">Avant de t'engager dans l'admin, prouve-toi que le produit marche.</p>
+    <div class="space-y-2" id="day0">
+      <!-- généré JS -->
+    </div>
+  </section>
+
+  <!-- ============== SEMAINE 1 ============== -->
+  <section class="bg-white rounded-2xl border border-slate-200 p-6">
+    <h2 class="text-xl font-bold mb-1 flex items-center gap-2">📋 Semaine 1 — Administratif</h2>
+    <p class="text-slate-600 text-sm mb-4">~6h de boulot · ~300€ · Pas de code</p>
+    <div class="space-y-2" id="week1"></div>
+  </section>
+
+  <!-- ============== SEMAINE 2 ============== -->
+  <section class="bg-white rounded-2xl border border-slate-200 p-6">
+    <h2 class="text-xl font-bold mb-1 flex items-center gap-2">💻 Semaine 2 — Test technique en local</h2>
+    <p class="text-slate-600 text-sm mb-4">~4h · 0€ · Tester sur ton Mac</p>
+    <div class="space-y-2" id="week2"></div>
+  </section>
+
+  <!-- ============== SEMAINE 3 ============== -->
+  <section class="bg-white rounded-2xl border border-slate-200 p-6">
+    <h2 class="text-xl font-bold mb-1 flex items-center gap-2">🔌 Semaine 3 — Hardware ESP32</h2>
+    <p class="text-slate-600 text-sm mb-4">~6h + livraison · ~100€ · Commander matos + flasher</p>
+    <div class="space-y-2" id="week3"></div>
+  </section>
+
+  <!-- ============== SEMAINE 4 ============== -->
+  <section class="bg-white rounded-2xl border border-slate-200 p-6">
+    <h2 class="text-xl font-bold mb-1 flex items-center gap-2">🚀 Semaine 4 — Mise en production</h2>
+    <p class="text-slate-600 text-sm mb-4">~5h · ~50€ · VPS + domaine + HTTPS</p>
+    <div class="space-y-2" id="week4"></div>
+  </section>
+
+  <!-- ============== SEMAINE 5 ============== -->
+  <section class="bg-white rounded-2xl border border-slate-200 p-6">
+    <h2 class="text-xl font-bold mb-1 flex items-center gap-2">📧 Semaine 5 — Prospection</h2>
+    <p class="text-slate-600 text-sm mb-4">~10h · 0€ · Contacter des prospects</p>
+    <div class="space-y-2" id="week5"></div>
+  </section>
+
+  <!-- ============== SEMAINE 6 ============== -->
+  <section class="bg-white rounded-2xl border border-slate-200 p-6">
+    <h2 class="text-xl font-bold mb-1 flex items-center gap-2">🎉 Semaine 6 — Premier client</h2>
+    <p class="text-slate-600 text-sm mb-4">~8h · 0€ · Conclure le 1er deal</p>
+    <div class="space-y-2" id="week6"></div>
+  </section>
+
+  <!-- ============== APRÈS ============== -->
+  <section class="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-6">
+    <h2 class="text-xl font-bold mb-3">🎯 Après le 1er client</h2>
+    <p class="text-slate-700 text-sm mb-3">Tu as validé que ça marche. Maintenant :</p>
+    <ul class="text-sm space-y-1 text-slate-700 list-disc pl-5">
+      <li>Récupère un <strong>témoignage vidéo</strong> de ton 1er client (gratuit en échange d'un mois d'abonnement offert)</li>
+      <li>Mets son logo sur ton site web</li>
+      <li>Active l'agent IA <strong>Customer Success</strong> (script Python déjà livré)</li>
+      <li>Lance l'<strong>agent Marketing SEO</strong> pour générer du trafic gratuit</li>
+      <li>Vise <strong>5 clients à la fin du mois 2</strong>, puis 20 au mois 3</li>
+      <li>À 30 clients : envisage de recruter un commercial OU activer le programme revendeurs</li>
+    </ul>
+    <p class="text-xs text-slate-500 mt-3">Suite détaillée dans <a href="ROADMAP.md" class="text-blue-600 hover:underline">ROADMAP.md</a> (phases 4-5).</p>
+  </section>
+
+  <!-- ============== AIDE ============== -->
+  <section class="bg-slate-900 text-white rounded-2xl p-6">
+    <h2 class="text-xl font-bold mb-3">🆘 Si tu bloques</h2>
+    <div class="grid md:grid-cols-3 gap-4 text-sm">
+      <div>
+        <div class="font-semibold mb-1">📖 Doc pas claire ?</div>
+        <a href="INDEX.html" class="text-blue-300 hover:text-blue-200">→ Va sur INDEX.html</a>
+      </div>
+      <div>
+        <div class="font-semibold mb-1">💻 Code marche pas ?</div>
+        <a href="docs/SECURITE.md" class="text-blue-300 hover:text-blue-200">→ Section dépannage</a>
+      </div>
+      <div>
+        <div class="font-semibold mb-1">💰 Question paiement ?</div>
+        <a href="docs/PAIEMENTS-FR.md" class="text-blue-300 hover:text-blue-200">→ Doc paiements FR</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+const STEPS = {
+  day0: [
+    { id: 'd0-1', title: 'Ouvrir INDEX.html', detail: 'Pour voir tout ce qui est dispo dans le projet', link: 'INDEX.html', time: '2 min', cost: '0€' },
+    { id: 'd0-2', title: 'Tester la démo Pro v3 dans le navigateur', detail: 'C\'est exactement ce que verront tes futurs clients', link: 'demos/03-dashboard-pro-v3-ia.html', time: '10 min', cost: '0€' },
+    { id: 'd0-3', title: 'Ouvrir l\'app mobile pour voir la version smartphone', detail: 'Tu pourras la montrer à tes prospects depuis ton tel', link: 'demos/04-app-mobile.html', time: '5 min', cost: '0€' },
+    { id: 'd0-4', title: 'Lire le ROADMAP en diagonale (10 min)', detail: 'Pour voir le plan d\'ensemble', link: 'ROADMAP.md', time: '10 min', cost: '0€' },
+    { id: 'd0-5', title: 'Décider : "OK je me lance" — ou pas', detail: 'Si oui, passe à la semaine 1. Si non, range tes affaires et fais autre chose.', time: '5 min', cost: '0€' },
+  ],
+
+  week1: [
+    { id: 'w1-1', title: 'Choisir un nom commercial', detail: 'Pas trop long, .fr libre, prononçable. Ex: TeleCare, MachineWatch, IoTime. Vérifie sur OVH si .fr/.com sont libres.', time: '30 min', cost: '0€' },
+    { id: 'w1-2', title: 'Acheter le nom de domaine', detail: 'Sur Cloudflare Registrar (prix coûtant ~10€/an) ou OVH', link: 'https://www.cloudflare.com/products/registrar/', time: '15 min', cost: '10€/an' },
+    { id: 'w1-3', title: 'Créer ta société (SAS ou EURL ou auto-entrepreneur)', detail: 'Plus simple : Legalstart 199€ / Captain Contrat. Auto-entrepreneur si tu démarres petit (gratuit mais cap 77k€ CA).', link: 'https://www.legalstart.fr', time: '1h + délai 1 sem', cost: '0-200€' },
+    { id: 'w1-4', title: 'Ouvrir un compte bancaire pro', detail: 'Qonto (rapide, 9€/mois) ou Shine. Pas de banque traditionnelle (lent).', link: 'https://qonto.com', time: '30 min', cost: '9€/mois' },
+    { id: 'w1-5', title: 'Créer un email pro (contact@tondomaine.fr)', detail: 'Zoho Mail gratuit (5 boîtes) ou Google Workspace 6€/mois', link: 'https://www.zoho.com/mail/', time: '20 min', cost: '0€' },
+    { id: 'w1-6', title: 'Inscription Stripe en mode TEST', detail: 'console.stripe.com/register → KYC ~24h pour activer le mode LIVE (à faire en semaine 4)', link: 'https://dashboard.stripe.com/register', time: '30 min', cost: '0€' },
+    { id: 'w1-7', title: 'Compte Mistral pour l\'IA', detail: 'Récupère ta clé API → 5€ de crédit pour démarrer', link: 'https://console.mistral.ai', time: '10 min', cost: '0€' },
+    { id: 'w1-8', title: 'Compte Resend pour les emails', detail: 'Gratuit jusqu\'à 3000 emails/mois — indispensable pour l\'agent Customer Success', link: 'https://resend.com', time: '10 min', cost: '0€' },
+    { id: 'w1-9', title: 'CGU/CGV/Mentions légales/Politique de confidentialité', detail: 'Génère sur Iubenda (29€/an) ou template Legalstart. Indispensable pour Stripe et RGPD.', link: 'https://www.iubenda.com', time: '1h', cost: '29€/an' },
+  ],
+
+  week2: [
+    { id: 'w2-1', title: 'Installer Node.js sur ton Mac', detail: 'Va sur nodejs.org → version LTS', link: 'https://nodejs.org', time: '10 min', cost: '0€' },
+    { id: 'w2-2', title: 'Suivre QUICKSTART_MAC.md', detail: 'Lance le backend + simulateur en 10 min', link: 'QUICKSTART_MAC.md', time: '20 min', cost: '0€' },
+    { id: 'w2-3', title: 'Ouvrir le dashboard sur localhost:3000', detail: 'Tu vois 3 machines simulées qui envoient des données en temps réel', time: '5 min', cost: '0€' },
+    { id: 'w2-4', title: 'Tester un faux paiement Stripe (mode test)', detail: 'CB de test 4242 4242 4242 4242 — voir doc Stripe', link: 'docs/STRIPE.md', time: '30 min', cost: '0€' },
+    { id: 'w2-5', title: 'Configurer la clé Mistral dans backend/.env', detail: 'Tester le chat IA dans le dashboard', time: '15 min', cost: '0€' },
+    { id: 'w2-6', title: 'Faire un screencast de toi en train d\'utiliser le produit', detail: 'Loom gratuit. Servira pour la prospection. 90 secondes.', link: 'https://loom.com', time: '15 min', cost: '0€' },
+  ],
+
+  week3: [
+    { id: 'w3-1', title: 'Commander 1 ESP32 LilyGO T-SIM7600E', detail: 'AliExpress (~50€ + 1-2 sem de livraison) ou LilyGO Store officiel. Demande facture pour la compta.', link: 'https://www.aliexpress.com/w/wholesale-LilyGO-T-SIM7600E.html', time: '20 min', cost: '50€' },
+    { id: 'w3-2', title: 'Commander 1 SIM 4G 1NCE (10 ans / 500 Mo)', detail: '10€ une seule fois pour 10 ans. Parfait IoT.', link: 'https://shop.1nce.com', time: '15 min', cost: '10€' },
+    { id: 'w3-3', title: 'Commander les capteurs (DS18B20 + reed + LDR)', detail: 'Amazon : ~15€ tout compris pour le kit de base', time: '15 min', cost: '15€' },
+    { id: 'w3-4', title: 'Boîtier IP65 + alimentation 5V/2A', detail: 'Amazon : ~25€', time: '10 min', cost: '25€' },
+    { id: 'w3-5', title: 'Installer Arduino IDE', detail: 'arduino.cc/en/software', link: 'https://www.arduino.cc/en/software', time: '20 min', cost: '0€' },
+    { id: 'w3-6', title: 'Suivre ESP32_SETUP.md pour flasher', detail: 'Compiler le firmware avec tes credentials, l\'uploader sur l\'ESP32', link: 'docs/ESP32_SETUP.md', time: '1h', cost: '0€' },
+    { id: 'w3-7', title: 'Brancher capteurs sur une machine de test', detail: 'Une cafetière chez toi, ou ton frigo. Suivre les schémas dans wiring-schemas/', link: 'wiring-schemas/01-cafetiere-espresso.svg', time: '45 min', cost: '0€' },
+    { id: 'w3-8', title: 'Voir les données arriver dans le dashboard local', detail: 'Moment magique : ton hardware envoie des vraies données', time: '15 min', cost: '0€' },
+  ],
+
+  week4: [
+    { id: 'w4-1', title: 'Créer un VPS Hetzner CCX13', detail: 'hetzner.com/cloud → Ubuntu 24.04 → 14€/mois. Mettre ta clé SSH.', link: 'https://www.hetzner.com/cloud', time: '20 min', cost: '14€/mois' },
+    { id: 'w4-2', title: 'Pointer le DNS vers l\'IP du VPS', detail: 'Cloudflare DNS → ajouter un A record vers ton IP', time: '10 min', cost: '0€' },
+    { id: 'w4-3', title: 'Lancer setup-server.sh sur le VPS', detail: 'curl + bash → durcissement automatique (UFW, fail2ban, Docker)', link: 'infra/setup-server.sh', time: '15 min', cost: '0€' },
+    { id: 'w4-4', title: 'Pousser ton code via Git sur le VPS', detail: 'git clone depuis ton repo privé GitHub', time: '15 min', cost: '0€' },
+    { id: 'w4-5', title: 'Lancer docker compose -f infra/docker-compose.prod.yml up -d', detail: 'Démarre tout en production : Caddy + backend + uptime kuma + backups', time: '10 min', cost: '0€' },
+    { id: 'w4-6', title: 'Vérifier https://tondomaine.fr fonctionne', detail: 'HTTPS auto, certificats Let\'s Encrypt en place', time: '5 min', cost: '0€' },
+    { id: 'w4-7', title: 'Configurer Stripe webhook pour la prod', detail: 'Dashboard Stripe → Developers → Webhooks → +Endpoint vers ton domaine /api/stripe/webhook', link: 'docs/STRIPE.md', time: '15 min', cost: '0€' },
+    { id: 'w4-8', title: 'Activer Stripe en mode LIVE', detail: 'Soumets ton KYC (Kbis, RIB, statuts). Délai 24h.', time: '30 min', cost: '0€' },
+    { id: 'w4-9', title: 'Backup test : restaurer un backup', detail: 'CRITIQUE — ne sois pas surpris le jour J. Suivre script dans infra/scripts/backup.sh', link: 'infra/scripts/backup.sh', time: '30 min', cost: '0€' },
+    { id: 'w4-10', title: 'UptimeRobot + Sentry pour monitoring', detail: 'UptimeRobot gratuit pour ping. Sentry gratuit pour exceptions.', link: 'https://uptimerobot.com', time: '20 min', cost: '0€' },
+  ],
+
+  week5: [
+    { id: 'w5-1', title: 'Lister 30 prospects ciblés', detail: 'LinkedIn + Pappers + Google Maps. Cible : sociétés gestion cafetières / distributeurs / restos avec frigos pros.', time: '2h', cost: '0€' },
+    { id: 'w5-2', title: 'Personnaliser le template email', detail: 'Voir commercial-kit/emails-prospection.md', link: 'commercial-kit/emails-prospection.md', time: '30 min', cost: '0€' },
+    { id: 'w5-3', title: 'Envoyer 30 emails de prospection', detail: 'Une vague par jour, 6 jours. Personnalise la 1ère phrase pour chaque.', time: '3h sur 6 jours', cost: '0€' },
+    { id: 'w5-4', title: 'Relancer après 3 jours', detail: 'Avec un nouveau message (template fourni)', time: '1h', cost: '0€' },
+    { id: 'w5-5', title: 'Faire 3-5 démos visio (Calendly + Zoom)', detail: 'Utilise le dashboard pro v3 + l\'app mobile pour impressionner', link: 'https://calendly.com', time: '3h', cost: '0€' },
+    { id: 'w5-6', title: 'Note les objections fréquentes', detail: 'Pour améliorer ton pitch. Beaucoup vont dire "trop cher" — c\'est rarement vrai, ils ne voient pas le ROI.', time: '30 min', cost: '0€' },
+  ],
+
+  week6: [
+    { id: 'w6-1', title: 'Identifier le prospect le plus chaud', detail: 'Celui qui a posé des questions précises sur l\'install', time: '20 min', cost: '0€' },
+    { id: 'w6-2', title: 'Offrir un essai gratuit "VIP" (1 kit ESP32 offert + 1 mois d\'abonnement gratuit)', detail: 'Pour les 3 premiers clients. Coût pour toi : ~80€. Mais valeur d\'un témoignage = inestimable.', time: '15 min', cost: '80€' },
+    { id: 'w6-3', title: 'Envoyer le kit en colissimo (lettre suivie)', detail: 'Avec une carte manuscrite "Bienvenue chez Télémétrie, Salih". Effet wow.', time: '30 min', cost: '15€' },
+    { id: 'w6-4', title: 'Faire l\'installation à distance par visio', detail: 'Tu guides ton client en partage d\'écran. Tu apprends ce qui bloque.', time: '1h', cost: '0€' },
+    { id: 'w6-5', title: 'Vérifier que ses machines apparaissent dans son dashboard', detail: 'Premier moment "wahou" du client', time: '15 min', cost: '0€' },
+    { id: 'w6-6', title: 'Suivi 1 semaine après : "ça va ?"', detail: 'Email court. S\'il aime, demande le passage en payant.', time: '15 min', cost: '0€' },
+    { id: 'w6-7', title: '🎉 ENCAISSER LE 1ER PAIEMENT STRIPE', detail: 'Quand le premier 49€ tombe sur ton compte — sors une bouteille', time: '— ', cost: '+49€' },
+    { id: 'w6-8', title: 'Demander un témoignage écrit ou vidéo', detail: 'En échange : 1 mois d\'abonnement offert. Indispensable pour les prochains.', time: '30 min', cost: '0€' },
+  ],
+};
+
+// ============== RENDER ==============
+function loadProgress() {
+  try { return JSON.parse(localStorage.getItem('demarrer_progress') || '{}'); }
+  catch { return {}; }
+}
+function saveProgress(p) { localStorage.setItem('demarrer_progress', JSON.stringify(p)); }
+
+function renderSection(id, steps) {
+  const el = document.getElementById(id);
+  const progress = loadProgress();
+  el.innerHTML = steps.map((s, i) => {
+    const done = progress[s.id] === 'done';
+    const wip = progress[s.id] === 'wip';
+    return `
+      <div class="step border-2 ${done ? 'border-emerald-200 done' : wip ? 'border-amber-300 in-progress' : 'border-slate-200'} rounded-xl p-3 flex items-start gap-3">
+        <input type="checkbox" ${done ? 'checked' : ''} onchange="toggle('${s.id}', this.checked)" class="mt-1 w-4 h-4 accent-emerald-600 cursor-pointer flex-shrink-0" />
+        <div class="flex-1 min-w-0 step-content">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-sm font-semibold">${i+1}. ${escapeHtml(s.title)}</span>
+            ${s.link ? `<a href="${s.link}" target="_blank" class="text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-0.5 rounded-full">Ouvrir ↗</a>` : ''}
+          </div>
+          <div class="text-xs text-slate-600 mt-1">${escapeHtml(s.detail)}</div>
+          <div class="text-[10px] text-slate-400 mt-1 flex gap-3">
+            <span>⏱ ${s.time}</span>
+            <span>💰 ${s.cost}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function escapeHtml(s) {
+  return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+}
+
+window.toggle = function(stepId, checked) {
+  const progress = loadProgress();
+  if (checked) progress[stepId] = 'done';
+  else delete progress[stepId];
+  saveProgress(progress);
+  renderAll();
+};
+
+window.resetProgress = function() {
+  if (confirm('Effacer toute ta progression ? Cette action est irréversible.')) {
+    localStorage.removeItem('demarrer_progress');
+    renderAll();
+  }
+};
+
+function computeProgress() {
+  const progress = loadProgress();
+  let total = 0, done = 0;
+  for (const week of Object.values(STEPS)) {
+    for (const s of week) {
+      total++;
+      if (progress[s.id] === 'done') done++;
+    }
+  }
+  return { total, done, pct: total ? Math.round(done/total * 100) : 0 };
+}
+
+function renderProgressRing() {
+  const { pct } = computeProgress();
+  const circ = 2 * Math.PI * 18;   // 113
+  const offset = circ - (pct / 100) * circ;
+  document.getElementById('progressCircle').setAttribute('stroke-dashoffset', offset);
+  document.getElementById('progressPct').textContent = pct;
+}
+
+function renderAll() {
+  for (const [key, steps] of Object.entries(STEPS)) renderSection(key, steps);
+  renderProgressRing();
+}
+
+renderAll();
+</script>
+</body>
+</html>

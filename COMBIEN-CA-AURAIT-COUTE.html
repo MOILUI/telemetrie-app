@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>💰 Combien ça aurait coûté ?</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+  .stat-counter { font-variant-numeric: tabular-nums; }
+  .gradient-bg {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  }
+  .price-tag { transition: all 0.2s; }
+  .price-tag:hover { transform: translateX(4px); }
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 30px rgba(16,185,129,0.3); }
+    50% { box-shadow: 0 0 50px rgba(16,185,129,0.6); }
+  }
+  .savings-card { animation: pulse-glow 2s infinite; }
+</style>
+</head>
+<body class="bg-slate-50">
+
+<!-- HEADER -->
+<header class="bg-white border-b border-slate-200 sticky top-0 z-10">
+  <div class="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
+    <a href="INDEX.html" class="text-slate-500 hover:text-slate-900">←</a>
+    <div>
+      <h1 class="font-bold">💰 Combien ça aurait coûté en sous-traitance ?</h1>
+      <p class="text-xs text-slate-500">Prix marché réels · agence française / freelances seniors</p>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-5xl mx-auto px-4 py-6 space-y-6">
+
+  <!-- ============== HERO TOTAL ============== -->
+  <section class="gradient-bg rounded-3xl p-8 text-center text-white shadow-2xl">
+    <div class="text-sm uppercase tracking-widest text-blue-300 mb-3">Total estimé si sous-traité</div>
+    <div class="text-5xl md:text-7xl font-bold stat-counter">
+      <span class="text-emerald-400">98 750</span>
+      <span class="text-3xl text-slate-400 ml-2">€ HT</span>
+    </div>
+    <div class="text-slate-300 mt-3 text-sm">Fourchette basse : 64 000€ · Fourchette haute : 145 000€</div>
+    <div class="mt-6 inline-block bg-emerald-500/20 border border-emerald-400 text-emerald-300 px-4 py-2 rounded-full text-sm">
+      ⏱ Délai si sous-traité : <strong>6 à 9 mois</strong> calendaires
+    </div>
+  </section>
+
+  <!-- ============== PAR CATEGORIE ============== -->
+  <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+    <h2 class="text-xl font-bold mb-4">🔍 Détail poste par poste</h2>
+
+    <!-- Technique -->
+    <div class="mb-6">
+      <h3 class="font-semibold text-slate-600 text-xs uppercase tracking-wider mb-3">💻 Développement technique</h3>
+      <div class="space-y-2">
+        <div class="price-tag flex items-center justify-between p-3 bg-slate-50 rounded-lg border-l-4 border-blue-500">
+          <div class="flex-1">
+            <div class="font-medium">Backend Node.js multi-tenant complet</div>
+            <div class="text-xs text-slate-500">Auth JWT, MQTT broker, Stripe Billing + Connect, Mistral AI, ~3 sem dev senior</div>
+          </div>
+          <div class="text-right">
+            <div class="font-bold text-lg">9 000€</div>
+            <div class="text-[10px] text-slate-500">€500/j × 18j</div>
+          </div>
+        </div>
+        <div class="price-tag flex items-center justify-between p-3 bg-slate-50 rounded-lg border-l-4 border-purple-500">
+          <div class="flex-1">
+            <div class="font-medium">Service Python ML (FastAPI + scikit-learn + ARIMA)</div>
+            <div class="text-xs text-slate-500">Maintenance prédictive, forecasting, anomaly detection · ~1 sem ML engineer</div>
+          </div>
+          <div class="text-right">
+            <div class="font-bold text-lg">3 500€</div>
+            <div class="text-[10px] text-slate-500">€600/j × 6j</div>
+          </div>
+        </div>
+        <div class="price-tag flex items-center justify-between p-3 bg-slate-50 rounded-lg border-l-4 border-amber-500">
+          <div class="flex-1">
+            <div class="font-medium">Firmware ESP32 + modem SIM7600 (4G)</div>
+            <div class="text-xs text-slate-500">TinyGSM, MQTT, capteurs génériques, OTA, ACK · ~2 sem embedded engineer</div>
+          </div>
+          <div class="text-right">
+            <div class="font-bold text-lg">6 000€</div>
+            <div class="text-[10px] text-slate-500">€600/j × 10j</div>
+          </div>
+        </div>
+        <div class="price-tag flex items-center justify-between p-3 bg-slate-50 rounded-lg border-l-4 border-emerald-500">
+          <div class="flex-1">
+            <div class="font-medium">Dashboard web pro (3 versions + app mobile PWA)</div>
+            <div class="text-xs text-slate-500">17 pages, IA, carte Leaflet, charts, multi-tenant · ~6 sem senior frontend</div>
+          </div>
+          <div class="text-right">
+            <div class="font-bold text-lg">15 000€</div>
+            <div class="text-[10px] text-slate-500">€500/j × 30j</div>
+          </div>
+        </div>
+        <div class="price-tag flex items-center justify-between p-3 bg-slate-50 rounded-lg border-l-4 border-pink-500">
+          <div class="flex-1">
+            <div class="font-medium">Site marketing + landing + signup + Stripe</div>
+            <div class="text-xs text-slate-500">Design moderne, pricing dyn, FAQ, intégrations · agence digitale</div>
+          </div>
+          <div class="text-right">
+            <div class="font-bold text-lg">6 000€</div>
+            <div class="text-[10px] text-slate-500">agence FR</div>
+          </div>
+        </div>
+        <div class="price-tag flex items-center justify-between p-3 bg-slate-50 rounded-lg border-l-4 border-cyan-500">
+          <div class="flex-1">
+            <div class="font-medium">Simulateur ESP32 + infra Docker + scripts production</div>
+            <div class="text-xs text-slate-500">Caddyfile, fail2ban, backup GPG, setup auto · DevOps</div>
+          </div>
+          <div class="text-right">
+            <div class="font-bold text-lg">2 500€</div>
+            <div class="text-[10px] text-slate-500">€650/j × 4j</div>
+          </div>
+        </div>
+        <div class="price-tag flex items-center justify-between p-3 bg-slate-50 rounded-lg border-l-4 border-violet-500">
+          <div class="flex-1">
+            <div class="font-medium">Agents IA (Customer Success complet + spec 7 autres)</div>
+            <div class="text-xs text-slate-500">Python avec Mistral/Claude API, anti-spam, kill switch · IA engineer</div>
+          </div>
+          <div class="text-right">
+            <div class="font-bold text-lg">2 500€</div>
+            <div class="text-[10px] text-slate-500">€700/j × 4j</div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-3 pt-3 border-t border-slate-200 flex justify-between font-semibold">
+        <span>Sous-total technique</span>
+        <span class="text-blue-600">44 500€</span>
+      </div>
+    </div>
+
+    <!-- Hardware -->
+    <div class="mb-6">
+      <h3 class="font-semibold text-slate-600 text-xs uppercase tracking-wider mb-3">🔌 Hardware & design électronique</h3>
+      <div class="space-y-2">
+        <div class="price-tag flex items-center justify-between p-3 bg-slate-50 rounded-lg border-l-4 border-orange-500">
+          <div class="flex-1">
+            <div class="font-medium">Design PCB pro (spec, schéma, BOM, brief KiCad)</div>
+            <div class="text-xs text-slate-500">100×80mm, 2 couches, isolation galvanique, relais 10A · electronics engineer</div>
+          </div>
+          <div class="text-right">
+            <div class="font-bold text-lg">2 500€</div>
+            <div class="text-[10px] text-slate-500">€650/j × 4j</div>
+          </div>
+        </div>
+        <div class="price-tag flex items-center justify-between p-3 bg-slate-50 rounded-lg border-l-4 border-red-500">
+          <div class="flex-1">
+            <div class="font-medium">Schémas raccordement détaillés (4 machines)</div>
+            <div class="text-xs text-slate-500">Cafetière, distri, frigo HACCP, indus · diagrammes SVG + BOM/coûts</div>
+          </div>
+          <div class="text-right">
+            <div class="font-bold text-lg">2 000€</div>
+            <div class="text-[10px] text-slate-500">illustrator + ingé</div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-3 pt-3 border-t border-slate-200 flex justify-between font-semibold">
+        <span>Sous-total hardware</span>
+        <span class="text-blue-600">4 500€</span>
+      </div>
+    </div>
+
+    <!-- Business -->
+    <div class="mb-6">
+      <h3 class="font-semibold text-slate-600 text-xs uppercase tracking-wider mb-3">💼 Business & stratégie</h3>
+      <div class="space-y-2">
+        <div class="price-tag flex items-center justify-between p-3 bg-slate-50 rounded-lg border-l-4 border-blue-500">
+          <div class="flex-1">
+            <div class="font-medium">Étude de marché (Nayax, Vendon, Televend, prix, positionnement)</div>
+            <div class="text-xs text-slate-500">~5j consultant senior</div>
+          </div>
+          <div class="text-right">
+            <div class="font-bold text-lg">4 000€</div>
+            <div class="text-[10px] text-slate-500">consultant indé</div>
+          </div>
+        </div>
+        <div class="price-tag flex items-center justify-between p-3 bg-slate-50 rounded-lg border-l-4 border-purple-500">
+          <div class="flex-1">
+            <div class="font-medium">Roadmap stratégique 6 phases + budget</div>
+            <div class="text-xs text-slate-500">Phasage, KPI, projections, go-to-market · senior advisor</div>
+          </div>
+          <div class="text-right">
+            <div class="font-bold text-lg">3 500€</div>
+            <div class="text-[10px] text-slate-500">€800/j × 4j</div>
+          </div>
+        </div>
+        <div class="price-tag flex items-center justify-between p-3 bg-slate-50 rounded-lg border-l-4 border-pink-500">
+          <div class="flex-1">
+            <div class="font-medium">Kit commercial (one-pager, pitch deck 12 slides, 8 emails)</div>
+            <div class="text-xs text-slate-500">Copywriter B2B + designer · ~5j</div>
+          </div>
+          <div class="text-right">
+            <div class="font-bold text-lg">3 500€</div>
+            <div class="text-[10px] text-slate-500">agence content</div>
+          </div>
+        </div>
+        <div class="price-tag flex items-center justify-between p-3 bg-slate-50 rounded-lg border-l-4 border-amber-500">
+          <div class="flex-1">
+            <div class="font-medium">Programme revendeurs (3 niveaux + contrat type)</div>
+            <div class="text-xs text-slate-500">Biz dev + avocat business · ~3j</div>
+          </div>
+          <div class="text-right">
+            <div class="font-bold text-lg">2 500€</div>
+            <div class="text-[10px] text-slate-500">consultant + avocat</div>
+          </div>
+        </div>
+        <div class="price-tag flex items-center justify-between p-3 bg-slate-50 rounded-lg border-l-4 border-emerald-500">
+          <div class="flex-1">
+            <div class="font-medium">Roadmap paiements FR (3 flux : Stripe + Connect + cashless)</div>
+            <div class="text-xs text-slate-500">Spécialiste fintech, ~3j</div>
+          </div>
+          <div class="text-right">
+            <div class="font-bold text-lg">2 500€</div>
+            <div class="text-[10px] text-slate-500">consultant fintech</div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-3 pt-3 border-t border-slate-200 flex justify-between font-semibold">
+        <span>Sous-total business</span>
+        <span class="text-blue-600">16 000€</span>
+      </div>
+    </div>
+
+    <!-- Documentation & UX -->
+    <div class="mb-6">
+      <h3 class="font-semibold text-slate-600 text-xs uppercase tracking-wider mb-3">📚 Documentation, formation & UX</h3>
+      <div class="space-y-2">
+        <div class="price-tag flex items-center justify-between p-3 bg-slate-50 rounded-lg border-l-4 border-cyan-500">
+          <div class="flex-1">
+            <div class="font-medium">17 documents techniques en français</div>
+            <div class="text-xs text-slate-500">Installation, ESP32, wiring, architecture, Stripe, paiements, sécurité, IA, intégration, agents, hébergement... · tech writer</div>
+          </div>
+          <div class="text-right">
+            <div class="font-bold text-lg">6 000€</div>
+            <div class="text-[10px] text-slate-500">€300/j × 20j</div>
+          </div>
+        </div>
+        <div class="price-tag flex items-center justify-between p-3 bg-slate-50 rounded-lg border-l-4 border-pink-500">
+          <div class="flex-1">
+            <div class="font-medium">Formation algorithmique (30 algos décortiqués)</div>
+            <div class="text-xs text-slate-500">Pour réponses client + montée en compétences · expert</div>
+          </div>
+          <div class="text-right">
+            <div class="font-bold text-lg">2 000€</div>
+            <div class="text-[10px] text-slate-500">formateur</div>
+          </div>
+        </div>
+        <div class="price-tag flex items-center justify-between p-3 bg-slate-50 rounded-lg border-l-4 border-blue-500">
+          <div class="flex-1">
+            <div class="font-medium">UX pages d'accueil (INDEX, DEMARRER, COMBIEN)</div>
+            <div class="text-xs text-slate-500">Wireframe + design + intégration · UX/UI designer</div>
+          </div>
+          <div class="text-right">
+            <div class="font-bold text-lg">1 500€</div>
+            <div class="text-[10px] text-slate-500">€500/j × 3j</div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-3 pt-3 border-t border-slate-200 flex justify-between font-semibold">
+        <span>Sous-total doc & UX</span>
+        <span class="text-blue-600">9 500€</span>
+      </div>
+    </div>
+
+    <!-- Gestion projet -->
+    <div class="mb-6">
+      <h3 class="font-semibold text-slate-600 text-xs uppercase tracking-wider mb-3">📋 Gestion de projet & coordination</h3>
+      <div class="space-y-2">
+        <div class="price-tag flex items-center justify-between p-3 bg-slate-50 rounded-lg border-l-4 border-indigo-500">
+          <div class="flex-1">
+            <div class="font-medium">Product Manager 6 mois (cadrage, suivi, recettes)</div>
+            <div class="text-xs text-slate-500">Indispensable pour coordonner 5-7 freelances/agences · senior PM</div>
+          </div>
+          <div class="text-right">
+            <div class="font-bold text-lg">18 000€</div>
+            <div class="text-[10px] text-slate-500">€5000/m × 3,6 mois</div>
+          </div>
+        </div>
+        <div class="price-tag flex items-center justify-between p-3 bg-slate-50 rounded-lg border-l-4 border-slate-500">
+          <div class="flex-1">
+            <div class="font-medium">Architecture & tech leadership review</div>
+            <div class="text-xs text-slate-500">Pour valider les choix techniques · CTO indé · ~4j</div>
+          </div>
+          <div class="text-right">
+            <div class="font-bold text-lg">3 750€</div>
+            <div class="text-[10px] text-slate-500">€900/j × 4j</div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-3 pt-3 border-t border-slate-200 flex justify-between font-semibold">
+        <span>Sous-total gestion</span>
+        <span class="text-blue-600">21 750€</span>
+      </div>
+    </div>
+
+    <!-- Frais cachés -->
+    <div>
+      <h3 class="font-semibold text-slate-600 text-xs uppercase tracking-wider mb-3">⚠️ Coûts cachés fréquents</h3>
+      <div class="space-y-2 text-sm text-slate-700">
+        <div class="flex items-center justify-between p-2 bg-amber-50 rounded">
+          <span>📦 Frais d'agence (marge + AR) <span class="text-xs text-slate-500">~30% sur les agences</span></span>
+          <span class="font-semibold">~2 500€</span>
+        </div>
+        <div class="flex items-center justify-between p-2 bg-amber-50 rounded">
+          <span>🔄 Allers-retours & corrections <span class="text-xs text-slate-500">+15-25% du total</span></span>
+          <span class="font-semibold">~5 000€</span>
+        </div>
+        <div class="flex items-center justify-between p-2 bg-amber-50 rounded">
+          <span>🐌 Délai supplémentaire (3-6 mois)</span>
+          <span class="font-semibold">Opportunité perdue</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== TOTAL ============== -->
+  <section class="bg-slate-900 text-white rounded-2xl p-8 shadow-xl">
+    <div class="text-center mb-6">
+      <div class="text-xs uppercase tracking-widest text-slate-400">TOTAL marché si tout sous-traité</div>
+    </div>
+    <div class="grid md:grid-cols-3 gap-4 text-center">
+      <div class="bg-slate-800 rounded-xl p-5">
+        <div class="text-xs text-slate-400">Fourchette basse</div>
+        <div class="text-3xl font-bold text-slate-300 stat-counter mt-1">64 000€</div>
+        <div class="text-xs text-slate-500 mt-1">freelances offshore + auto-gérer</div>
+      </div>
+      <div class="bg-emerald-500/20 border-2 border-emerald-400 rounded-xl p-5">
+        <div class="text-xs text-emerald-300">RÉALISTE (estimation médiane)</div>
+        <div class="text-4xl font-bold text-emerald-400 stat-counter mt-1">98 750€</div>
+        <div class="text-xs text-emerald-300 mt-1">mix agence FR + freelances seniors + PM</div>
+      </div>
+      <div class="bg-slate-800 rounded-xl p-5">
+        <div class="text-xs text-slate-400">Fourchette haute</div>
+        <div class="text-3xl font-bold text-slate-300 stat-counter mt-1">145 000€</div>
+        <div class="text-xs text-slate-500 mt-1">agence premium tout-en-un</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== TON COÛT RÉEL ============== -->
+  <section class="savings-card bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-8 text-white text-center shadow-2xl">
+    <div class="text-xs uppercase tracking-widest text-emerald-200 mb-2">Ton coût réel</div>
+    <div class="text-6xl md:text-7xl font-bold stat-counter">
+      <span>~</span>
+      <span>0</span>
+      <span class="text-3xl text-emerald-200 ml-2">€</span>
+    </div>
+    <div class="text-emerald-100 mt-3 text-sm">
+      (juste ton abonnement Claude/Cowork — ~20€)
+    </div>
+    <div class="mt-6 inline-block bg-white/20 backdrop-blur px-6 py-3 rounded-full font-bold text-2xl">
+      🎉 Tu viens d'économiser ~98 700€
+    </div>
+  </section>
+
+  <!-- ============== QUE FAIRE AVEC L'ARGENT ÉCONOMISÉ ============== -->
+  <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+    <h2 class="text-2xl font-bold mb-4">💡 Que faire des 98 700€ que tu n'as PAS dépensés ?</h2>
+    <p class="text-slate-600 mb-6">À ta place, voilà comment je répartirais ce budget pour <strong>vraiment scaler</strong> :</p>
+
+    <div class="space-y-3">
+      <div class="flex items-start gap-4 p-4 bg-blue-50 rounded-xl border-l-4 border-blue-500">
+        <div class="text-3xl">📢</div>
+        <div class="flex-1">
+          <div class="font-semibold">15 000€ — Marketing & ads sur 6 mois</div>
+          <div class="text-sm text-slate-600 mt-1">Google Ads ciblé "télémétrie distributeur", LinkedIn ads, SEO, contenu blog</div>
+          <div class="text-xs text-blue-700 mt-1">ROI estimé : 50 clients × 49€/mois × 24 mois LTV = 58 800€ générés</div>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-4 p-4 bg-purple-50 rounded-xl border-l-4 border-purple-500">
+        <div class="text-3xl">👨‍💼</div>
+        <div class="flex-1">
+          <div class="font-semibold">30 000€ — 1 commercial B2B junior pour 6 mois</div>
+          <div class="text-sm text-slate-600 mt-1">3 500€ brut × 6 + variable. Vise 30 démos/mois → 5 closes/mois → 20 clients à 6 mois</div>
+          <div class="text-xs text-purple-700 mt-1">ROI : 20 × 49 × 12 = 11 760€/an récurrent, x3 sur LTV</div>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-4 p-4 bg-emerald-50 rounded-xl border-l-4 border-emerald-500">
+        <div class="text-3xl">🔌</div>
+        <div class="flex-1">
+          <div class="font-semibold">10 000€ — Stock de 100 kits ESP32 préparés</div>
+          <div class="text-sm text-slate-600 mt-1">Achat groupé (-30% sur Aliexpress en gros), PCB custom JLCPCB</div>
+          <div class="text-xs text-emerald-700 mt-1">Livraison 24h promise = avantage commercial énorme vs Nayax (2-3 semaines)</div>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-4 p-4 bg-amber-50 rounded-xl border-l-4 border-amber-500">
+        <div class="text-3xl">🎥</div>
+        <div class="flex-1">
+          <div class="font-semibold">5 000€ — Vidéos de présentation pro + photos</div>
+          <div class="text-sm text-slate-600 mt-1">Vidéaste 3 jours : vidéo hero, témoignages clients, tutos installation. Photos produit pro.</div>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-4 p-4 bg-pink-50 rounded-xl border-l-4 border-pink-500">
+        <div class="text-3xl">📜</div>
+        <div class="flex-1">
+          <div class="font-semibold">3 000€ — Avocat business (CGV, marque INPI, contrats)</div>
+          <div class="text-sm text-slate-600 mt-1">CGU/CGV validées, dépôt marque, contrats revendeurs/clients. Évite procès = inestimable.</div>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-4 p-4 bg-cyan-50 rounded-xl border-l-4 border-cyan-500">
+        <div class="text-3xl">🏢</div>
+        <div class="flex-1">
+          <div class="font-semibold">5 000€ — Salons / événements / networking</div>
+          <div class="text-sm text-slate-600 mt-1">Stand Sirha Lyon (resto), Equipotel, salons distributeurs auto. 1 salon = 50-200 leads qualifiés.</div>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-4 p-4 bg-violet-50 rounded-xl border-l-4 border-violet-500">
+        <div class="text-3xl">🏦</div>
+        <div class="flex-1">
+          <div class="font-semibold">30 700€ — Trésorerie / fond de roulement</div>
+          <div class="text-sm text-slate-600 mt-1">Pour passer les 6-12 premiers mois sereinement. Tes premières factures arriveront mois 2-3.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-6 bg-slate-900 text-white rounded-xl p-5 text-center">
+      <div class="text-xs uppercase tracking-widest text-blue-300 mb-2">Avec ce plan, en 12 mois</div>
+      <div class="text-3xl font-bold">~100 clients × 49€/mois = <span class="text-emerald-400">4 900€/mois MRR</span></div>
+      <div class="text-sm text-slate-400 mt-2">soit 58 800€ ARR — récurrent, qui grossit chaque mois</div>
+    </div>
+  </section>
+
+  <!-- ============== PERSPECTIVE TEMPS ============== -->
+  <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+    <h2 class="text-2xl font-bold mb-4">⏱ Et le temps gagné ?</h2>
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="bg-red-50 rounded-xl p-5 border border-red-200">
+        <div class="text-xs uppercase tracking-widest text-red-600 mb-2">Si sous-traité</div>
+        <div class="text-3xl font-bold">6-9 mois</div>
+        <ul class="mt-3 text-sm text-slate-700 space-y-1">
+          <li>• Sourcing freelances : 2 sem</li>
+          <li>• Validation devis : 1 sem chacun</li>
+          <li>• Dev backend : 6 sem</li>
+          <li>• Dev firmware : 4 sem</li>
+          <li>• Dev frontend : 8 sem</li>
+          <li>• Recettes / corrections : 4 sem</li>
+          <li>• Délais coordination : +30%</li>
+        </ul>
+      </div>
+      <div class="bg-emerald-50 rounded-xl p-5 border border-emerald-200">
+        <div class="text-xs uppercase tracking-widest text-emerald-600 mb-2">Avec Claude/Cowork</div>
+        <div class="text-3xl font-bold">~quelques jours</div>
+        <ul class="mt-3 text-sm text-slate-700 space-y-1">
+          <li>• Itérations rapides (heures)</li>
+          <li>• Validation immédiate</li>
+          <li>• Modifications en live</li>
+          <li>• Pas de coordination</li>
+          <li>• Documentation auto-générée</li>
+          <li>• Disponibilité 24/7</li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-4 bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm">
+      💡 <strong>Le vrai gain :</strong> tu peux passer en prod en 6 semaines au lieu de 9 mois. C'est <strong>~6 mois de revenus en avance</strong> sur tes concurrents.
+      Si tu fais 1 000€ MRR au mois 6 vs au mois 12, c'est <strong>~6 000€ de revenus additionnels</strong> juste sur la 1ère année.
+    </div>
+  </section>
+
+  <!-- ============== ATTENTION ============== -->
+  <section class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-6">
+    <h3 class="font-bold text-amber-900 mb-2">⚠️ À garder en tête</h3>
+    <ul class="text-sm text-amber-900 space-y-2">
+      <li><strong>Ce code n'est pas en prod.</strong> Il a été validé syntaxiquement, mais le vrai test viendra quand tu le déploieras et que de vrais clients l'utiliseront. Prévois 1-2 semaines de debug à ce moment-là.</li>
+      <li><strong>Il manque encore quelques bricoles</strong> (mot de passe oublié, emails transactionnels...) — voir <code class="bg-amber-100 px-1 rounded">CHECKLIST-FINALE.md</code>.</li>
+      <li><strong>Tu auras quand même besoin de freelances</strong> pour : KiCad final du PCB, avocat pour CGV, vidéaste, et peut-être un dev pour l'industrialisation à 1000+ clients. Budget pour ça : <strong>~10-15k€</strong> sur la 1ère année.</li>
+      <li><strong>Ton vrai investissement</strong> ce sont les <strong>~830€ admin/matos</strong> + ton temps. Tu n'as pas dépensé 98k€, mais tu as dépensé l'équivalent en heures de travail intensif.</li>
+    </ul>
+  </section>
+
+  <!-- ============== CTA ============== -->
+  <section class="bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-2xl p-8 text-center shadow-xl">
+    <h2 class="text-2xl md:text-3xl font-bold mb-3">Maintenant à toi de jouer 🚀</h2>
+    <p class="text-blue-100 mb-6 max-w-2xl mx-auto">
+      Tu as un produit qui aurait coûté 100k€ à faire. Tu n'as plus aucune excuse technique. Le seul truc qui peut t'empêcher de réussir, c'est de ne pas <strong>aller chercher tes premiers clients</strong>.
+    </p>
+    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+      <a href="DEMARRER.html" class="bg-white text-blue-600 hover:bg-blue-50 font-bold px-8 py-3.5 rounded-xl shadow-lg">
+        🚀 Démarrer la checklist
+      </a>
+      <a href="INDEX.html" class="bg-white/10 hover:bg-white/20 backdrop-blur text-white font-semibold px-8 py-3.5 rounded-xl border border-white/30">
+        Retour au tableau de bord
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="max-w-5xl mx-auto px-4 py-8 text-center text-xs text-slate-500">
+  Estimations basées sur les tarifs marché 2026 (freelances + agences FR seniors). Prix HT.
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,65 @@
+// =========================================================
+// CONFIGURATION — copie ce fichier en "config.h" et modifie
+// les valeurs pour ta machine et ton serveur.
+// =========================================================
+#ifndef TELEMETRY_CONFIG_H
+#define TELEMETRY_CONFIG_H
+
+// --- Identité de la machine ---
+// IMPORTANT : doit être UNIQUE par appareil (ex: cafe-paris-01)
+#define DEVICE_ID         "machine-001"
+
+// --- Serveur MQTT (ton Raspberry Pi) ---
+// Mets l'IP publique du Pi ou un nom de domaine (DynDNS, no-ip…)
+#define MQTT_HOST         "ton-serveur.exemple.com"
+#define MQTT_PORT         1883
+#define MQTT_USERNAME     "device"
+#define MQTT_PASSWORD     "esp32-secret-change-moi"   // doit correspondre à DEVICE_TOKEN du backend
+
+// --- Réseau cellulaire (carte SIM) ---
+// APN de ton opérateur — quelques exemples :
+//   Free Mobile FR  : "free"
+//   Orange FR       : "orange.fr"     (login/mdp : "orange" / "orange")
+//   SFR FR          : "sl2sfr"
+//   Bouygues FR     : "mmsbouygtel.com"
+//   M2M générique   : selon contrat (Things Mobile, 1NCE, etc.)
+#define GSM_APN           "free"
+#define GSM_USER          ""           // souvent vide
+#define GSM_PASS          ""           // souvent vide
+#define GSM_PIN           ""           // code PIN de la SIM si activé, sinon vide
+
+// --- Fréquence d'envoi ---
+#define TELEMETRY_PERIOD_MS  60000UL   // envoie toutes les 60 secondes
+#define HEARTBEAT_PERIOD_MS  300000UL  // envoie un "je suis vivant" toutes les 5 min même sans données
+
+// --- Brochage SIM7600 (carte LilyGO T-SIM7600 ou module externe) ---
+// Si tu utilises une LilyGO T-SIM7600E :
+#define MODEM_TX_PIN      27
+#define MODEM_RX_PIN      26
+#define MODEM_PWRKEY_PIN  4
+#define MODEM_POWER_ON    25
+#define MODEM_RST_PIN     5
+
+// --- Brochage capteurs (à adapter selon ta machine) ---
+// Compteur d'impulsions (ex: débitmètre, compteur de tasses, monnayeur) :
+#define PULSE_INPUT_PIN     34         // GPIO d'entrée (interruption)
+#define PULSE_DEBOUNCE_MS   50
+
+// Capteur de température DS18B20 (OneWire) :
+#define ONEWIRE_PIN         15
+#define USE_DS18B20         1          // mets 0 pour désactiver
+
+// Entrée numérique (ex: porte ouverte, niveau bas) :
+#define DIGITAL_INPUT_PIN   32
+
+// Sortie de commande (ex: relais pour redémarrer la machine) :
+#define RELAY_OUTPUT_PIN    13
+
+// Entrée analogique (ex: pression, niveau capacitif) :
+#define ANALOG_INPUT_PIN    35
+#define ANALOG_ENABLED      0          // 0 = désactivé, 1 = activé
+
+// --- LED de statut ---
+#define STATUS_LED_PIN      12
+
+#endif // TELEMETRY_CONFIG_H

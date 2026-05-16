@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 700" font-family="ui-sans-serif, system-ui, sans-serif">
+<style>
+  .bg{fill:#fafaf9}.title{font-size:22px;font-weight:bold;fill:#0c0a09}
+  .sub{font-size:13px;fill:#57534e}.lbl{font-size:12px;fill:#0c0a09}
+  .pin{font-size:10px;fill:#525252;font-family:monospace}
+  .esp{fill:#dbeafe;stroke:#1e40af;stroke-width:2}.machine{fill:#f5f5f4;stroke:#78716c;stroke-width:2}
+  .sensor{fill:#dcfce7;stroke:#15803d;stroke-width:1.5}
+  .danger{fill:#fee2e2;stroke:#b91c1c;stroke-width:1.5}
+  .note{font-size:11px;fill:#0c0a09}.badge{font-size:10px;fill:white;font-weight:bold}
+  .w-sig{stroke:#2563eb;stroke-width:1.5;fill:none}
+</style>
+<rect class="bg" width="1100" height="700"/>
+<text x="550" y="32" class="title" text-anchor="middle">🥤 Raccordement — Distributeur automatique</text>
+<text x="550" y="52" class="sub" text-anchor="middle">Snacks, boissons fraîches, café. 2 méthodes : trappe de sortie (simple) ou bus MDB (complet)</text>
+
+<!-- Distributeur -->
+<g transform="translate(620,90)">
+  <rect class="machine" width="400" height="540" rx="8"/>
+  <text x="200" y="28" class="lbl" text-anchor="middle" font-weight="bold">DISTRIBUTEUR</text>
+  <!-- Spirales produits -->
+  <g transform="translate(50,60)">
+    <rect width="300" height="180" fill="#27272a" rx="4"/>
+    <text x="150" y="22" class="badge" text-anchor="middle">VITRINE PRODUITS (frigo)</text>
+    <!-- Spirales lignes -->
+    <line x1="20" y1="50" x2="280" y2="50" stroke="#52525b" stroke-width="2"/>
+    <line x1="20" y1="80" x2="280" y2="80" stroke="#52525b" stroke-width="2"/>
+    <line x1="20" y1="110" x2="280" y2="110" stroke="#52525b" stroke-width="2"/>
+    <line x1="20" y1="140" x2="280" y2="140" stroke="#52525b" stroke-width="2"/>
+    <line x1="20" y1="170" x2="280" y2="170" stroke="#52525b" stroke-width="2"/>
+    <text x="290" y="55" class="note" fill="white">8</text>
+    <text x="290" y="85" class="note" fill="white">7</text>
+    <text x="290" y="115" class="note" fill="white">6</text>
+    <text x="290" y="145" class="note" fill="white">5</text>
+    <text x="290" y="175" class="note" fill="white">3</text>
+  </g>
+  <!-- Trappe sortie -->
+  <rect x="100" y="310" width="200" height="70" fill="#a3a3a3" rx="4"/>
+  <text x="200" y="345" class="note" text-anchor="middle" fill="white">TRAPPE DE SORTIE</text>
+  <text x="200" y="395" class="note" text-anchor="middle">Le produit tombe ici → switch ferme</text>
+  <!-- Monnayeur / paiement -->
+  <rect x="50" y="430" width="120" height="60" fill="#0ea5e9" rx="4"/>
+  <text x="110" y="455" class="note" text-anchor="middle" fill="white">Monnayeur</text>
+  <text x="110" y="475" class="note" text-anchor="middle" fill="white">MDB bus</text>
+  <rect x="190" y="430" width="120" height="60" fill="#22c55e" rx="4"/>
+  <text x="250" y="455" class="note" text-anchor="middle" fill="white">TPE NFC/CB</text>
+  <text x="250" y="475" class="note" text-anchor="middle" fill="white">(option pro)</text>
+  <!-- Porte principale -->
+  <text x="200" y="525" class="note" text-anchor="middle" font-weight="bold">↕ Porte principale (reed magnétique)</text>
+</g>
+
+<!-- ESP32 -->
+<g transform="translate(60,90)">
+  <rect class="esp" width="240" height="260" rx="8"/>
+  <text x="120" y="28" class="lbl" text-anchor="middle" font-weight="bold">ESP32 + PCB</text>
+  <text x="120" y="48" class="sub" text-anchor="middle">À l'intérieur du distributeur</text>
+  <rect x="20" y="70" width="200" height="180" fill="#1e293b" rx="4"/>
+  <text x="120" y="95" class="badge" text-anchor="middle">BORNIERS</text>
+  <text x="35" y="115" class="pin" fill="#fbbf24">PULSE</text>
+  <text x="180" y="115" class="pin" fill="white" text-anchor="end">→ Switch trappe</text>
+  <text x="35" y="135" class="pin" fill="#fbbf24">IN1</text>
+  <text x="180" y="135" class="pin" fill="white" text-anchor="end">→ Reed porte</text>
+  <text x="35" y="155" class="pin" fill="#fbbf24">T1</text>
+  <text x="180" y="155" class="pin" fill="white" text-anchor="end">→ T° frigo</text>
+  <text x="35" y="175" class="pin" fill="#fbbf24">RS485 A/B</text>
+  <text x="180" y="175" class="pin" fill="white" text-anchor="end">→ Bus MDB (option)</text>
+  <text x="35" y="195" class="pin" fill="#fbbf24">IN2</text>
+  <text x="180" y="195" class="pin" fill="white" text-anchor="end">→ IR derrière colonne</text>
+  <text x="35" y="215" class="pin" fill="#fbbf24">K1</text>
+  <text x="180" y="215" class="pin" fill="white" text-anchor="end">→ Reboot relais</text>
+  <text x="35" y="235" class="pin" fill="#fbbf24">3.3V/GND</text>
+  <text x="180" y="235" class="pin" fill="white" text-anchor="end">→ Alim capteurs</text>
+</g>
+
+<!-- Capteurs -->
+<g transform="translate(330,90)">
+  <rect class="sensor" width="260" height="60" rx="6"/>
+  <text x="10" y="20" class="lbl" font-weight="bold">① Micro-switch sur trappe</text>
+  <text x="10" y="38" class="note">Ferme à chaque produit qui tombe</text>
+  <text x="10" y="52" class="note">→ Compte ventes (méthode simple)</text>
+
+  <rect class="sensor" y="75" width="260" height="60" rx="6"/>
+  <text x="10" y="95" class="lbl" font-weight="bold">② Reed magnétique</text>
+  <text x="10" y="113" class="note">Aimant sur porte, reed sur châssis</text>
+  <text x="10" y="127" class="note">→ Anti-vol, vidange caisse, intervention tech</text>
+
+  <rect class="sensor" y="150" width="260" height="60" rx="6"/>
+  <text x="10" y="170" class="lbl" font-weight="bold">③ Sonde DS18B20</text>
+  <text x="10" y="188" class="note">Dans le compartiment frigo (3m câble)</text>
+  <text x="10" y="202" class="note">→ HACCP, alerte si dépassement</text>
+
+  <rect class="sensor" y="225" width="260" height="80" rx="6"/>
+  <text x="10" y="245" class="lbl" font-weight="bold">④ Bus MDB (option pro)</text>
+  <text x="10" y="263" class="note">Adaptateur MDB → UART (Cashless Master)</text>
+  <text x="10" y="277" class="note">Donne : produit vendu par référence,</text>
+  <text x="10" y="291" class="note">type paiement, montant exact, erreurs</text>
+  <text x="10" y="300" class="note" fill="#16a34a" font-weight="bold">→ Suivi par produit (Nayax-level)</text>
+
+  <rect class="danger" y="320" width="260" height="50" rx="6"/>
+  <text x="10" y="340" class="lbl" font-weight="bold">⚠️ Sécurité</text>
+  <text x="10" y="356" class="note">Couper l'alim avant d'installer.</text>
+  <text x="10" y="368" class="note">Si MDB : adaptateur certifié obligatoire.</text>
+</g>
+
+<!-- Bottom info -->
+<g transform="translate(60,400)">
+  <rect fill="white" stroke="#d6d3d1" width="1000" height="280" rx="6"/>
+  <text x="20" y="30" class="lbl" font-weight="bold">📋 Composants — Distributeur</text>
+  <text x="20" y="55" class="lbl">• ESP32 LilyGO T-SIM7600E + PCB (60€)</text>
+  <text x="20" y="75" class="lbl">• Micro-switch SS-5GL (1€)</text>
+  <text x="20" y="95" class="lbl">• Reed switch + aimant (3€)</text>
+  <text x="20" y="115" class="lbl">• DS18B20 inox 3m câble (5€)</text>
+  <text x="20" y="135" class="lbl">• Capteurs IR par colonne (1€×8 = 8€) — option</text>
+  <text x="20" y="155" class="lbl">• Adaptateur MDB Cashless Master (45€) — option pro</text>
+  <text x="20" y="175" class="lbl">• Relais 5V + alim + boîtier IP65 + SIM</text>
+  <text x="20" y="203" class="lbl" font-weight="bold">TOTAL standard : ~90€ — TOTAL avec MDB : ~150€</text>
+
+  <text x="540" y="30" class="lbl" font-weight="bold">📊 Métriques (standard)</text>
+  <text x="540" y="55" class="lbl">• Nombre de ventes par jour/heure</text>
+  <text x="540" y="75" class="lbl">• CA estimé (vente × prix moyen)</text>
+  <text x="540" y="95" class="lbl">• Température frigo (HACCP)</text>
+  <text x="540" y="115" class="lbl">• Porte ouverte (intervention/vol)</text>
+  <text x="540" y="135" class="lbl">• Stock estimé (vente cumulée vs capacité)</text>
+
+  <text x="540" y="170" class="lbl" font-weight="bold">📊 Métriques (avec MDB)</text>
+  <text x="540" y="195" class="lbl">• Produit exact vendu (référence)</text>
+  <text x="540" y="215" class="lbl">• Mode paiement (espèce / CB / NFC)</text>
+  <text x="540" y="235" class="lbl">• Codes erreur natifs de la machine</text>
+  <text x="540" y="255" class="lbl">• Réconciliation espèces vs ventes</text>
+</g>
+</svg>

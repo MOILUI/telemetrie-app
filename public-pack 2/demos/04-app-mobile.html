@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0f172a" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>Télémétrie — App mobile</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<style>
+  * { -webkit-tap-highlight-color: transparent; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; overscroll-behavior-y: none; background: #f1f5f9; }
+  .phone-frame { max-width: 440px; margin: 0 auto; background: #f1f5f9; min-height: 100vh; position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.1); }
+  .tab.active { color: #2563eb; }
+  .tab.active .icon { transform: scale(1.1); }
+  .icon { transition: transform 0.15s; font-size: 22px; }
+  .page { display: none; padding-bottom: 90px; }
+  .page.active { display: block; }
+  .pulse-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .online{background:#10b981;animation:pulse 2s infinite}.offline{background:#9ca3af}.warn{background:#f59e0b}.error{background:#ef4444}
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.5} }
+  .machine-marker { width:14px;height:14px;border-radius:50%;border:2px solid white }
+  .machine-marker.green{background:#10b981;box-shadow:0 0 0 2px #10b981}
+  .machine-marker.red{background:#ef4444;box-shadow:0 0 0 2px #ef4444}
+  .machine-marker.amber{background:#f59e0b;box-shadow:0 0 0 2px #f59e0b}
+  #map { height: calc(100vh - 200px); }
+  /* swipe transitions */
+  .fade-in { animation: fadeIn 0.2s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  /* iOS-style safe areas */
+  .safe-top { padding-top: env(safe-area-inset-top, 0); }
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0); }
+</style>
+</head>
+<body>
+
+<!-- Bannière démo (à enlever pour la vraie app) -->
+<div class="bg-blue-600 text-white text-xs py-2 text-center">
+  📱 Aperçu app mobile — installable sur iPhone/Android via "Ajouter à l'écran d'accueil"
+</div>
+
+<div class="phone-frame">
+
+  <!-- STATUS BAR -->
+  <div class="safe-top bg-slate-900 text-white px-5 py-3 flex items-center justify-between text-xs">
+    <div class="flex items-center gap-1.5">
+      <div class="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">📡</div>
+      <div>
+        <div class="text-[10px] text-slate-400 leading-3">Salih R.</div>
+        <div class="text-xs font-semibold">Plan Pro</div>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <span>🔔</span>
+      <span>⚙️</span>
+    </div>
+  </div>
+
+  <!-- ============== HOME / DASHBOARD ============== -->
+  <div id="page-home" class="page active fade-in">
+    <div class="px-5 pt-4 pb-2">
+      <h1 class="text-2xl font-bold">Bonjour Salih 👋</h1>
+      <p class="text-sm text-slate-500">Voici l'état de tes machines</p>
+    </div>
+
+    <!-- KPIs row -->
+    <div class="grid grid-cols-2 gap-3 px-5 mb-4">
+      <div class="bg-white rounded-2xl p-4 shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-slate-500">Revenus 24h</span>
+          <span class="text-emerald-600 text-xs">↗ +12%</span>
+        </div>
+        <div class="text-2xl font-bold mt-1" id="mKpiRev">—</div>
+      </div>
+      <div class="bg-white rounded-2xl p-4 shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-slate-500">Ventes</span>
+          <span class="text-emerald-600 text-xs">↗ +8%</span>
+        </div>
+        <div class="text-2xl font-bold mt-1" id="mKpiSales">—</div>
+      </div>
+      <div class="bg-white rounded-2xl p-4 shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-slate-500">Machines actives</span>
+        </div>
+        <div class="text-2xl font-bold mt-1"><span id="mKpiOnline">—</span><span class="text-sm text-slate-400">/12</span></div>
+      </div>
+      <div class="bg-white rounded-2xl p-4 shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-slate-500">Alertes</span>
+          <span class="text-red-600 text-xs">🔥</span>
+        </div>
+        <div class="text-2xl font-bold mt-1 text-red-600" id="mKpiAlerts">—</div>
+      </div>
+    </div>
+
+    <!-- Alertes critiques -->
+    <div class="px-5 mb-4">
+      <h3 class="text-sm font-semibold mb-2 text-slate-700">⚡ Alertes critiques</h3>
+      <div id="mAlertsTop" class="space-y-2"></div>
+    </div>
+
+    <!-- Revenue chart -->
+    <div class="px-5 mb-4">
+      <div class="bg-white rounded-2xl p-4 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-semibold text-sm">Revenus 7j</h3>
+          <span class="text-xs text-slate-500">€ par jour</span>
+        </div>
+        <canvas id="mChartRev" height="120"></canvas>
+      </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="px-5 mb-4">
+      <h3 class="text-sm font-semibold mb-2 text-slate-700">⚡ Actions rapides</h3>
+      <div class="grid grid-cols-4 gap-2">
+        <button class="bg-white rounded-2xl p-3 shadow-sm flex flex-col items-center gap-1">
+          <span class="text-2xl">➕</span>
+          <span class="text-[10px] text-slate-700">Ajouter</span>
+        </button>
+        <button class="bg-white rounded-2xl p-3 shadow-sm flex flex-col items-center gap-1" onclick="switchTab('routes')">
+          <span class="text-2xl">🗺️</span>
+          <span class="text-[10px] text-slate-700">Tournée</span>
+        </button>
+        <button class="bg-white rounded-2xl p-3 shadow-sm flex flex-col items-center gap-1" onclick="switchTab('inventory')">
+          <span class="text-2xl">📦</span>
+          <span class="text-[10px] text-slate-700">Stock</span>
+        </button>
+        <button class="bg-white rounded-2xl p-3 shadow-sm flex flex-col items-center gap-1">
+          <span class="text-2xl">📊</span>
+          <span class="text-[10px] text-slate-700">Rapport</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- IA Insights -->
+    <div class="px-5 mb-4">
+      <h3 class="text-sm font-semibold mb-2 text-slate-700">🤖 Suggestions IA</h3>
+      <div class="bg-gradient-to-br from-purple-600 to-blue-600 rounded-2xl p-4 text-white shadow-lg">
+        <div class="text-xs opacity-80 mb-1">Insight du jour</div>
+        <div class="text-sm font-medium">
+          Le distributeur "Lyon Part-Dieu" sera vide vers <strong>jeudi 14h</strong> au rythme actuel.
+          Planifier un réassort mercredi soir.
+        </div>
+        <button class="mt-3 bg-white/20 hover:bg-white/30 backdrop-blur px-3 py-1.5 rounded-lg text-xs">
+          Voir 4 autres insights →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== MACHINES LIST ============== -->
+  <div id="page-machines" class="page fade-in">
+    <div class="px-5 pt-4 pb-3 bg-white border-b border-slate-200 sticky top-0 z-10">
+      <h1 class="text-xl font-bold mb-2">Mes machines</h1>
+      <input type="text" placeholder="🔍 Rechercher…" id="mSearch" class="w-full bg-slate-100 rounded-xl px-3 py-2 text-sm" />
+      <div class="flex gap-2 mt-2 overflow-x-auto pb-1">
+        <button class="filter-btn bg-blue-600 text-white text-xs px-3 py-1.5 rounded-full whitespace-nowrap">Toutes</button>
+        <button class="filter-btn bg-white border border-slate-300 text-xs px-3 py-1.5 rounded-full whitespace-nowrap">En ligne</button>
+        <button class="filter-btn bg-white border border-slate-300 text-xs px-3 py-1.5 rounded-full whitespace-nowrap">En alerte</button>
+        <button class="filter-btn bg-white border border-slate-300 text-xs px-3 py-1.5 rounded-full whitespace-nowrap">☕ Café</button>
+        <button class="filter-btn bg-white border border-slate-300 text-xs px-3 py-1.5 rounded-full whitespace-nowrap">🥤 Distri</button>
+      </div>
+    </div>
+    <div id="mMachinesList" class="px-5 py-3 space-y-2"></div>
+  </div>
+
+  <!-- ============== MAP ============== -->
+  <div id="page-map" class="page fade-in">
+    <div class="bg-white px-5 py-3 border-b border-slate-200">
+      <h1 class="text-xl font-bold">Carte</h1>
+      <p class="text-xs text-slate-500">12 machines géolocalisées</p>
+    </div>
+    <div id="map"></div>
+  </div>
+
+  <!-- ============== ROUTES ============== -->
+  <div id="page-routes" class="page fade-in">
+    <div class="px-5 pt-4">
+      <h1 class="text-xl font-bold mb-1">Ma tournée</h1>
+      <p class="text-sm text-slate-500">5 machines · 32 km · ~2h15</p>
+
+      <div class="mt-4 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl p-4 text-white shadow-lg">
+        <div class="text-xs opacity-80">Itinéraire optimisé par IA</div>
+        <div class="text-lg font-bold mt-1">Démarrer la tournée →</div>
+        <div class="text-xs mt-2 opacity-90">Ordre optimal calculé avec trafic temps réel</div>
+      </div>
+
+      <h3 class="text-sm font-semibold mt-5 mb-2 text-slate-700">📍 Stops dans l'ordre</h3>
+      <div id="mRouteList" class="space-y-2"></div>
+    </div>
+  </div>
+
+  <!-- ============== INVENTORY ============== -->
+  <div id="page-inventory" class="page fade-in">
+    <div class="px-5 pt-4">
+      <h1 class="text-xl font-bold mb-1">Inventaire</h1>
+      <p class="text-sm text-slate-500">État du stock par machine</p>
+
+      <div class="grid grid-cols-3 gap-2 mt-4 mb-4">
+        <div class="bg-white rounded-2xl p-3 shadow-sm text-center">
+          <div class="text-xs text-slate-500">Global</div>
+          <div class="text-xl font-bold mt-1">71%</div>
+        </div>
+        <div class="bg-white rounded-2xl p-3 shadow-sm text-center">
+          <div class="text-xs text-slate-500">À refill</div>
+          <div class="text-xl font-bold mt-1 text-amber-600">3</div>
+        </div>
+        <div class="bg-white rounded-2xl p-3 shadow-sm text-center">
+          <div class="text-xs text-slate-500">Valeur</div>
+          <div class="text-xl font-bold mt-1">2 840€</div>
+        </div>
+      </div>
+
+      <div id="mInventoryList" class="space-y-2"></div>
+    </div>
+  </div>
+
+  <!-- ============== ALERTS ============== -->
+  <div id="page-alerts" class="page fade-in">
+    <div class="px-5 pt-4 pb-3 bg-white border-b border-slate-200 sticky top-0 z-10">
+      <h1 class="text-xl font-bold">Alertes</h1>
+      <div class="flex gap-2 mt-2 overflow-x-auto pb-1">
+        <button class="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-full">Toutes (6)</button>
+        <button class="bg-red-50 text-red-700 text-xs px-3 py-1.5 rounded-full">Critiques (2)</button>
+        <button class="bg-amber-50 text-amber-700 text-xs px-3 py-1.5 rounded-full">Warning (3)</button>
+        <button class="bg-slate-50 text-slate-700 text-xs px-3 py-1.5 rounded-full">Info (1)</button>
+      </div>
+    </div>
+    <div id="mAlertsAll" class="px-5 py-3 space-y-2"></div>
+  </div>
+
+  <!-- ============== ACCOUNT ============== -->
+  <div id="page-account" class="page fade-in">
+    <div class="px-5 pt-4">
+      <h1 class="text-xl font-bold mb-3">Compte</h1>
+
+      <div class="bg-white rounded-2xl p-4 shadow-sm mb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold">SR</div>
+          <div>
+            <div class="font-semibold">Salih Riahi</div>
+            <div class="text-xs text-slate-500">salih@example.com</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl p-4 shadow-sm mb-3">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <div class="font-semibold">Plan Pro</div>
+            <div class="text-xs text-slate-500">49€/mois · 12/20 machines</div>
+          </div>
+          <span class="bg-emerald-100 text-emerald-700 text-xs px-2 py-1 rounded-full font-medium">Actif</span>
+        </div>
+        <div class="h-2 bg-slate-100 rounded overflow-hidden">
+          <div class="h-full bg-blue-600" style="width:60%"></div>
+        </div>
+        <button class="w-full mt-3 bg-slate-100 text-sm py-2 rounded-xl font-medium">Gérer l'abonnement →</button>
+      </div>
+
+      <h3 class="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2 mt-4">Paramètres</h3>
+      <div class="bg-white rounded-2xl shadow-sm divide-y divide-slate-100">
+        <button class="w-full px-4 py-3 flex items-center justify-between text-sm">
+          <span class="flex items-center gap-3"><span>🔔</span> Notifications</span>
+          <span class="text-slate-400">→</span>
+        </button>
+        <button class="w-full px-4 py-3 flex items-center justify-between text-sm">
+          <span class="flex items-center gap-3"><span>👥</span> Équipe (3 membres)</span>
+          <span class="text-slate-400">→</span>
+        </button>
+        <button class="w-full px-4 py-3 flex items-center justify-between text-sm">
+          <span class="flex items-center gap-3"><span>🔑</span> API &amp; intégrations</span>
+          <span class="text-slate-400">→</span>
+        </button>
+        <button class="w-full px-4 py-3 flex items-center justify-between text-sm">
+          <span class="flex items-center gap-3"><span>📜</span> Factures</span>
+          <span class="text-slate-400">→</span>
+        </button>
+      </div>
+
+      <h3 class="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2 mt-4">Aide</h3>
+      <div class="bg-white rounded-2xl shadow-sm divide-y divide-slate-100">
+        <button class="w-full px-4 py-3 flex items-center justify-between text-sm">
+          <span class="flex items-center gap-3"><span>💬</span> Support / Chat</span>
+          <span class="text-slate-400">→</span>
+        </button>
+        <button class="w-full px-4 py-3 flex items-center justify-between text-sm">
+          <span class="flex items-center gap-3"><span>📚</span> Documentation</span>
+          <span class="text-slate-400">→</span>
+        </button>
+      </div>
+
+      <button class="w-full text-red-600 text-sm py-3 mt-4">Se déconnecter</button>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="fixed bottom-0 left-0 right-0 max-w-[440px] mx-auto bg-white border-t border-slate-200 grid grid-cols-5 safe-bottom" style="z-index:100">
+    <button class="tab active py-2 flex flex-col items-center gap-0.5 text-slate-500" data-page="home">
+      <span class="icon">🏠</span>
+      <span class="text-[10px]">Accueil</span>
+    </button>
+    <button class="tab py-2 flex flex-col items-center gap-0.5 text-slate-500" data-page="machines">
+      <span class="icon">📡</span>
+      <span class="text-[10px]">Machines</span>
+    </button>
+    <button class="tab py-2 flex flex-col items-center gap-0.5 text-slate-500" data-page="map">
+      <span class="icon">🗺️</span>
+      <span class="text-[10px]">Carte</span>
+    </button>
+    <button class="tab py-2 flex flex-col items-center gap-0.5 text-slate-500 relative" data-page="alerts">
+      <span class="icon">🔔</span>
+      <span class="text-[10px]">Alertes</span>
+      <span class="absolute top-1 right-6 bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full" id="mAlertBadge">6</span>
+    </button>
+    <button class="tab py-2 flex flex-col items-center gap-0.5 text-slate-500" data-page="account">
+      <span class="icon">👤</span>
+      <span class="text-[10px]">Compte</span>
+    </button>
+  </nav>
+
+  <!-- ====== MACHINE DETAIL SHEET (slides from bottom) ====== -->
+  <div id="mDetailSheet" class="hidden fixed inset-0 bg-black/50" style="z-index:200">
+    <div class="absolute bottom-0 left-0 right-0 max-w-[440px] mx-auto bg-white rounded-t-3xl p-5 max-h-[85vh] overflow-y-auto">
+      <div class="w-12 h-1 bg-slate-300 rounded-full mx-auto mb-4"></div>
+      <div class="flex items-start justify-between mb-3">
+        <div>
+          <h3 class="font-bold text-lg" id="mdName">—</h3>
+          <p class="text-xs text-slate-500" id="mdMeta">—</p>
+        </div>
+        <button onclick="document.getElementById('mDetailSheet').classList.add('hidden')" class="text-slate-400 text-2xl">×</button>
+      </div>
+      <div id="mdMetrics" class="grid grid-cols-2 gap-2 mb-4"></div>
+      <h4 class="text-sm font-semibold mb-2">Évolution 24h</h4>
+      <div class="bg-slate-50 rounded-xl p-3 mb-4"><canvas id="mdChart" height="100"></canvas></div>
+      <h4 class="text-sm font-semibold mb-2">Commandes</h4>
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="mCmd('ping')" class="bg-slate-100 text-sm py-2 rounded-xl">📡 Ping</button>
+        <button onclick="mCmd('reboot')" class="bg-slate-100 text-sm py-2 rounded-xl">🔄 Redémarrer</button>
+        <button onclick="mCmd('reset')" class="bg-slate-100 text-sm py-2 rounded-xl">🔢 Reset</button>
+        <button onclick="mCmd('relay')" class="bg-slate-100 text-sm py-2 rounded-xl">⚡ Relais</button>
+      </div>
+      <div id="mdCmdRes" class="hidden mt-3 text-sm bg-emerald-50 text-emerald-800 rounded-xl p-2"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============== DATASET ==============
+const cities = [
+  {n:'Paris',lat:48.8566,lng:2.3522},
+  {n:'Lyon',lat:45.7640,lng:4.8357},
+  {n:'Marseille',lat:43.2965,lng:5.3698},
+  {n:'Toulouse',lat:43.6047,lng:1.4442},
+  {n:'Bordeaux',lat:44.8378,lng:-0.5792},
+  {n:'Nice',lat:43.7102,lng:7.2620},
+  {n:'Strasbourg',lat:48.5734,lng:7.7521},
+  {n:'Lille',lat:50.6292,lng:3.0573},
+];
+const types = [
+  {id:'espresso',name:'☕ Café',rev:1.5},
+  {id:'vending',name:'🥤 Distri',rev:2.5},
+  {id:'frigo',name:'🧊 Frigo',rev:0},
+  {id:'indus',name:'⚙️ Indus',rev:0},
+];
+const machines = [];
+for (let i = 0; i < 12; i++) {
+  const city = cities[i % cities.length];
+  const type = types[i % types.length];
+  const sales = Math.floor(Math.random() * 80) + (type.rev > 0 ? 20 : 0);
+  const stock = Math.floor(Math.random() * 100);
+  let status = 'online';
+  if (Math.random() < 0.15) status = stock < 20 ? 'warn' : 'error';
+  if (Math.random() < 0.05) status = 'offline';
+  machines.push({
+    id: `${type.id}-${city.n.slice(0,3).toLowerCase()}-${String(i+1).padStart(2,'0')}`,
+    name: `${type.name} ${city.n} #${i+1}`,
+    type: type.id, typeLabel: type.name, location: city.n,
+    lat: city.lat + (Math.random()-0.5)*0.05, lng: city.lng + (Math.random()-0.5)*0.05,
+    sales, rev: +(sales * type.rev).toFixed(2), stock, status,
+    lastSeen: Date.now() - Math.floor(Math.random() * 3600 * 1000),
+  });
+}
+
+const alerts = [
+  { level:'error', code:'temp_high', message:'Température frigo 12°C', machine:'Frigo Marseille #3', ts: Date.now()-12*60*1000 },
+  { level:'error', code:'offline', message:'Hors ligne 45 min', machine:'Distri Lyon #2', ts: Date.now()-45*60*1000 },
+  { level:'warn', code:'low_stock', message:'Stock < 20%', machine:'Distri Toulouse #4', ts: Date.now()-2*3600*1000 },
+  { level:'warn', code:'low_water', message:'Niveau eau bas', machine:'Café Paris #1', ts: Date.now()-3*3600*1000 },
+  { level:'warn', code:'vibration', message:'Vibrations moteur', machine:'Indus Strasbourg #7', ts: Date.now()-6*3600*1000 },
+  { level:'info', code:'maintenance', message:'Détartrage dans 3j', machine:'Café Bordeaux #5', ts: Date.now()-5*3600*1000 },
+];
+
+// ============== NAV ==============
+function switchTab(page) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`[data-page="${page}"]`)?.classList.add('active');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(`page-${page}`).classList.add('active');
+  if (page === 'map' && map) setTimeout(() => map.invalidateSize(), 100);
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.page)));
+
+// ============== HOME ==============
+function renderHome() {
+  const totalRev = machines.reduce((s,m) => s + m.rev, 0).toFixed(0);
+  const totalSales = machines.reduce((s,m) => s + m.sales, 0);
+  const online = machines.filter(m => m.status === 'online').length;
+  document.getElementById('mKpiRev').textContent = totalRev + ' €';
+  document.getElementById('mKpiSales').textContent = totalSales;
+  document.getElementById('mKpiOnline').textContent = online;
+  document.getElementById('mKpiAlerts').textContent = alerts.filter(a => a.level === 'error' || a.level === 'warn').length;
+  document.getElementById('mAlertBadge').textContent = alerts.length;
+
+  const top = alerts.filter(a => a.level === 'error').slice(0, 2);
+  document.getElementById('mAlertsTop').innerHTML = top.map(a => `
+    <div class="bg-red-50 border border-red-200 rounded-2xl p-3 flex items-center gap-3 active:bg-red-100" onclick="switchTab('alerts')">
+      <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">🚨</div>
+      <div class="flex-1 min-w-0">
+        <div class="text-sm font-semibold text-red-900 truncate">${a.machine}</div>
+        <div class="text-xs text-red-700">${a.message}</div>
+      </div>
+      <span class="text-red-400">›</span>
+    </div>
+  `).join('') || '<div class="text-xs text-slate-500">Aucune alerte critique 🎉</div>';
+}
+
+// ============== MACHINES LIST ==============
+function renderMachines() {
+  const q = (document.getElementById('mSearch').value || '').toLowerCase();
+  const filtered = machines.filter(m => !q || m.name.toLowerCase().includes(q) || m.location.toLowerCase().includes(q));
+  document.getElementById('mMachinesList').innerHTML = filtered.map(m => {
+    const cls = { online:'online', offline:'offline', warn:'warn', error:'error' }[m.status];
+    const stockColor = m.stock < 20 ? 'text-red-600' : m.stock < 50 ? 'text-amber-600' : 'text-emerald-600';
+    return `
+      <div class="bg-white rounded-2xl p-4 shadow-sm active:bg-slate-50" onclick="openDetail('${m.id}')">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2 flex-1 min-w-0">
+            <span class="pulse-dot ${cls}"></span>
+            <div class="font-semibold text-sm truncate">${m.name}</div>
+          </div>
+          <span class="text-xs text-slate-400">${m.location}</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2 text-xs">
+          <div><div class="text-slate-400 text-[10px]">VENTES 24H</div><div class="font-semibold">${m.sales}</div></div>
+          <div><div class="text-slate-400 text-[10px]">REVENUS</div><div class="font-semibold">${m.rev.toFixed(0).replace('.',',')}€</div></div>
+          <div><div class="text-slate-400 text-[10px]">STOCK</div><div class="font-semibold ${stockColor}">${m.stock}%</div></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+document.getElementById('mSearch').addEventListener('input', renderMachines);
+
+// ============== DETAIL SHEET ==============
+let currentDetail = null;
+function openDetail(id) {
+  const m = machines.find(x => x.id === id);
+  if (!m) return;
+  currentDetail = m;
+  document.getElementById('mdName').textContent = m.name;
+  document.getElementById('mdMeta').textContent = `${m.typeLabel} • ${m.location}`;
+  const metrics = [
+    ['Ventes 24h', m.sales],
+    ['Revenus', m.rev.toFixed(2).replace('.',',') + '€'],
+    ['Stock', m.stock + '%'],
+    ['État', { online:'En ligne', offline:'Hors ligne', warn:'Stock bas', error:'Alerte' }[m.status]],
+  ];
+  document.getElementById('mdMetrics').innerHTML = metrics.map(([k,v]) => `
+    <div class="bg-slate-50 rounded-xl p-3">
+      <div class="text-[10px] text-slate-500 uppercase">${k}</div>
+      <div class="font-bold text-base mt-0.5">${v}</div>
+    </div>
+  `).join('');
+  // Mini chart fake data
+  const data = Array.from({length:24}, () => Math.floor(Math.random()*20));
+  const ctx = document.getElementById('mdChart').getContext('2d');
+  if (window.mdChartObj) window.mdChartObj.destroy();
+  window.mdChartObj = new Chart(ctx, {
+    type:'line', data:{ labels: Array.from({length:24},(_,i)=>i+'h'), datasets:[{data,borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.1)',fill:true,tension:0.3,pointRadius:0}] },
+    options:{ plugins:{legend:{display:false}}, scales:{x:{ticks:{maxTicksLimit:6}}} },
+  });
+  document.getElementById('mDetailSheet').classList.remove('hidden');
+}
+function mCmd(cmd) {
+  const res = document.getElementById('mdCmdRes');
+  const msgs = { ping:'↩️ Pong 142ms', reboot:'✅ Redémarré', reset:'✅ Reset OK', relay:'✅ Relais basculé' };
+  res.textContent = msgs[cmd] || cmd;
+  res.classList.remove('hidden');
+  setTimeout(() => res.classList.add('hidden'), 2500);
+}
+
+// ============== MAP ==============
+let map = null;
+function initMap() {
+  if (map) return;
+  map = L.map('map').setView([46.7, 2.5], 5);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'© OSM', maxZoom:18 }).addTo(map);
+  for (const m of machines) {
+    const cls = m.status === 'online' ? 'green' : (m.status === 'error' || m.status === 'warn') ? 'red' : 'amber';
+    const icon = L.divIcon({ className:'', html:`<div class="machine-marker ${cls}"></div>`, iconSize:[14,14], iconAnchor:[7,7] });
+    L.marker([m.lat, m.lng], { icon }).addTo(map).bindPopup(`
+      <div style="font-weight:600;font-size:13px">${m.name}</div>
+      <div style="font-size:11px;color:#64748b">${m.typeLabel} • ${m.location}</div>
+      <div style="margin-top:8px;font-size:12px">
+        <div>Ventes 24h : <b>${m.sales}</b></div>
+        <div>Revenus : <b>${m.rev.toFixed(2).replace('.',',')}€</b></div>
+        <div>Stock : <b>${m.stock}%</b></div>
+      </div>
+    `);
+  }
+}
+
+// ============== ALERTS ==============
+function renderAlertsAll() {
+  const el = document.getElementById('mAlertsAll');
+  el.innerHTML = alerts.map(a => {
+    const color = a.level === 'error' ? 'border-l-red-500 bg-red-50' : a.level === 'warn' ? 'border-l-amber-500 bg-amber-50' : 'border-l-slate-400 bg-white';
+    const icon = a.level === 'error' ? '🚨' : a.level === 'warn' ? '⚠️' : 'ℹ️';
+    const ago = Math.floor((Date.now() - a.ts) / 60000);
+    const agoStr = ago < 60 ? `${ago}m` : `${Math.floor(ago/60)}h`;
+    return `
+      <div class="${color} border-l-4 rounded-r-2xl p-3 flex items-start gap-3">
+        <span class="text-xl">${icon}</span>
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-sm">${a.machine}</div>
+          <div class="text-xs text-slate-700 mt-0.5">${a.message}</div>
+          <div class="text-[10px] text-slate-500 mt-1">il y a ${agoStr}</div>
+        </div>
+        <button class="text-xs text-slate-500 px-2">✓</button>
+      </div>
+    `;
+  }).join('');
+}
+
+// ============== ROUTES ==============
+function renderRoutes() {
+  const stops = machines.filter(m => m.stock < 30).slice(0, 5);
+  document.getElementById('mRouteList').innerHTML = stops.map((m, i) => `
+    <div class="bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3">
+      <div class="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">${i+1}</div>
+      <div class="flex-1 min-w-0">
+        <div class="font-medium text-sm truncate">${m.name}</div>
+        <div class="text-xs text-slate-500">${m.location} · Stock ${m.stock}%</div>
+      </div>
+      <button class="text-xs bg-slate-100 px-3 py-1.5 rounded-lg">GPS →</button>
+    </div>
+  `).join('');
+}
+
+// ============== INVENTORY ==============
+function renderInventory() {
+  const list = machines.filter(m => ['vending','espresso'].includes(m.type));
+  document.getElementById('mInventoryList').innerHTML = list.map(m => {
+    const color = m.stock < 20 ? 'bg-red-500' : m.stock < 50 ? 'bg-amber-500' : 'bg-emerald-500';
+    return `
+      <div class="bg-white rounded-2xl p-4 shadow-sm">
+        <div class="flex items-center justify-between mb-2">
+          <div class="font-medium text-sm truncate">${m.name}</div>
+          <span class="text-xs font-semibold ${m.stock < 20 ? 'text-red-600' : 'text-slate-700'}">${m.stock}%</span>
+        </div>
+        <div class="h-2 bg-slate-100 rounded overflow-hidden">
+          <div class="h-full ${color}" style="width:${m.stock}%"></div>
+        </div>
+        ${m.stock < 30 ? '<div class="mt-2 text-xs text-amber-700">⚠️ Réassort recommandé</div>' : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+// ============== CHART ==============
+function initChart() {
+  const days = ['L','M','Me','J','V','S','D'];
+  const data = days.map(() => Math.floor(Math.random()*200)+200);
+  new Chart(document.getElementById('mChartRev'), {
+    type: 'bar',
+    data: { labels: days, datasets: [{ data, backgroundColor:'#2563eb', borderRadius: 6 }] },
+    options: { plugins:{legend:{display:false}}, scales:{y:{display:false}} },
+  });
+}
+
+// ============== BOOT ==============
+renderHome();
+renderMachines();
+renderAlertsAll();
+renderRoutes();
+renderInventory();
+initChart();
+setTimeout(initMap, 500);
+</script>
+</body>
+</html>

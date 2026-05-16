@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>📡 Télémétrie — Tableau de bord du projet</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+  .card { transition: all 0.15s; }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+  .gradient-hero {
+    background: radial-gradient(ellipse at top, rgba(99,102,241,0.15), transparent 60%),
+                radial-gradient(ellipse at bottom right, rgba(168,85,247,0.10), transparent 60%);
+  }
+  details summary { list-style: none; cursor: pointer; }
+  details summary::-webkit-details-marker { display: none; }
+  .chevron { transition: transform 0.2s; }
+  details[open] .chevron { transform: rotate(90deg); }
+</style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+<!-- ============== HEADER ============== -->
+<header class="gradient-hero border-b border-slate-200">
+  <div class="max-w-6xl mx-auto px-6 py-10">
+    <div class="flex items-center gap-3 mb-3">
+      <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white text-2xl">📡</div>
+      <div>
+        <h1 class="text-2xl font-bold">Télémétrie</h1>
+        <p class="text-sm text-slate-600">Centre de commandement du projet</p>
+      </div>
+    </div>
+    <p class="text-slate-700 max-w-2xl">
+      Bienvenue. Tout ton projet est rangé ici en 7 catégories.
+      Clique sur n'importe quoi pour l'ouvrir directement. Pas besoin de chercher dans les dossiers.
+    </p>
+    <div class="flex gap-3 mt-4 text-xs">
+      <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full">✓ 63 fichiers livrés</span>
+      <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full">✓ 10 343 lignes</span>
+      <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full">✓ Production-ready</span>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-6 py-8 space-y-8">
+
+  <!-- ============== 0. À LIRE EN PREMIER ============== -->
+  <section>
+    <div class="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-2xl p-6">
+      <h2 class="text-xl font-bold mb-3 flex items-center gap-2">📌 Par où commencer ?</h2>
+      <p class="text-slate-700 mb-4">Si tu démarres maintenant, commence par <strong>DEMARRER.html</strong> qui te donne la checklist jour par jour.</p>
+      <a href="VALIDATION.html" class="card bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl p-4 block mb-3">
+        <div class="flex items-center gap-3">
+          <div class="text-3xl">🔬</div>
+          <div>
+            <div class="font-bold text-lg">VALIDATION.html — Plan réaliste 4 phases</div>
+            <div class="text-xs text-orange-100 mt-1">POC → Beta → Pilotes → Lancement · avec gates strictes avant chaque phase</div>
+          </div>
+        </div>
+      </a>
+      <a href="DEMARRER.html" class="card bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl p-4 block mb-3">
+        <div class="flex items-center gap-3">
+          <div class="text-3xl">🚀</div>
+          <div>
+            <div class="font-bold text-lg">DEMARRER.html — Checklist 6 semaines (version optimiste)</div>
+            <div class="text-xs text-blue-100 mt-1">Plan accéléré si tout marche du premier coup — à compléter APRÈS validation</div>
+          </div>
+        </div>
+      </a>
+      <a href="COMBIEN-CA-AURAIT-COUTE.html" class="card bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl p-4 block mb-4">
+        <div class="flex items-center gap-3">
+          <div class="text-3xl">💰</div>
+          <div>
+            <div class="font-bold text-lg">COMBIEN-CA-AURAIT-COUTE.html — Calcul motivant</div>
+            <div class="text-xs text-emerald-100 mt-1">Voir combien tu aurais payé en sous-traitance (~98 700€)</div>
+          </div>
+        </div>
+      </a>
+      <p class="text-slate-700 mb-4">Ou si tu préfères lire d'abord :</p>
+      <div class="grid md:grid-cols-3 gap-3">
+        <a href="ROADMAP.md" class="card bg-white rounded-xl p-4 border border-amber-200 block">
+          <div class="text-2xl mb-1">🗺️</div>
+          <div class="font-semibold">1. ROADMAP.md</div>
+          <div class="text-xs text-slate-500 mt-1">Plan complet : 6 phases, semaine par semaine</div>
+        </a>
+        <a href="CHECKLIST-FINALE.md" class="card bg-white rounded-xl p-4 border border-amber-200 block">
+          <div class="text-2xl mb-1">✅</div>
+          <div class="font-semibold">2. CHECKLIST-FINALE.md</div>
+          <div class="text-xs text-slate-500 mt-1">Ce qui est fait / reste / oublié</div>
+        </a>
+        <a href="QUICKSTART_MAC.md" class="card bg-white rounded-xl p-4 border border-amber-200 block">
+          <div class="text-2xl mb-1">⚡</div>
+          <div class="font-semibold">3. QUICKSTART_MAC.md</div>
+          <div class="text-xs text-slate-500 mt-1">Tester en local en 10 minutes</div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== 1. DÉMOS ============== -->
+  <section>
+    <h2 class="text-xl font-bold mb-3 flex items-center gap-2">🎬 Démos visuelles <span class="text-sm font-normal text-slate-500">— ouvre direct dans le navigateur, sans installation</span></h2>
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-3">
+      <a href="demos/05-dashboard-pro-v4.html" class="card bg-gradient-to-br from-blue-600 to-purple-700 text-white rounded-xl p-4 block relative">
+        <span class="absolute top-2 right-2 bg-amber-400 text-amber-900 text-[9px] font-bold px-2 py-0.5 rounded-full">⭐ KILLER</span>
+        <div class="text-2xl mb-1">🚀</div>
+        <div class="font-semibold text-sm">Dashboard v4 — dépasse Nayax</div>
+        <div class="text-xs text-blue-100 mt-1">Planogrammes drag-drop, picklists, audit log, white-label</div>
+      </a>
+      <a href="demos/06-driver-app.html" class="card bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-xl p-4 block relative">
+        <span class="absolute top-2 right-2 bg-white text-orange-700 text-[9px] font-bold px-2 py-0.5 rounded-full">NEW</span>
+        <div class="text-2xl mb-1">🚐</div>
+        <div class="font-semibold text-sm">App Driver (technicien)</div>
+        <div class="text-xs text-amber-100 mt-1">Concurrent MoMa Nayax — tournée + scan QR + photos</div>
+      </a>
+      <a href="demos/07-consumer-app.html" class="card bg-gradient-to-br from-purple-600 to-pink-600 text-white rounded-xl p-4 block relative">
+        <span class="absolute top-2 right-2 bg-white text-pink-700 text-[9px] font-bold px-2 py-0.5 rounded-full">NEW</span>
+        <div class="text-2xl mb-1">💳</div>
+        <div class="font-semibold text-sm">App Consumer (fidélité)</div>
+        <div class="text-xs text-purple-100 mt-1">Concurrent Monyx Wallet — wallet + cartes tampons</div>
+      </a>
+      <a href="demos/03-dashboard-pro-v3-ia.html" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">🤖</div>
+        <div class="font-semibold text-sm">Dashboard v3 IA</div>
+        <div class="text-xs text-slate-500 mt-1">Avec IA prédictive, cashless, marketplace</div>
+      </a>
+      <a href="demos/02-dashboard-pro-v2.html" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">📈</div>
+        <div class="font-semibold text-sm">Dashboard v2</div>
+        <div class="text-xs text-slate-500 mt-1">Niveau Nayax basique</div>
+      </a>
+      <a href="demos/04-app-mobile.html" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">📱</div>
+        <div class="font-semibold text-sm">App Mobile simple</div>
+        <div class="text-xs text-slate-500 mt-1">Vue admin smartphone basique</div>
+      </a>
+      <a href="demos/01-demo-simple.html" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">📊</div>
+        <div class="font-semibold text-sm">Démo simple v1</div>
+        <div class="text-xs text-slate-500 mt-1">3 machines simulées</div>
+      </a>
+      <a href="demos/README.md" class="card bg-slate-100 rounded-xl p-4 border border-slate-300 block">
+        <div class="text-2xl mb-1">📖</div>
+        <div class="font-semibold text-sm">README démos</div>
+        <div class="text-xs text-slate-500 mt-1">Quelle démo pour quel cas</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============== 2. SITE WEB CLIENT ============== -->
+  <section>
+    <h2 class="text-xl font-bold mb-3 flex items-center gap-2">🌐 Site web pour tes clients</h2>
+    <div class="grid md:grid-cols-3 gap-3">
+      <a href="web/index.html" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">🏠</div>
+        <div class="font-semibold text-sm">Landing page marketing</div>
+        <div class="text-xs text-slate-500 mt-1">Page d'accueil publique avec pricing</div>
+      </a>
+      <a href="web/signup.html" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">📝</div>
+        <div class="font-semibold text-sm">Page inscription</div>
+        <div class="text-xs text-slate-500 mt-1">Essai gratuit 14 jours, sans CB</div>
+      </a>
+      <a href="dashboard/index.html" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">🖥️</div>
+        <div class="font-semibold text-sm">Dashboard espace client</div>
+        <div class="text-xs text-slate-500 mt-1">Connexion + supervision live</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============== 3. DOCUMENTATION ============== -->
+  <section>
+    <details open>
+      <summary class="text-xl font-bold mb-3 flex items-center gap-2">
+        <span class="chevron">▶</span> 📚 Documentation <span class="text-sm font-normal text-slate-500">— 13 docs en français</span>
+      </summary>
+      <div class="space-y-4 mt-4">
+
+        <div>
+          <h3 class="font-semibold text-slate-600 text-xs uppercase tracking-wider mb-2">🚀 Installation & démarrage</h3>
+          <div class="grid md:grid-cols-3 gap-2">
+            <a href="docs/INSTALLATION.md" class="card bg-white rounded-lg p-3 border border-slate-200 block text-sm">📖 Installation Raspberry Pi</a>
+            <a href="docs/ESP32_SETUP.md" class="card bg-white rounded-lg p-3 border border-slate-200 block text-sm">🔧 Setup ESP32 + flash</a>
+            <a href="docs/HEBERGEMENT.md" class="card bg-white rounded-lg p-3 border border-slate-200 block text-sm">🏗️ Hébergement complet</a>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="font-semibold text-slate-600 text-xs uppercase tracking-wider mb-2">💳 Paiement & business</h3>
+          <div class="grid md:grid-cols-2 gap-2">
+            <a href="docs/STRIPE.md" class="card bg-white rounded-lg p-3 border border-slate-200 block text-sm">💸 Configurer Stripe Billing</a>
+            <a href="docs/PAIEMENTS-FR.md" class="card bg-white rounded-lg p-3 border border-slate-200 block text-sm">🇫🇷 3 flux paiement français</a>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="font-semibold text-slate-600 text-xs uppercase tracking-wider mb-2">🔒 Sécurité & conformité</h3>
+          <div class="grid md:grid-cols-1 gap-2">
+            <a href="docs/SECURITE.md" class="card bg-white rounded-lg p-3 border border-slate-200 block text-sm">🛡️ Sécurité bout-en-bout (3 niveaux)</a>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="font-semibold text-slate-600 text-xs uppercase tracking-wider mb-2">🤖 IA & technique</h3>
+          <div class="grid md:grid-cols-3 gap-2">
+            <a href="docs/IA-COUTS.md" class="card bg-white rounded-lg p-3 border border-slate-200 block text-sm">💰 IA & coûts réels</a>
+            <a href="docs/AGENTS-IA.md" class="card bg-white rounded-lg p-3 border border-slate-200 block text-sm">🤖 8 agents IA pour automatiser</a>
+            <a href="docs/FORMATION-ALGOS.md" class="card bg-white rounded-lg p-3 border border-slate-200 block text-sm">🎓 30 algos décortiqués</a>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="font-semibold text-slate-600 text-xs uppercase tracking-wider mb-2">🔌 Hardware & raccordement</h3>
+          <div class="grid md:grid-cols-2 gap-2">
+            <a href="docs/WIRING.md" class="card bg-white rounded-lg p-3 border border-slate-200 block text-sm">🔧 Guide raccordement général</a>
+            <a href="docs/ARCHITECTURE.md" class="card bg-white rounded-lg p-3 border border-slate-200 block text-sm">🏛️ Architecture MQTT + BDD</a>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="font-semibold text-slate-600 text-xs uppercase tracking-wider mb-2">🤝 Pour tes clients & intégrateurs</h3>
+          <div class="grid md:grid-cols-1 gap-2">
+            <a href="docs/INTEGRATION.md" class="card bg-white rounded-lg p-3 border border-slate-200 block text-sm">📡 Guide intégration client / API</a>
+          </div>
+        </div>
+
+      </div>
+    </details>
+  </section>
+
+  <!-- ============== 4. SCHÉMAS RACCORDEMENT ============== -->
+  <section>
+    <h2 class="text-xl font-bold mb-3 flex items-center gap-2">🔌 Schémas de raccordement <span class="text-sm font-normal text-slate-500">— par type de machine</span></h2>
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-3">
+      <a href="wiring-schemas/01-cafetiere-espresso.svg" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">☕</div>
+        <div class="font-semibold text-sm">Cafetière espresso pro</div>
+        <div class="text-xs text-slate-500 mt-1">LDR + DS18B20 + reed — ~90€</div>
+      </a>
+      <a href="wiring-schemas/02-distributeur.svg" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">🥤</div>
+        <div class="font-semibold text-sm">Distributeur automatique</div>
+        <div class="text-xs text-slate-500 mt-1">Micro-switch + MDB option — ~90€</div>
+      </a>
+      <a href="wiring-schemas/03-frigo-haccp.svg" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">🧊</div>
+        <div class="font-semibold text-sm">Frigo pro HACCP</div>
+        <div class="text-xs text-slate-500 mt-1">Conforme DDPP, rapport PDF auto — ~95€</div>
+      </a>
+      <a href="wiring-schemas/04-machine-industrielle.svg" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">⚙️</div>
+        <div class="font-semibold text-sm">Machine industrielle</div>
+        <div class="text-xs text-slate-500 mt-1">Vibrations + courant + Modbus — ~155€</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============== 5. CONCEPTION PCB ============== -->
+  <section>
+    <h2 class="text-xl font-bold mb-3 flex items-center gap-2">🔧 Conception PCB <span class="text-sm font-normal text-slate-500">— design électronique pro</span></h2>
+    <div class="grid md:grid-cols-4 gap-3">
+      <a href="pcb/README.md" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">📋</div>
+        <div class="font-semibold text-sm">Spec complète</div>
+        <div class="text-xs text-slate-500 mt-1">100×80mm, 2 couches</div>
+      </a>
+      <a href="pcb/schematic.svg" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">📐</div>
+        <div class="font-semibold text-sm">Schéma SVG</div>
+        <div class="text-xs text-slate-500 mt-1">Diagramme fonctionnel</div>
+      </a>
+      <a href="pcb/BOM.csv" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">📊</div>
+        <div class="font-semibold text-sm">BOM CSV</div>
+        <div class="text-xs text-slate-500 mt-1">Composants + prix LCSC</div>
+      </a>
+      <a href="pcb/brief-freelance.md" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">💼</div>
+        <div class="font-semibold text-sm">Brief freelance</div>
+        <div class="text-xs text-slate-500 mt-1">À copier sur Malt/Fiverr</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============== 6. CODE BACKEND ============== -->
+  <section>
+    <details>
+      <summary class="text-xl font-bold mb-3 flex items-center gap-2">
+        <span class="chevron">▶</span> 💻 Code backend <span class="text-sm font-normal text-slate-500">— Node.js + Python</span>
+      </summary>
+      <div class="grid md:grid-cols-3 gap-3 mt-4">
+        <a href="backend/src/server.js" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+          <div class="text-2xl mb-1">🖥️</div>
+          <div class="font-semibold text-sm">server.js</div>
+          <div class="text-xs text-slate-500 mt-1">Point d'entrée Express + WebSocket</div>
+        </a>
+        <a href="backend/src/db.js" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+          <div class="text-2xl mb-1">🗃️</div>
+          <div class="font-semibold text-sm">db.js</div>
+          <div class="text-xs text-slate-500 mt-1">Schéma SQLite multi-tenant</div>
+        </a>
+        <a href="backend/src/mqtt.js" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+          <div class="text-2xl mb-1">📡</div>
+          <div class="font-semibold text-sm">mqtt.js</div>
+          <div class="text-xs text-slate-500 mt-1">Broker MQTT embarqué</div>
+        </a>
+        <a href="backend/src/auth.js" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+          <div class="text-2xl mb-1">🔐</div>
+          <div class="font-semibold text-sm">auth.js</div>
+          <div class="text-xs text-slate-500 mt-1">JWT + bcrypt</div>
+        </a>
+        <a href="backend/src/stripeRoutes.js" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+          <div class="text-2xl mb-1">💳</div>
+          <div class="font-semibold text-sm">stripeRoutes.js</div>
+          <div class="text-xs text-slate-500 mt-1">Stripe Billing (abonnements)</div>
+        </a>
+        <a href="backend/src/stripeConnect.js" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+          <div class="text-2xl mb-1">💸</div>
+          <div class="font-semibold text-sm">stripeConnect.js</div>
+          <div class="text-xs text-slate-500 mt-1">Marketplace (split paiement)</div>
+        </a>
+        <a href="backend/src/aiRoutes.js" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+          <div class="text-2xl mb-1">🤖</div>
+          <div class="font-semibold text-sm">aiRoutes.js</div>
+          <div class="text-xs text-slate-500 mt-1">Chat IA Mistral</div>
+        </a>
+        <a href="backend/src/plans.js" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+          <div class="text-2xl mb-1">📋</div>
+          <div class="font-semibold text-sm">plans.js</div>
+          <div class="text-xs text-slate-500 mt-1">Plans tarifaires</div>
+        </a>
+        <a href="ai-service/predict.py" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+          <div class="text-2xl mb-1">🧠</div>
+          <div class="font-semibold text-sm">predict.py</div>
+          <div class="text-xs text-slate-500 mt-1">ML maintenance prédictive</div>
+        </a>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============== 7. FIRMWARE ESP32 ============== -->
+  <section>
+    <h2 class="text-xl font-bold mb-3 flex items-center gap-2">📟 Firmware ESP32</h2>
+    <div class="grid md:grid-cols-2 gap-3">
+      <a href="firmware/telemetry_esp32.ino" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">📟</div>
+        <div class="font-semibold text-sm">telemetry_esp32.ino</div>
+        <div class="text-xs text-slate-500 mt-1">Sketch Arduino + TinyGSM + MQTT</div>
+      </a>
+      <a href="firmware/config.h.example" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">⚙️</div>
+        <div class="font-semibold text-sm">config.h.example</div>
+        <div class="text-xs text-slate-500 mt-1">Template configuration ESP32</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============== 8. INFRA DÉPLOIEMENT ============== -->
+  <section>
+    <h2 class="text-xl font-bold mb-3 flex items-center gap-2">🛠️ Infra & déploiement production</h2>
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-3">
+      <a href="infra/Caddyfile" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">🔒</div>
+        <div class="font-semibold text-sm">Caddyfile</div>
+        <div class="text-xs text-slate-500 mt-1">HTTPS auto + headers sec</div>
+      </a>
+      <a href="infra/docker-compose.prod.yml" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">🐳</div>
+        <div class="font-semibold text-sm">docker-compose.prod.yml</div>
+        <div class="text-xs text-slate-500 mt-1">Stack hardenée production</div>
+      </a>
+      <a href="infra/setup-server.sh" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">⚡</div>
+        <div class="font-semibold text-sm">setup-server.sh</div>
+        <div class="text-xs text-slate-500 mt-1">Install VPS Ubuntu 1 cmd</div>
+      </a>
+      <a href="infra/scripts/backup.sh" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">💾</div>
+        <div class="font-semibold text-sm">backup.sh</div>
+        <div class="text-xs text-slate-500 mt-1">Backup chiffré GPG + cloud</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============== 9. AGENTS IA ============== -->
+  <section>
+    <h2 class="text-xl font-bold mb-3 flex items-center gap-2">🤖 Agents IA <span class="text-sm font-normal text-slate-500">— automatiser ton business</span></h2>
+    <div class="grid md:grid-cols-2 gap-3">
+      <a href="agents/customer_success_agent.py" class="card bg-white rounded-xl p-4 border-2 border-emerald-400 block">
+        <div class="text-2xl mb-1">🟢</div>
+        <div class="font-semibold text-sm">customer_success_agent.py</div>
+        <div class="text-xs text-slate-500 mt-1">Détecte clients à risque + email auto · ~0,30€/mois</div>
+      </a>
+      <a href="agents/README.md" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">📖</div>
+        <div class="font-semibold text-sm">README agents</div>
+        <div class="text-xs text-slate-500 mt-1">Setup 15 min + cron</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============== 10. KIT COMMERCIAL ============== -->
+  <section>
+    <h2 class="text-xl font-bold mb-3 flex items-center gap-2">💼 Kit commercial <span class="text-sm font-normal text-slate-500">— pour vendre</span></h2>
+    <div class="grid md:grid-cols-3 gap-3">
+      <a href="commercial-kit/one-pager.md" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">📄</div>
+        <div class="font-semibold text-sm">One-pager</div>
+        <div class="text-xs text-slate-500 mt-1">Plaquette commerciale</div>
+      </a>
+      <a href="commercial-kit/pitch-deck.md" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">🎯</div>
+        <div class="font-semibold text-sm">Pitch deck</div>
+        <div class="text-xs text-slate-500 mt-1">12 slides pour visios</div>
+      </a>
+      <a href="commercial-kit/emails-prospection.md" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">📧</div>
+        <div class="font-semibold text-sm">Emails prospection</div>
+        <div class="text-xs text-slate-500 mt-1">8 emails sur 30j + script appel</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============== 11. PROGRAMME REVENDEURS ============== -->
+  <section>
+    <h2 class="text-xl font-bold mb-3 flex items-center gap-2">🤝 Programme revendeurs</h2>
+    <div class="grid md:grid-cols-2 gap-3">
+      <a href="reseller-program/README.md" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">🥇</div>
+        <div class="font-semibold text-sm">3 niveaux partenaires</div>
+        <div class="text-xs text-slate-500 mt-1">Référent / Revendeur / White-label</div>
+      </a>
+      <a href="reseller-program/contrat-revendeur.md" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">📜</div>
+        <div class="font-semibold text-sm">Contrat type</div>
+        <div class="text-xs text-slate-500 mt-1">À valider par avocat</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============== 12. SIMULATEUR ============== -->
+  <section>
+    <h2 class="text-xl font-bold mb-3 flex items-center gap-2">🧪 Simulateur de machines</h2>
+    <div class="grid md:grid-cols-2 gap-3">
+      <a href="simulator/simulate.js" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">🤖</div>
+        <div class="font-semibold text-sm">simulate.js</div>
+        <div class="text-xs text-slate-500 mt-1">3 machines simulées (café, distri, indus)</div>
+      </a>
+      <a href="simulator/package.json" class="card bg-white rounded-xl p-4 border border-slate-200 block">
+        <div class="text-2xl mb-1">📦</div>
+        <div class="font-semibold text-sm">package.json</div>
+        <div class="text-xs text-slate-500 mt-1">Dépendances simulateur</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============== AIDE & SUPPORT ============== -->
+  <section>
+    <div class="bg-slate-900 rounded-2xl p-6 text-white">
+      <h2 class="text-xl font-bold mb-3">🆘 Quand tu te perds</h2>
+      <div class="grid md:grid-cols-3 gap-4 text-sm">
+        <div>
+          <div class="font-semibold mb-1">📖 Tu cherches comment faire X</div>
+          <div class="text-slate-300">→ Consulte d'abord <code class="bg-slate-700 px-1 rounded">ROADMAP.md</code></div>
+        </div>
+        <div>
+          <div class="font-semibold mb-1">🐛 Quelque chose ne marche pas</div>
+          <div class="text-slate-300">→ Vérifie <code class="bg-slate-700 px-1 rounded">CHECKLIST-FINALE.md</code></div>
+        </div>
+        <div>
+          <div class="font-semibold mb-1">🤔 Tu veux comprendre un algo</div>
+          <div class="text-slate-300">→ Ouvre <code class="bg-slate-700 px-1 rounded">docs/FORMATION-ALGOS.md</code></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="max-w-6xl mx-auto px-6 py-8 text-center text-sm text-slate-500">
+  Tableau de bord projet Télémétrie · 63 fichiers · 10 343 lignes
+</footer>
+
+</body>
+</html>

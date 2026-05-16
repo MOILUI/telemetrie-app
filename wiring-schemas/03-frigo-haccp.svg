@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 700" font-family="ui-sans-serif, system-ui, sans-serif">
+<style>
+  .bg{fill:#fafaf9}.title{font-size:22px;font-weight:bold;fill:#0c0a09}
+  .sub{font-size:13px;fill:#57534e}.lbl{font-size:12px;fill:#0c0a09}
+  .pin{font-size:10px;fill:#525252;font-family:monospace}
+  .esp{fill:#dbeafe;stroke:#1e40af;stroke-width:2}.machine{fill:#e0f2fe;stroke:#0284c7;stroke-width:2}
+  .sensor{fill:#dcfce7;stroke:#15803d;stroke-width:1.5}
+  .note{font-size:11px;fill:#0c0a09}.badge{font-size:10px;fill:white;font-weight:bold}
+</style>
+<rect class="bg" width="1100" height="700"/>
+<text x="550" y="32" class="title" text-anchor="middle">🧊 Raccordement — Frigo professionnel / Chambre froide HACCP</text>
+<text x="550" y="52" class="sub" text-anchor="middle">Traçabilité réglementaire automatique · Alerte avant dérive · Marge brute légale</text>
+
+<g transform="translate(620,90)">
+  <rect class="machine" width="400" height="500" rx="8"/>
+  <text x="200" y="28" class="lbl" text-anchor="middle" font-weight="bold">FRIGO PROFESSIONNEL</text>
+  <!-- Compartiment intérieur -->
+  <rect x="40" y="60" width="320" height="280" fill="#bae6fd" rx="4"/>
+  <text x="200" y="85" class="note" text-anchor="middle">🥩 🥬 🐟 🧀</text>
+  <text x="200" y="115" class="note" text-anchor="middle">INTÉRIEUR FRIGO</text>
+  <text x="200" y="135" class="note" text-anchor="middle">Cible : 0 à 4°C (HACCP)</text>
+  <!-- Sonde positionnée centre -->
+  <circle cx="200" cy="200" r="10" fill="#16a34a"/>
+  <text x="200" y="225" class="note" text-anchor="middle" font-weight="bold">DS18B20</text>
+  <text x="200" y="240" class="note" text-anchor="middle">(sonde inox)</text>
+  <!-- Joint porte -->
+  <line x1="40" y1="340" x2="360" y2="340" stroke="#64748b" stroke-width="3" stroke-dasharray="4 4"/>
+  <text x="200" y="358" class="note" text-anchor="middle">Joint porte (passage du câble)</text>
+  <!-- Porte avec poignée -->
+  <rect x="40" y="370" width="320" height="80" fill="#cbd5e1" rx="4"/>
+  <text x="200" y="415" class="note" text-anchor="middle">PORTE (reed magnétique externe)</text>
+  <!-- Compresseur -->
+  <rect x="80" y="465" width="240" height="40" fill="#71717a" rx="4"/>
+  <text x="200" y="490" class="note" text-anchor="middle" fill="white">COMPRESSEUR (capteur courant non-invasif)</text>
+</g>
+
+<g transform="translate(60,90)">
+  <rect class="esp" width="240" height="240" rx="8"/>
+  <text x="120" y="28" class="lbl" text-anchor="middle" font-weight="bold">ESP32 + PCB</text>
+  <text x="120" y="48" class="sub" text-anchor="middle">Boîtier IP65 à l'extérieur</text>
+  <rect x="20" y="70" width="200" height="160" fill="#1e293b" rx="4"/>
+  <text x="120" y="95" class="badge" text-anchor="middle">BORNIERS</text>
+  <text x="35" y="115" class="pin" fill="#fbbf24">T1 (1-wire)</text>
+  <text x="180" y="115" class="pin" fill="white" text-anchor="end">→ Sonde inox</text>
+  <text x="35" y="135" class="pin" fill="#fbbf24">IN1</text>
+  <text x="180" y="135" class="pin" fill="white" text-anchor="end">→ Reed porte</text>
+  <text x="35" y="155" class="pin" fill="#fbbf24">A1 (0-10V)</text>
+  <text x="180" y="155" class="pin" fill="white" text-anchor="end">→ Pince ampèremétrique</text>
+  <text x="35" y="175" class="pin" fill="#fbbf24">BZ (buzzer)</text>
+  <text x="180" y="175" class="pin" fill="white" text-anchor="end">→ Alarme sonore locale</text>
+  <text x="35" y="195" class="pin" fill="#fbbf24">LED RGB</text>
+  <text x="180" y="195" class="pin" fill="white" text-anchor="end">→ Statut visible</text>
+  <text x="35" y="215" class="pin" fill="#fbbf24">3.3V/GND</text>
+  <text x="180" y="215" class="pin" fill="white" text-anchor="end">→ Alim</text>
+</g>
+
+<g transform="translate(330,90)">
+  <rect class="sensor" width="260" height="60" rx="6"/>
+  <text x="10" y="20" class="lbl" font-weight="bold">① DS18B20 inox étanche</text>
+  <text x="10" y="38" class="note">Au cœur du compartiment, câble 3m</text>
+  <text x="10" y="52" class="note">→ Mesure T° toutes les 30s, précision ±0.5°C</text>
+
+  <rect class="sensor" y="75" width="260" height="60" rx="6"/>
+  <text x="10" y="95" class="lbl" font-weight="bold">② Reed switch porte</text>
+  <text x="10" y="113" class="note">Aimant cadre + reed sur porte</text>
+  <text x="10" y="127" class="note">→ Compte ouvertures, durée d'ouverture</text>
+
+  <rect class="sensor" y="150" width="260" height="60" rx="6"/>
+  <text x="10" y="170" class="lbl" font-weight="bold">③ Pince SCT-013 (option)</text>
+  <text x="10" y="188" class="note">Clipsée sur fil phase du compresseur</text>
+  <text x="10" y="202" class="note">→ Cycles défrostage, signe de fuite gaz</text>
+
+  <rect class="sensor" y="225" width="260" height="60" rx="6"/>
+  <text x="10" y="245" class="lbl" font-weight="bold">④ Buzzer + LED RGB</text>
+  <text x="10" y="263" class="note">Alarme locale si T° &gt; seuil</text>
+  <text x="10" y="277" class="note">Vert = OK · Orange = warn · Rouge = critique</text>
+
+  <rect fill="#fef3c7" stroke="#d97706" stroke-width="1.5" y="300" width="260" height="80" rx="6"/>
+  <text x="10" y="320" class="lbl" font-weight="bold">📋 HACCP : ce qu'on génère</text>
+  <text x="10" y="338" class="note">• Log T° toutes les 30s (1 an d'historique)</text>
+  <text x="10" y="352" class="note">• PDF mensuel auto pour DDPP / contrôles</text>
+  <text x="10" y="366" class="note">• Email immédiat si T° &gt; 4°C pendant &gt; 15 min</text>
+  <text x="10" y="376" class="note">• Signature électronique du rapport</text>
+</g>
+
+<g transform="translate(60,360)">
+  <rect fill="white" stroke="#d6d3d1" width="1000" height="320" rx="6"/>
+  <text x="20" y="30" class="lbl" font-weight="bold">⚖️ Cadre réglementaire</text>
+  <text x="20" y="55" class="note">• Règlement CE 852/2004 : enregistrement continu T° dans la chaîne du froid</text>
+  <text x="20" y="75" class="note">• Norme NF EN 12830 : précision sondes ±1°C suffisante (DS18B20 = ±0.5°C, OK)</text>
+  <text x="20" y="95" class="note">• Durée de conservation des logs : minimum 1 an (notre app : illimité)</text>
+  <text x="20" y="115" class="note">• Audit DDPP : doit pouvoir produire les logs sur demande sous 24h → export PDF instantané</text>
+
+  <text x="20" y="150" class="lbl" font-weight="bold">💰 Argumentaire commercial</text>
+  <text x="20" y="170" class="note">• Restaurants : 1 amende DDPP évitée = 1500-15000€ → ROI immédiat</text>
+  <text x="20" y="190" class="note">• Boucherie/poissonnerie : produits sauvés en cas de panne = ~500€/incident</text>
+  <text x="20" y="210" class="note">• Pharmacies vaccins/médicaments : exigence réglementaire stricte</text>
+  <text x="20" y="230" class="note">• Hôtels (chambres froides cuisine) : protection responsabilité civile</text>
+
+  <text x="540" y="30" class="lbl" font-weight="bold">📦 Composants</text>
+  <text x="540" y="55" class="note">• ESP32 + PCB : 60€</text>
+  <text x="540" y="75" class="note">• Sonde DS18B20 inox 3m câble : 8€</text>
+  <text x="540" y="95" class="note">• Reed switch + aimant : 3€</text>
+  <text x="540" y="115" class="note">• Pince SCT-013-030 (option courant) : 8€</text>
+  <text x="540" y="135" class="note">• Buzzer piezo + boîtier IP65 : 12€</text>
+  <text x="540" y="155" class="note">• Carte SIM 4G 10 ans : 10€</text>
+  <text x="540" y="183" class="note" font-weight="bold">TOTAL : ~95€</text>
+
+  <text x="540" y="220" class="lbl" font-weight="bold">🎯 Cas réels chiffrés</text>
+  <text x="540" y="240" class="note">Bouchers : ~12 frigos = €1140 d'install + 60€/mois</text>
+  <text x="540" y="260" class="note">→ amorti en 4 mois si évite 1 panne marchandises</text>
+  <text x="540" y="280" class="note">Pharmacies : 2 frigos vaccins = €190 + 38€/mois</text>
+  <text x="540" y="300" class="note">→ obligatoire (vaccins COVID, insuline...)</text>
+</g>
+</svg>

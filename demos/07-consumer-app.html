@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#7c3aed" />
+<title>📱 Wallet & Fidélité — App Consommateur</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  * { -webkit-tap-highlight-color: transparent; }
+  body { font-family: -apple-system, 'Inter', sans-serif; overscroll-behavior-y: none; background: linear-gradient(135deg, #f1f5f9 0%, #e0e7ff 100%); }
+  .phone-frame { max-width: 440px; margin: 0 auto; background: white; min-height: 100vh; box-shadow: 0 0 40px rgba(0,0,0,0.1); position: relative; overflow: hidden; }
+  .tab.active { color: #7c3aed; }
+  .tab.active .icon { transform: scale(1.1); }
+  .icon { transition: transform 0.15s; font-size: 22px; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .fade-in { animation: fadeIn 0.2s ease-out; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .card-gradient {
+    background: linear-gradient(135deg, #7c3aed 0%, #ec4899 50%, #f59e0b 100%);
+  }
+  .stamp { transition: all 0.3s; }
+  .stamp.collected { background: linear-gradient(135deg, #10b981, #059669); color: white; transform: rotate(-8deg); }
+</style>
+</head>
+<body>
+
+<div class="bg-purple-600 text-white text-xs py-2 text-center">
+  📱 App Consommateur (fidélité) · concurrent direct de Monyx Wallet Nayax
+</div>
+
+<div class="phone-frame">
+
+  <!-- ============== HOME / WALLET ============== -->
+  <div id="page-home" class="page active fade-in">
+
+    <!-- Header with avatar -->
+    <div class="px-5 pt-6 pb-3">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-xs text-slate-500">Bonjour</div>
+          <div class="font-bold text-xl">Marie 👋</div>
+        </div>
+        <div class="w-10 h-10 rounded-full bg-purple-600 text-white flex items-center justify-center font-semibold">M</div>
+      </div>
+    </div>
+
+    <!-- WALLET CARD -->
+    <div class="px-5 mb-4">
+      <div class="card-gradient rounded-3xl p-5 text-white shadow-2xl shadow-purple-300 relative overflow-hidden">
+        <div class="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full"></div>
+        <div class="absolute -right-20 -top-20 w-60 h-60 bg-white/5 rounded-full"></div>
+
+        <div class="relative">
+          <div class="text-xs opacity-80 uppercase tracking-wider">Mon wallet</div>
+          <div class="text-4xl font-bold mt-1">12,80 €</div>
+          <div class="text-xs opacity-90 mt-1">Disponible</div>
+
+          <div class="mt-4 flex gap-2">
+            <button class="bg-white/20 hover:bg-white/30 backdrop-blur text-white text-xs font-semibold px-3 py-1.5 rounded-full">+ Recharger</button>
+            <button class="bg-white/20 hover:bg-white/30 backdrop-blur text-white text-xs font-semibold px-3 py-1.5 rounded-full">Envoyer</button>
+          </div>
+        </div>
+
+        <div class="mt-5 flex items-center justify-between text-xs">
+          <div>
+            <div class="opacity-80">⭐ Points</div>
+            <div class="font-bold text-lg">847</div>
+          </div>
+          <div class="text-right">
+            <div class="opacity-80">Niveau</div>
+            <div class="font-bold">VIP Gold</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QR PAYMENT (gros bouton central) -->
+    <div class="px-5 mb-4">
+      <button class="w-full bg-slate-900 text-white rounded-2xl py-5 font-semibold shadow-lg flex items-center justify-center gap-3 active:scale-95 transition">
+        <span class="text-3xl">📱</span>
+        <div class="text-left">
+          <div class="text-sm">Payer une machine</div>
+          <div class="text-xs text-slate-400 font-normal">Scan QR ou approche sans contact</div>
+        </div>
+      </button>
+    </div>
+
+    <!-- LOYALTY PROGRAMS (carte tampons) -->
+    <div class="px-5 mb-4">
+      <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">⭐ Tes cartes fidélité</h3>
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-2xl">☕</span>
+            <div>
+              <div class="font-semibold text-sm">10 cafés = 1 offert</div>
+              <div class="text-[10px] text-slate-500">Café République</div>
+            </div>
+          </div>
+          <span class="bg-purple-100 text-purple-700 text-[10px] font-semibold px-2 py-1 rounded-full">7/10</span>
+        </div>
+        <div class="grid grid-cols-5 gap-2">
+          <div class="stamp collected aspect-square rounded-lg flex items-center justify-center text-sm">☕</div>
+          <div class="stamp collected aspect-square rounded-lg flex items-center justify-center text-sm">☕</div>
+          <div class="stamp collected aspect-square rounded-lg flex items-center justify-center text-sm">☕</div>
+          <div class="stamp collected aspect-square rounded-lg flex items-center justify-center text-sm">☕</div>
+          <div class="stamp collected aspect-square rounded-lg flex items-center justify-center text-sm">☕</div>
+          <div class="stamp collected aspect-square rounded-lg flex items-center justify-center text-sm">☕</div>
+          <div class="stamp collected aspect-square rounded-lg flex items-center justify-center text-sm">☕</div>
+          <div class="aspect-square rounded-lg flex items-center justify-center text-sm bg-slate-100 text-slate-300">?</div>
+          <div class="aspect-square rounded-lg flex items-center justify-center text-sm bg-slate-100 text-slate-300">?</div>
+          <div class="aspect-square rounded-lg flex items-center justify-center text-sm bg-amber-100 text-amber-700 font-bold">🎁</div>
+        </div>
+        <div class="mt-3 text-xs text-emerald-700">Plus que <strong>3 cafés</strong> pour 1 offert ☕</div>
+      </div>
+    </div>
+
+    <!-- PROMO du jour -->
+    <div class="px-5 mb-4">
+      <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">🎉 Promos du jour</h3>
+      <div class="space-y-2">
+        <div class="bg-gradient-to-r from-amber-50 to-orange-100 border border-amber-200 rounded-2xl p-3 flex items-center gap-3">
+          <div class="text-3xl">🎂</div>
+          <div class="flex-1">
+            <div class="font-semibold text-sm">Joyeux anniversaire !</div>
+            <div class="text-xs text-amber-800">Café gratuit aujourd'hui — code AUTO</div>
+          </div>
+          <button class="bg-amber-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">Utiliser</button>
+        </div>
+        <div class="bg-slate-50 rounded-2xl p-3 flex items-center gap-3">
+          <div class="text-3xl">🌞</div>
+          <div class="flex-1">
+            <div class="font-semibold text-sm">Happy Hour Café -20%</div>
+            <div class="text-xs text-slate-500">14h-16h sur 3 machines partenaires</div>
+          </div>
+          <span class="bg-slate-200 text-slate-700 text-[10px] font-semibold px-2 py-1 rounded-full">Auto</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM PADDING -->
+    <div class="pb-24"></div>
+  </div>
+
+  <!-- ============== HISTORY ============== -->
+  <div id="page-history" class="page fade-in">
+    <div class="px-5 pt-6 pb-3 bg-white border-b border-slate-200">
+      <h1 class="text-xl font-bold">Historique</h1>
+      <p class="text-xs text-slate-500">Tes derniers achats &amp; recharges</p>
+    </div>
+    <div class="px-5 py-3 pb-24 space-y-2">
+      <div class="bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3">
+        <div class="w-10 h-10 bg-purple-100 text-purple-700 rounded-full flex items-center justify-center">☕</div>
+        <div class="flex-1">
+          <div class="font-semibold text-sm">Café espresso</div>
+          <div class="text-xs text-slate-500">Café République · ce matin 8:42</div>
+        </div>
+        <div class="text-right">
+          <div class="font-bold text-sm">-1,80€</div>
+          <div class="text-[10px] text-emerald-600">+5 ⭐</div>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3">
+        <div class="w-10 h-10 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center">🥤</div>
+        <div class="flex-1">
+          <div class="font-semibold text-sm">Coca-Cola 33cl</div>
+          <div class="text-xs text-slate-500">Distri Gare Lyon · hier 14:25</div>
+        </div>
+        <div class="text-right">
+          <div class="font-bold text-sm">-2,00€</div>
+          <div class="text-[10px] text-emerald-600">+8 ⭐</div>
+        </div>
+      </div>
+      <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-center gap-3">
+        <div class="w-10 h-10 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center">💳</div>
+        <div class="flex-1">
+          <div class="font-semibold text-sm">Recharge wallet</div>
+          <div class="text-xs text-slate-500">Apple Pay · hier 14:24</div>
+        </div>
+        <div class="text-right">
+          <div class="font-bold text-sm text-emerald-700">+10,00€</div>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3 opacity-70">
+        <div class="w-10 h-10 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center">🍫</div>
+        <div class="flex-1">
+          <div class="font-semibold text-sm">KitKat 4F</div>
+          <div class="text-xs text-slate-500">Distri Gare Lyon · 2 jours</div>
+        </div>
+        <div class="text-right">
+          <div class="font-bold text-sm">-1,80€</div>
+        </div>
+      </div>
+      <div class="bg-pink-50 border border-pink-200 rounded-2xl p-4 flex items-center gap-3">
+        <div class="w-10 h-10 bg-pink-100 text-pink-700 rounded-full flex items-center justify-center">🎁</div>
+        <div class="flex-1">
+          <div class="font-semibold text-sm">Café offert (fidélité)</div>
+          <div class="text-xs text-slate-500">Café République · 4 jours</div>
+        </div>
+        <div class="text-right">
+          <div class="font-bold text-sm text-emerald-700">GRATUIT</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== MAP - find machines ============== -->
+  <div id="page-machines" class="page fade-in">
+    <div class="px-5 pt-6 pb-3 bg-white border-b border-slate-200">
+      <h1 class="text-xl font-bold">Trouver une machine</h1>
+      <input type="text" placeholder="🔍 Recherche par nom ou lieu" class="w-full mt-2 bg-slate-100 rounded-xl px-3 py-2 text-sm" />
+    </div>
+    <div class="px-5 py-3 space-y-2 pb-24">
+      <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-3">
+        <div class="text-xs text-emerald-700 font-semibold">📍 PROCHE DE TOI</div>
+      </div>
+      <div class="bg-white rounded-2xl p-4 shadow-sm">
+        <div class="flex items-center justify-between mb-2">
+          <div>
+            <div class="font-semibold text-sm">☕ Café République</div>
+            <div class="text-xs text-slate-500">120 m · ouvert</div>
+          </div>
+          <span class="bg-emerald-100 text-emerald-700 text-[10px] font-semibold px-2 py-1 rounded-full">⭐ 4,7</span>
+        </div>
+        <div class="flex gap-2 text-[10px]">
+          <span class="bg-slate-100 px-2 py-0.5 rounded">☕ Café</span>
+          <span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded">Carte fidélité 7/10</span>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl p-4 shadow-sm">
+        <div class="flex items-center justify-between mb-2">
+          <div>
+            <div class="font-semibold text-sm">🥤 Distri Gare Lyon</div>
+            <div class="text-xs text-slate-500">540 m · ouvert 24/7</div>
+          </div>
+          <span class="bg-emerald-100 text-emerald-700 text-[10px] font-semibold px-2 py-1 rounded-full">⭐ 4,3</span>
+        </div>
+        <div class="flex gap-2 text-[10px]">
+          <span class="bg-slate-100 px-2 py-0.5 rounded">🥤 Boissons</span>
+          <span class="bg-slate-100 px-2 py-0.5 rounded">🍫 Snacks</span>
+          <span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded">🎉 -20%</span>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl p-4 shadow-sm">
+        <div class="flex items-center justify-between mb-2">
+          <div>
+            <div class="font-semibold text-sm">☕ Café Place Bellecour</div>
+            <div class="text-xs text-slate-500">1,2 km · ouvert</div>
+          </div>
+          <span class="bg-emerald-100 text-emerald-700 text-[10px] font-semibold px-2 py-1 rounded-full">⭐ 4,9</span>
+        </div>
+        <div class="flex gap-2 text-[10px]">
+          <span class="bg-slate-100 px-2 py-0.5 rounded">☕ Café</span>
+          <span class="bg-slate-100 px-2 py-0.5 rounded">🥐 Viennoiseries</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== ACCOUNT ============== -->
+  <div id="page-account" class="page fade-in">
+    <div class="px-5 pt-6 pb-3">
+      <h1 class="text-xl font-bold mb-3">Mon compte</h1>
+
+      <div class="bg-gradient-to-br from-purple-600 to-pink-600 text-white rounded-2xl p-4 mb-3">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-14 h-14 bg-white/20 backdrop-blur rounded-full flex items-center justify-center font-bold text-xl">M</div>
+          <div>
+            <div class="font-bold">Marie L.</div>
+            <div class="text-xs opacity-90">marie@example.com</div>
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-2 text-center text-xs">
+          <div class="bg-white/10 rounded-lg p-2"><div class="opacity-80">Achats</div><div class="font-bold text-lg">87</div></div>
+          <div class="bg-white/10 rounded-lg p-2"><div class="opacity-80">Points</div><div class="font-bold text-lg">847</div></div>
+          <div class="bg-white/10 rounded-lg p-2"><div class="opacity-80">Niveau</div><div class="font-bold text-sm">Gold</div></div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-sm divide-y divide-slate-100 mb-4">
+        <button class="w-full px-4 py-3 flex items-center justify-between text-sm">
+          <span class="flex items-center gap-3"><span>💳</span> Moyens de paiement</span>
+          <span class="text-slate-400">→</span>
+        </button>
+        <button class="w-full px-4 py-3 flex items-center justify-between text-sm">
+          <span class="flex items-center gap-3"><span>🎟️</span> Mes vouchers</span>
+          <span class="text-slate-400">→</span>
+        </button>
+        <button class="w-full px-4 py-3 flex items-center justify-between text-sm">
+          <span class="flex items-center gap-3"><span>🔔</span> Notifications</span>
+          <span class="text-slate-400">→</span>
+        </button>
+        <button class="w-full px-4 py-3 flex items-center justify-between text-sm">
+          <span class="flex items-center gap-3"><span>🌐</span> Langue · Français</span>
+          <span class="text-slate-400">→</span>
+        </button>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-sm divide-y divide-slate-100 mb-4">
+        <button class="w-full px-4 py-3 flex items-center justify-between text-sm">
+          <span class="flex items-center gap-3"><span>❓</span> Aide</span>
+          <span class="text-slate-400">→</span>
+        </button>
+        <button class="w-full px-4 py-3 flex items-center justify-between text-sm">
+          <span class="flex items-center gap-3"><span>📜</span> Conditions</span>
+          <span class="text-slate-400">→</span>
+        </button>
+        <button class="w-full px-4 py-3 flex items-center justify-between text-sm">
+          <span class="flex items-center gap-3"><span>🔒</span> RGPD &amp; données</span>
+          <span class="text-slate-400">→</span>
+        </button>
+      </div>
+
+      <button class="w-full text-red-600 text-sm py-3 pb-24">Se déconnecter</button>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="fixed bottom-0 left-0 right-0 max-w-[440px] mx-auto bg-white border-t border-slate-200 grid grid-cols-4">
+    <button class="tab active py-2 flex flex-col items-center gap-0.5 text-slate-500" data-page="home">
+      <span class="icon">💳</span><span class="text-[10px]">Wallet</span>
+    </button>
+    <button class="tab py-2 flex flex-col items-center gap-0.5 text-slate-500" data-page="machines">
+      <span class="icon">📍</span><span class="text-[10px]">Près de moi</span>
+    </button>
+    <button class="tab py-2 flex flex-col items-center gap-0.5 text-slate-500" data-page="history">
+      <span class="icon">📜</span><span class="text-[10px]">Historique</span>
+    </button>
+    <button class="tab py-2 flex flex-col items-center gap-0.5 text-slate-500" data-page="account">
+      <span class="icon">👤</span><span class="text-[10px]">Compte</span>
+    </button>
+  </nav>
+</div>
+
+<script>
+function goTo(p) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`[data-page="${p}"]`)?.classList.add('active');
+  document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+  document.getElementById('page-' + p).classList.add('active');
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => goTo(t.dataset.page)));
+</script>
+</body>
+</html>

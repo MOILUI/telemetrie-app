@@ -1,0 +1,27 @@
+{
+  "name": "telemetry-backend",
+  "version": "2.0.0",
+  "description": "Backend de télémétrie ESP32 (broker MQTT + API + dashboard temps réel + SaaS Stripe)",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "aedes": "^0.51.0",
+    "better-sqlite3": "^11.3.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "jsonwebtoken": "^9.0.2",
+    "mqtt": "^5.10.1",
+    "nanoid": "^3.3.7",
+    "socket.io": "^4.8.0",
+    "stripe": "^17.4.0"
+  }
+}

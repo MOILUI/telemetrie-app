@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 700" font-family="ui-sans-serif, system-ui, sans-serif">
+<style>
+  .bg{fill:#fafaf9}.title{font-size:22px;font-weight:bold;fill:#0c0a09}
+  .sub{font-size:13px;fill:#57534e}.lbl{font-size:12px;fill:#0c0a09}
+  .pin{font-size:10px;fill:#525252;font-family:monospace}
+  .esp{fill:#dbeafe;stroke:#1e40af;stroke-width:2}.machine{fill:#f5f5f4;stroke:#78716c;stroke-width:2}
+  .sensor{fill:#dcfce7;stroke:#15803d;stroke-width:1.5}
+  .danger{fill:#fee2e2;stroke:#b91c1c;stroke-width:1.5}
+  .w-signal{stroke:#2563eb;stroke-width:1.5;fill:none}
+  .w-power{stroke:#dc2626;stroke-width:1.5;fill:none}
+  .w-gnd{stroke:#1f2937;stroke-width:1.5;fill:none}
+  .note{font-size:11px;fill:#0c0a09}.badge{font-size:10px;fill:white;font-weight:bold}
+</style>
+<rect class="bg" width="1100" height="700"/>
+<text x="550" y="32" class="title" text-anchor="middle">☕ Raccordement — Cafetière espresso pro</text>
+<text x="550" y="52" class="sub" text-anchor="middle">Ex: La Marzocco, Eversys, WMF, Saeco Aulika · Méthodes non-invasives uniquement</text>
+
+<!-- Machine -->
+<g transform="translate(620,90)">
+  <rect class="machine" width="400" height="520" rx="8"/>
+  <text x="200" y="28" class="lbl" text-anchor="middle" font-weight="bold">CAFETIÈRE ESPRESSO</text>
+  <!-- LED bouton -->
+  <circle cx="80" cy="100" r="14" fill="#fbbf24"/>
+  <circle cx="80" cy="100" r="6" fill="#f59e0b"/>
+  <text x="80" y="140" class="note" text-anchor="middle">LED bouton "café"</text>
+  <text x="80" y="155" class="note" text-anchor="middle">(s'allume à chaque shot)</text>
+  <!-- Chaudière -->
+  <rect x="180" y="80" width="120" height="80" fill="#a3a3a3" rx="6"/>
+  <text x="240" y="110" class="note" text-anchor="middle" fill="white">CHAUDIÈRE</text>
+  <text x="240" y="128" class="note" text-anchor="middle" fill="white">~92°C</text>
+  <text x="240" y="180" class="note" text-anchor="middle">Métal externe accessible</text>
+  <!-- Porte -->
+  <rect x="80" y="320" width="240" height="100" fill="#d6d3d1" rx="4"/>
+  <text x="200" y="375" class="note" text-anchor="middle">Trappe d'accès marc à café</text>
+  <text x="200" y="395" class="note" text-anchor="middle">(détection ouverture)</text>
+  <!-- Reservoir grain -->
+  <rect x="320" y="200" width="60" height="100" fill="#92400e" rx="4"/>
+  <text x="350" y="248" class="note" text-anchor="middle" fill="white">Trémie</text>
+  <text x="350" y="262" class="note" text-anchor="middle" fill="white">grains</text>
+  <!-- Tableau prise 230V -->
+  <rect x="80" y="450" width="100" height="40" fill="#22c55e" rx="4"/>
+  <text x="130" y="475" class="note" text-anchor="middle" fill="white">Alim 230V</text>
+</g>
+
+<!-- ESP32 + PCB -->
+<g transform="translate(60,90)">
+  <rect class="esp" width="240" height="240" rx="8"/>
+  <text x="120" y="28" class="lbl" text-anchor="middle" font-weight="bold">ESP32 + PCB Télémétrie</text>
+  <text x="120" y="48" class="sub" text-anchor="middle">LilyGO T-SIM7600E + shield</text>
+  <!-- pins/borniers visibles -->
+  <rect x="20" y="70" width="200" height="160" fill="#1e293b" rx="4"/>
+  <text x="120" y="95" class="badge" text-anchor="middle">BORNIERS À VIS</text>
+  <text x="35" y="115" class="pin" fill="#fbbf24">IN1</text>
+  <text x="35" y="135" class="pin" fill="#fbbf24">IN2</text>
+  <text x="35" y="155" class="pin" fill="#fbbf24">PULSE</text>
+  <text x="35" y="175" class="pin" fill="#fbbf24">T1 (1-wire)</text>
+  <text x="35" y="195" class="pin" fill="#fbbf24">K1 (relais)</text>
+  <text x="35" y="215" class="pin" fill="#fbbf24">3.3V / GND</text>
+  <text x="180" y="115" class="pin" fill="white" text-anchor="end">→ Compteur tasses</text>
+  <text x="180" y="135" class="pin" fill="white" text-anchor="end">→ Porte ouverte</text>
+  <text x="180" y="155" class="pin" fill="white" text-anchor="end">→ Débitmètre opt.</text>
+  <text x="180" y="175" class="pin" fill="white" text-anchor="end">→ T° chaudière</text>
+  <text x="180" y="195" class="pin" fill="white" text-anchor="end">→ Reboot remote</text>
+  <text x="180" y="215" class="pin" fill="white" text-anchor="end">→ Alim capteurs</text>
+  <!-- Antenne -->
+  <line x1="120" y1="240" x2="120" y2="260" stroke="#0f172a" stroke-width="2"/>
+  <circle cx="120" cy="265" r="4" fill="#0f172a"/>
+  <text x="120" y="285" class="note" text-anchor="middle">📶 Antenne 4G</text>
+</g>
+
+<!-- Capteurs (au milieu, légendés) -->
+<g transform="translate(330,90)">
+  <!-- LDR -->
+  <rect class="sensor" width="260" height="55" rx="6"/>
+  <text x="10" y="20" class="lbl" font-weight="bold">① Photorésistance (LDR)</text>
+  <text x="10" y="38" class="note">Collée devant LED bouton avec adhésif noir opaque</text>
+  <text x="10" y="50" class="note">→ Compte chaque tasse servie</text>
+
+  <rect class="sensor" y="70" width="260" height="55" rx="6"/>
+  <text x="10" y="90" class="lbl" font-weight="bold">② Sonde DS18B20 inox</text>
+  <text x="10" y="108" class="note">Collée sur corps métal chaudière + pâte thermique</text>
+  <text x="10" y="120" class="note">→ Surveillance T° (alerte si dérive)</text>
+
+  <rect class="sensor" y="140" width="260" height="55" rx="6"/>
+  <text x="10" y="160" class="lbl" font-weight="bold">③ Reed switch + aimant</text>
+  <text x="10" y="178" class="note">Aimant sur trappe, reed sur châssis (collés)</text>
+  <text x="10" y="190" class="note">→ Détection ouverture (anti-vol, vidange marc)</text>
+
+  <rect class="sensor" y="210" width="260" height="55" rx="6"/>
+  <text x="10" y="230" class="lbl" font-weight="bold">④ Relais (optionnel)</text>
+  <text x="10" y="248" class="note">Sur ligne 230V via prise intermédiaire</text>
+  <text x="10" y="260" class="note">→ Reboot machine à distance</text>
+
+  <rect class="danger" y="280" width="260" height="50" rx="6"/>
+  <text x="10" y="300" class="lbl" font-weight="bold">⚠️ Sécurité</text>
+  <text x="10" y="316" class="note">Ne JAMAIS toucher au câblage interne 230V</text>
+  <text x="10" y="328" class="note">de la machine. Tous capteurs externes seulement.</text>
+</g>
+
+<!-- Wires (signal lines) -->
+<!-- LDR vers IN1 -->
+<path class="w-signal" d="M 700 200 Q 480 180 300 165"/>
+<text x="480" y="172" class="note">①</text>
+<!-- DS18B20 vers T1 -->
+<path class="w-signal" d="M 800 170 Q 480 210 300 205"/>
+<text x="480" y="200" class="note">②</text>
+<!-- Reed vers IN2 -->
+<path class="w-signal" d="M 800 410 Q 480 340 300 145"/>
+<text x="480" y="315" class="note">③</text>
+<!-- Relais -->
+<path class="w-power" d="M 680 540 Q 470 480 300 225"/>
+<text x="470" y="480" class="note" fill="#dc2626">④</text>
+
+<!-- Wiring legend + commands -->
+<g transform="translate(60,360)">
+  <rect fill="white" stroke="#d6d3d1" width="1000" height="320" rx="6"/>
+  <text x="20" y="30" class="lbl" font-weight="bold">📋 Liste des courses (cafetière espresso)</text>
+
+  <text x="20" y="60" class="lbl">• 1× ESP32 LilyGO T-SIM7600E (50€)</text>
+  <text x="20" y="80" class="lbl">• 1× PCB Télémétrie ou plaque proto (10€)</text>
+  <text x="20" y="100" class="lbl">• 1× Photorésistance LDR + résistance 10kΩ (1€)</text>
+  <text x="20" y="120" class="lbl">• 1× Sonde DS18B20 inox étanche (3€)</text>
+  <text x="20" y="140" class="lbl">• 1× Reed switch + aimant néodyme (3€)</text>
+  <text x="20" y="160" class="lbl">• 1× Module relais 5V isolé (4€)</text>
+  <text x="20" y="180" class="lbl">• 1× Carte SIM 4G data (1NCE 10€ pour 10 ans)</text>
+  <text x="20" y="200" class="lbl">• 1× Boîtier IP65 + entretoises + serre-câbles (8€)</text>
+  <text x="20" y="220" class="lbl">• Adhésif double-face 3M + gaine thermo + dominos</text>
+  <text x="20" y="248" class="lbl" font-weight="bold">TOTAL : ~90€ HT</text>
+  <text x="20" y="268" class="note">Installation par technicien : 45 min sans aucun perçage</text>
+
+  <text x="540" y="60" class="lbl" font-weight="bold">📊 Métriques remontées</text>
+  <text x="540" y="85" class="lbl">• Nombre de tasses servies / jour / heure</text>
+  <text x="540" y="105" class="lbl">• Température chaudière (alerte si &gt; 95°C)</text>
+  <text x="540" y="125" class="lbl">• Trappe ouverte (alerte anti-vol)</text>
+  <text x="540" y="145" class="lbl">• Heures de pic d'utilisation</text>
+  <text x="540" y="165" class="lbl">• Tendances semaine/mois</text>
+  <text x="540" y="185" class="lbl">• Détartrage suggéré (~2000 tasses)</text>
+  <text x="540" y="205" class="lbl">• Estimation chiffre d'affaires généré</text>
+
+  <text x="540" y="240" class="lbl" font-weight="bold">🎯 Commandes à distance</text>
+  <text x="540" y="260" class="lbl">• Reboot machine (via relais)</text>
+  <text x="540" y="280" class="lbl">• Reset compteur de tasses</text>
+  <text x="540" y="300" class="lbl">• Test ping (vérifier connexion)</text>
+</g>
+</svg>

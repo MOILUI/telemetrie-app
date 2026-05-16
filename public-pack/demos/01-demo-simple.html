@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Démo Télémétrie — Aperçu interactif</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+  body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .pulse-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .online  { background: #10b981; animation: pulse 2s infinite; }
+  .offline { background: #9ca3af; }
+  .stale   { background: #f59e0b; }
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(16,185,129,0.6); }
+    70%  { box-shadow: 0 0 0 10px rgba(16,185,129,0); }
+    100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+  }
+</style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800">
+
+<!-- Banner démo -->
+<div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm py-2 px-4 text-center">
+  🚀 <strong>Mode démo</strong> — données simulées dans le navigateur. Tu vois le produit final tel quel.
+</div>
+
+<!-- Header -->
+<header class="bg-white border-b border-slate-200 sticky top-0 z-10">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="text-2xl">📡</div>
+      <div>
+        <div class="font-bold">Télémétrie</div>
+        <div class="text-xs text-emerald-600">🟢 En ligne (démo)</div>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <button class="px-3 py-1.5 text-sm bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-200">
+        💳 Plan Pro <span id="planCount">(3/20)</span>
+      </button>
+      <button id="alertsBtn" class="relative px-3 py-1.5 text-sm bg-slate-100 hover:bg-slate-200 rounded-lg">
+        🔔 Alertes <span id="alertCount" class="hidden ml-1 inline-flex items-center justify-center w-5 h-5 text-xs bg-red-500 text-white rounded-full">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+
+  <!-- KPIs -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
+      <div class="text-xs text-slate-500 uppercase">Machines</div>
+      <div class="text-2xl font-bold" id="kpiTotal">0</div>
+    </div>
+    <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
+      <div class="text-xs text-slate-500 uppercase">En ligne</div>
+      <div class="text-2xl font-bold text-emerald-600" id="kpiOnline">0</div>
+    </div>
+    <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
+      <div class="text-xs text-slate-500 uppercase">Ventes / tasses (jour)</div>
+      <div class="text-2xl font-bold text-blue-600" id="kpiSales">0</div>
+    </div>
+    <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
+      <div class="text-xs text-slate-500 uppercase">Alertes actives</div>
+      <div class="text-2xl font-bold text-red-600" id="kpiAlerts">0</div>
+    </div>
+  </div>
+
+  <!-- Devices grid -->
+  <section>
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-lg font-bold">Mes machines</h2>
+      <div class="text-xs text-slate-500">Mise à jour : <span id="lastUpdate">—</span></div>
+    </div>
+    <div id="devicesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+  </section>
+</main>
+
+<!-- DETAIL MODAL -->
+<div id="detailModal" class="hidden fixed inset-0 bg-black/50 z-20 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+    <div class="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+      <div>
+        <h3 class="text-lg font-bold" id="dmName">—</h3>
+        <p class="text-sm text-slate-500" id="dmMeta">—</p>
+      </div>
+      <button id="dmClose" class="text-slate-400 hover:text-slate-600 text-2xl">×</button>
+    </div>
+    <div class="p-6 space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="dmMetrics"></div>
+      <div>
+        <h4 class="font-semibold mb-2">Historique (60 derniers points)</h4>
+        <select id="dmMetricSelect" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm mb-2"></select>
+        <div class="bg-slate-50 rounded-xl p-4">
+          <canvas id="dmChart" height="120"></canvas>
+        </div>
+      </div>
+      <div>
+        <h4 class="font-semibold mb-2">Évènements récents</h4>
+        <div id="dmEvents" class="space-y-2 max-h-48 overflow-y-auto"></div>
+      </div>
+      <div>
+        <h4 class="font-semibold mb-2">Commande à distance</h4>
+        <div class="flex gap-2 flex-wrap">
+          <button data-cmd="ping" class="cmd bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg text-sm">📡 Ping</button>
+          <button data-cmd="reboot" class="cmd bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg text-sm">🔄 Redémarrer</button>
+          <button data-cmd="reset_counter" class="cmd bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg text-sm">🔢 Reset compteur</button>
+          <button data-cmd="relay" class="cmd bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg text-sm">⚡ Toggle relais</button>
+        </div>
+        <div id="dmCmdResult" class="hidden mt-2 text-sm bg-emerald-50 text-emerald-800 rounded-lg p-2"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ALERTS DRAWER -->
+<div id="alertsDrawer" class="hidden fixed top-0 right-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-30 overflow-y-auto">
+  <div class="sticky top-0 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+    <h3 class="font-bold">🔔 Alertes</h3>
+    <button id="alertsClose" class="text-slate-400 hover:text-slate-600 text-2xl">×</button>
+  </div>
+  <div id="alertsList" class="divide-y divide-slate-200"></div>
+</div>
+
+<script>
+// ============== DONNÉES SIMULÉES ==============
+const machines = [
+  {
+    id: 'cafe-paris-01', name: '☕ Cafetière Place République', type: 'espresso',
+    location: 'Paris 11e', status: 'online',
+    state: { tasses: 142, temp_chaudiere: 92, pression_bar: 9.0, eau_litres: 3.2, grains_pct: 78 },
+    history: [], events: [],
+    tick() {
+      if (Math.random() < 0.35) this.state.tasses++;
+      this.state.temp_chaudiere = r1(91 + Math.random() * 2);
+      this.state.pression_bar = r1(8.5 + Math.random());
+      this.state.eau_litres = r1(Math.max(0.2, this.state.eau_litres - 0.01));
+      if (Math.random() < 0.5) this.state.grains_pct = Math.max(0, this.state.grains_pct - 0.5);
+      if (this.state.grains_pct < 15 && !this._a1) {
+        this._a1 = true;
+        addAlert(this, 'error', 'Niveau de grains critique', 'no_beans');
+      }
+      if (this.state.eau_litres < 0.5 && !this._a2) {
+        this._a2 = true;
+        addAlert(this, 'warn', 'Niveau d\'eau bas', 'low_water');
+      }
+    },
+  },
+  {
+    id: 'vending-lyon-12', name: '🥤 Distributeur Gare Lyon', type: 'distributeur',
+    location: 'Lyon Part-Dieu', status: 'online',
+    state: { ventes_jour: 23, revenus_eur: 32.5, temp_frigo: 4, stock_pct: 64 },
+    history: [], events: [],
+    tick() {
+      if (Math.random() < 0.25) {
+        this.state.ventes_jour++;
+        this.state.revenus_eur = r1(this.state.revenus_eur + 1.5);
+        this.state.stock_pct = Math.max(0, this.state.stock_pct - 1);
+      }
+      this.state.temp_frigo = r1(3 + Math.random() * 2);
+      if (this.state.stock_pct < 20 && !this._a1) {
+        this._a1 = true;
+        addAlert(this, 'warn', 'Stock < 20%, prévoir réassort', 'low_stock');
+      }
+      if (Math.random() < 0.005 && !this._a2) {
+        this._a2 = true;
+        this.state.temp_frigo = 12;
+        addAlert(this, 'error', 'Température frigo trop élevée : 12°C', 'temp_high');
+      }
+    },
+  },
+  {
+    id: 'frigo-marseille-03', name: '🧊 Frigo pro Restaurant Le Phare', type: 'frigo',
+    location: 'Marseille Vieux-Port', status: 'online',
+    state: { temp_c: 3.5, porte_ouverte: false, cycles_jour: 12 },
+    history: [], events: [],
+    tick() {
+      this.state.temp_c = r1(2.5 + Math.random() * 1.5);
+      if (Math.random() < 0.05) {
+        this.state.porte_ouverte = !this.state.porte_ouverte;
+        if (this.state.porte_ouverte) addAlert(this, 'info', 'Porte ouverte', 'door_open');
+      }
+      if (Math.random() < 0.1) this.state.cycles_jour++;
+    },
+  },
+];
+
+function r1(n) { return Math.round(n * 10) / 10; }
+
+let alertSeq = 1;
+const allAlerts = [];
+function addAlert(m, level, message, code) {
+  const a = { id: alertSeq++, device_id: m.id, device_name: m.name, level, message, code, ts: Date.now(), acked: false };
+  allAlerts.unshift(a);
+  m.events.unshift(a);
+  renderKpis();
+  renderAlerts();
+}
+
+// ============== RENDU ==============
+function statusClass(m) { return m.status; }
+
+function renderDevices() {
+  const grid = document.getElementById('devicesGrid');
+  grid.innerHTML = machines.map(m => {
+    const metrics = Object.entries(m.state).slice(0, 4);
+    return `
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200 hover:shadow-md transition cursor-pointer" data-id="${m.id}">
+        <div class="flex items-start justify-between mb-2">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="pulse-dot ${statusClass(m)}"></span>
+              <h3 class="font-semibold text-sm">${m.name}</h3>
+            </div>
+            <div class="text-xs text-slate-500 mt-0.5">${m.location}</div>
+          </div>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">${m.type}</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2 mt-3">
+          ${metrics.map(([k, v]) => `
+            <div class="bg-slate-50 rounded-lg px-2 py-1">
+              <div class="text-[10px] text-slate-500 uppercase truncate">${k}</div>
+              <div class="font-semibold text-sm">${typeof v === 'boolean' ? (v ? '✓' : '✗') : v}</div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="text-xs text-emerald-600 mt-3">Vu à l'instant</div>
+      </div>
+    `;
+  }).join('');
+  grid.querySelectorAll('[data-id]').forEach(c => c.addEventListener('click', () => openDetail(c.dataset.id)));
+}
+
+function renderKpis() {
+  document.getElementById('kpiTotal').textContent = machines.length;
+  document.getElementById('kpiOnline').textContent = machines.filter(m => m.status === 'online').length;
+  const sales = machines.reduce((s, m) => s + (m.state.tasses || m.state.ventes_jour || 0), 0);
+  document.getElementById('kpiSales').textContent = sales;
+  const active = allAlerts.filter(a => !a.acked);
+  document.getElementById('kpiAlerts').textContent = active.length;
+  const badge = document.getElementById('alertCount');
+  if (active.length > 0) { badge.textContent = active.length; badge.classList.remove('hidden'); }
+  else { badge.classList.add('hidden'); }
+}
+
+function renderAlerts() {
+  const el = document.getElementById('alertsList');
+  const active = allAlerts;
+  if (active.length === 0) {
+    el.innerHTML = '<div class="p-6 text-center text-sm text-slate-500">Aucune alerte.</div>';
+    return;
+  }
+  el.innerHTML = active.map(a => {
+    const color = a.level === 'error' ? 'border-l-red-500' : a.level === 'warn' ? 'border-l-amber-500' : 'border-l-slate-400';
+    return `
+      <div class="p-4 border-l-4 ${color} ${a.acked ? 'opacity-50' : ''}">
+        <div class="flex items-start justify-between">
+          <div>
+            <div class="font-semibold text-sm">${a.device_name}</div>
+            <div class="text-xs text-slate-500">${a.code} • ${new Date(a.ts).toLocaleTimeString('fr-FR')}</div>
+            <div class="text-sm mt-1">${a.message}</div>
+          </div>
+          ${!a.acked ? `<button class="text-xs text-slate-500 hover:text-slate-900 ml-2" data-ack="${a.id}">Acquitter</button>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+  el.querySelectorAll('[data-ack]').forEach(b => {
+    b.addEventListener('click', () => {
+      const a = allAlerts.find(x => x.id == b.dataset.ack);
+      if (a) a.acked = true;
+      renderAlerts(); renderKpis();
+    });
+  });
+}
+
+let currentMachine = null;
+let chart = null;
+
+function openDetail(id) {
+  const m = machines.find(x => x.id === id);
+  if (!m) return;
+  currentMachine = m;
+  document.getElementById('dmName').textContent = m.name;
+  document.getElementById('dmMeta').textContent = `${m.type} • ${m.location}`;
+
+  const mc = document.getElementById('dmMetrics');
+  mc.innerHTML = Object.entries(m.state).map(([k, v]) => `
+    <div class="bg-slate-50 rounded-xl p-3">
+      <div class="text-[10px] text-slate-500 uppercase">${k}</div>
+      <div class="text-xl font-bold mt-1">${typeof v === 'boolean' ? (v ? '✓' : '✗') : v}</div>
+    </div>
+  `).join('');
+
+  const numericKeys = Object.keys(m.state).filter(k => typeof m.state[k] === 'number');
+  const sel = document.getElementById('dmMetricSelect');
+  sel.innerHTML = numericKeys.map(k => `<option value="${k}">${k}</option>`).join('');
+  if (numericKeys.length) drawChart(numericKeys[0]);
+  sel.onchange = () => drawChart(sel.value);
+
+  const ev = document.getElementById('dmEvents');
+  if (m.events.length === 0) ev.innerHTML = '<div class="text-sm text-slate-500">Aucun évènement récent.</div>';
+  else ev.innerHTML = m.events.slice(0, 10).map(e => {
+    const color = e.level === 'error' ? 'bg-red-50 text-red-700 border-red-200'
+                : e.level === 'warn'  ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                      : 'bg-slate-50 text-slate-700 border-slate-200';
+    return `<div class="border ${color} rounded-lg px-3 py-2 text-sm">
+      <div class="flex justify-between text-xs text-slate-500"><span>${e.code}</span><span>${new Date(e.ts).toLocaleTimeString('fr-FR')}</span></div>
+      <div>${e.message}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('detailModal').classList.remove('hidden');
+}
+
+function drawChart(metric) {
+  if (!currentMachine) return;
+  const points = currentMachine.history.slice(-60);
+  const labels = points.map(p => new Date(p.ts).toLocaleTimeString('fr-FR'));
+  const data = points.map(p => p[metric]);
+  if (chart) chart.destroy();
+  const ctx = document.getElementById('dmChart').getContext('2d');
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets: [{ label: metric, data, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.1)', fill: true, tension: 0.25, pointRadius: 0 }] },
+    options: { responsive: true, scales: { x: { ticks: { maxTicksLimit: 6 } } } },
+  });
+}
+
+// Commandes
+document.querySelectorAll('.cmd').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (!currentMachine) return;
+    const cmd = btn.dataset.cmd;
+    const res = document.getElementById('dmCmdResult');
+    let msg = '';
+    if (cmd === 'ping') msg = '↩️ Pong reçu en 142ms';
+    else if (cmd === 'reboot') { msg = '✅ Machine redémarrée'; if (currentMachine.state.tasses != null) currentMachine.state.tasses = 0; }
+    else if (cmd === 'reset_counter') { msg = '✅ Compteur remis à zéro'; if (currentMachine.state.tasses != null) currentMachine.state.tasses = 0; if (currentMachine.state.ventes_jour != null) currentMachine.state.ventes_jour = 0; }
+    else if (cmd === 'relay') msg = '✅ Relais basculé';
+    res.textContent = msg;
+    res.classList.remove('hidden');
+    renderDevices();
+    setTimeout(() => res.classList.add('hidden'), 3000);
+  });
+});
+
+// Drawer alertes
+document.getElementById('alertsBtn').addEventListener('click', () => document.getElementById('alertsDrawer').classList.remove('hidden'));
+document.getElementById('alertsClose').addEventListener('click', () => document.getElementById('alertsDrawer').classList.add('hidden'));
+document.getElementById('dmClose').addEventListener('click', () => document.getElementById('detailModal').classList.add('hidden'));
+
+// ============== BOUCLE SIMULATION ==============
+function tick() {
+  for (const m of machines) {
+    m.tick();
+    const point = { ts: Date.now(), ...m.state };
+    m.history.push(point);
+    if (m.history.length > 200) m.history.shift();
+  }
+  renderDevices();
+  renderKpis();
+  document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('fr-FR');
+  // Si modal ouvert, mettre à jour
+  if (currentMachine && !document.getElementById('detailModal').classList.contains('hidden')) {
+    const sel = document.getElementById('dmMetricSelect');
+    if (sel && sel.value) drawChart(sel.value);
+  }
+}
+
+// Premier tick
+for (const m of machines) {
+  for (let i = 0; i < 30; i++) {
+    m.tick();
+    m.history.push({ ts: Date.now() - (30 - i) * 5000, ...m.state });
+  }
+}
+
+// Évènements initiaux
+addAlert(machines[1], 'info', 'Machine démarrée', 'boot');
+
+// Boucle
+renderDevices();
+renderKpis();
+renderAlerts();
+setInterval(tick, 2000);
+</script>
+</body>
+</html>

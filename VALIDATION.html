@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🔬 Plan de validation réaliste — Phase par phase</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+  .phase-card { transition: all 0.2s; }
+  .gate { position: relative; }
+  .gate::before {
+    content: '🚪'; position: absolute; left: -2.5rem; top: 1rem; font-size: 1.5rem;
+  }
+  .check-item.done { background: #f0fdf4; }
+  .check-item.done .item-text { text-decoration: line-through; color: #6b7280; }
+  .progress-bar { transition: width 0.4s; }
+  .blocked { opacity: 0.5; pointer-events: none; }
+</style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+<!-- ============== HEADER ============== -->
+<header class="bg-white border-b border-slate-200 sticky top-0 z-10">
+  <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <a href="INDEX.html" class="text-slate-500 hover:text-slate-900">←</a>
+      <div>
+        <h1 class="font-bold">🔬 Plan de validation réaliste</h1>
+        <p class="text-xs text-slate-500">4 phases avec gates · ne passe pas à la suivante sans valider</p>
+      </div>
+    </div>
+    <button onclick="resetProgress()" class="text-xs text-slate-400 hover:text-red-600">↺ reset</button>
+  </div>
+</header>
+
+<main class="max-w-5xl mx-auto px-4 py-6 space-y-6">
+
+  <!-- ============== INTRO RÉALITÉ ============== -->
+  <section class="bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-3xl p-8 shadow-xl">
+    <h2 class="text-2xl md:text-3xl font-bold mb-3">📌 Reality check</h2>
+    <p class="text-orange-50 mb-4">Tu as raison de remettre les pieds sur terre. Voici la vérité :</p>
+    <div class="grid md:grid-cols-2 gap-4 text-sm">
+      <div class="bg-white/15 backdrop-blur rounded-xl p-4">
+        <div class="font-bold mb-2">❌ Ce qu'il NE FAUT PAS faire</div>
+        <ul class="space-y-1 text-orange-100">
+          <li>• Prospecter avant d'avoir testé en conditions réelles</li>
+          <li>• Vendre un produit qui n'a jamais tourné 24/7</li>
+          <li>• Promettre du SLA sans avoir mesuré</li>
+          <li>• Faire des ads avant le 1er pilote validé</li>
+          <li>• Recruter avant 10 clients réguliers</li>
+        </ul>
+      </div>
+      <div class="bg-white/15 backdrop-blur rounded-xl p-4">
+        <div class="font-bold mb-2">✅ Ce qu'il faut faire</div>
+        <ul class="space-y-1 text-orange-100">
+          <li>• POC chez toi pendant 4 semaines minimum</li>
+          <li>• Beta gratuite avec 2-3 connaissances</li>
+          <li>• 5 pilotes payants à tarif réduit</li>
+          <li>• Itérer le produit avec leurs retours</li>
+          <li>• <strong>ALORS</strong> seulement, prospecter</li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-4 text-xs text-orange-100">
+      💡 Tous les SaaS hardware sérieux (Trackmate, Sigfox, Nayax au début) ont fait ça. 6 mois de validation = 5 ans de marché à conquérir derrière.
+    </div>
+  </section>
+
+  <!-- ============== TIMELINE GLOBALE ============== -->
+  <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+    <h2 class="text-xl font-bold mb-4">🗺️ Vue d'ensemble — 4 phases sur ~6 mois</h2>
+    <div class="grid grid-cols-4 gap-3 text-center">
+      <div class="bg-blue-50 border-2 border-blue-300 rounded-xl p-4">
+        <div class="text-3xl mb-1">🔬</div>
+        <div class="font-bold text-sm">Phase A</div>
+        <div class="text-xs text-slate-600 mt-1">POC chez toi</div>
+        <div class="text-xs text-blue-600 mt-2 font-semibold">4 semaines</div>
+        <div class="text-[10px] text-slate-500">~150€</div>
+      </div>
+      <div class="bg-purple-50 border-2 border-purple-300 rounded-xl p-4">
+        <div class="text-3xl mb-1">👥</div>
+        <div class="font-bold text-sm">Phase B</div>
+        <div class="text-xs text-slate-600 mt-1">Beta gratuite</div>
+        <div class="text-xs text-purple-600 mt-2 font-semibold">4 semaines</div>
+        <div class="text-[10px] text-slate-500">~400€</div>
+      </div>
+      <div class="bg-emerald-50 border-2 border-emerald-300 rounded-xl p-4">
+        <div class="text-3xl mb-1">💰</div>
+        <div class="font-bold text-sm">Phase C</div>
+        <div class="text-xs text-slate-600 mt-1">Pilotes payants</div>
+        <div class="text-xs text-emerald-600 mt-2 font-semibold">8 semaines</div>
+        <div class="text-[10px] text-slate-500">~1500€ (rentre)</div>
+      </div>
+      <div class="bg-pink-50 border-2 border-pink-300 rounded-xl p-4">
+        <div class="text-3xl mb-1">🚀</div>
+        <div class="font-bold text-sm">Phase D</div>
+        <div class="text-xs text-slate-600 mt-1">Lancement public</div>
+        <div class="text-xs text-pink-600 mt-2 font-semibold">continu</div>
+        <div class="text-[10px] text-slate-500">budget marketing</div>
+      </div>
+    </div>
+    <div class="mt-4 text-xs text-slate-600">
+      ⚠️ Tu peux <strong>échouer un gate</strong> et devoir revenir en arrière. Mieux vaut perdre 2 semaines à corriger que perdre 100 clients à cause d'un bug.
+    </div>
+  </section>
+
+  <!-- ============== PHASE A — POC ============== -->
+  <section class="phase-card bg-white rounded-2xl border-2 border-blue-300 shadow-md overflow-hidden">
+    <div class="bg-blue-600 text-white px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-xs uppercase tracking-widest opacity-80">Phase A · semaines 1-4</div>
+          <h2 class="text-2xl font-bold mt-1">🔬 POC — Tout marche chez toi</h2>
+        </div>
+        <div class="text-right">
+          <div class="text-xs opacity-80">Budget</div>
+          <div class="text-2xl font-bold">~150€</div>
+        </div>
+      </div>
+      <p class="text-blue-100 text-sm mt-2">Objectif : 1 machine de test (cafetière, frigo, distributeur) chez toi qui envoie des données pendant <strong>30 jours sans coupure</strong>.</p>
+    </div>
+
+    <div class="p-6 space-y-3">
+      <h3 class="font-semibold text-sm text-slate-600 uppercase tracking-wider mb-2">Étapes à valider</h3>
+      <div id="phase-a" class="space-y-2"></div>
+
+      <div class="gate bg-blue-50 border-l-4 border-blue-600 rounded-r-lg p-4 mt-4 ml-10">
+        <div class="font-bold text-blue-900 mb-2">🚪 GATE A — Critères de passage à la phase B</div>
+        <ul class="text-sm text-blue-800 space-y-1">
+          <li>✓ ESP32 a tenu 30 jours consécutifs sans crash ni reboot</li>
+          <li>✓ Aucune perte de données > 1 heure</li>
+          <li>✓ Toutes les alertes ont fonctionné (test manuel : coupe l'alim → tu reçois SMS/email)</li>
+          <li>✓ Tu as identifié 2-3 personnes à qui demander pour la beta</li>
+          <li>✓ Backend tourne sur Hetzner avec HTTPS et backups testés</li>
+        </ul>
+        <div class="mt-3 text-xs text-blue-700">
+          💡 <strong>Si un critère échoue :</strong> reste en phase A et corrige. C'est normal d'y passer 6-8 semaines au lieu de 4.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== PHASE B — BETA ============== -->
+  <section class="phase-card bg-white rounded-2xl border-2 border-purple-300 shadow-md overflow-hidden">
+    <div class="bg-purple-600 text-white px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-xs uppercase tracking-widest opacity-80">Phase B · semaines 5-8</div>
+          <h2 class="text-2xl font-bold mt-1">👥 Beta privée gratuite</h2>
+        </div>
+        <div class="text-right">
+          <div class="text-xs opacity-80">Budget</div>
+          <div class="text-2xl font-bold">~400€</div>
+        </div>
+      </div>
+      <p class="text-purple-100 text-sm mt-2">Objectif : 2-3 béta-testeurs (idéalement des amis pros) avec leurs <strong>vraies machines</strong>. Gratuit pour eux, mais ils s'engagent à donner des retours détaillés.</p>
+    </div>
+
+    <div class="p-6 space-y-3">
+      <h3 class="font-semibold text-sm text-slate-600 uppercase tracking-wider mb-2">Étapes à valider</h3>
+      <div id="phase-b" class="space-y-2"></div>
+
+      <div class="gate bg-purple-50 border-l-4 border-purple-600 rounded-r-lg p-4 mt-4 ml-10">
+        <div class="font-bold text-purple-900 mb-2">🚪 GATE B — Critères de passage à la phase C</div>
+        <ul class="text-sm text-purple-800 space-y-1">
+          <li>✓ Au moins <strong>2 béta-testeurs sur 3</strong> disent "oui je paierais 49€/mois pour ça"</li>
+          <li>✓ Tu as un témoignage écrit ou vidéo de chacun</li>
+          <li>✓ Les 3 problèmes les plus signalés sont <strong>corrigés</strong>, pas juste notés</li>
+          <li>✓ Tu sais combien de temps prend une install moyenne (= ton coût SAV)</li>
+          <li>✓ Un béta-testeur t'a recommandé à un de ses contacts</li>
+        </ul>
+        <div class="mt-3 text-xs text-purple-700">
+          💡 <strong>Si moins de 2/3 disent oui :</strong> il y a un vrai problème produit. Pivot ou corrige en profondeur avant la phase C.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== PHASE C — PILOTES PAYANTS ============== -->
+  <section class="phase-card bg-white rounded-2xl border-2 border-emerald-300 shadow-md overflow-hidden">
+    <div class="bg-emerald-600 text-white px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-xs uppercase tracking-widest opacity-80">Phase C · semaines 9-16</div>
+          <h2 class="text-2xl font-bold mt-1">💰 Pilotes payants (5 premiers clients)</h2>
+        </div>
+        <div class="text-right">
+          <div class="text-xs opacity-80">Budget</div>
+          <div class="text-2xl font-bold">~1 500€</div>
+        </div>
+      </div>
+      <p class="text-emerald-100 text-sm mt-2">Objectif : <strong>5 vrais clients qui payent</strong>, même à tarif réduit (29€ au lieu de 49€). Validation de la promesse commerciale avant de l'industrialiser.</p>
+    </div>
+
+    <div class="p-6 space-y-3">
+      <h3 class="font-semibold text-sm text-slate-600 uppercase tracking-wider mb-2">Étapes à valider</h3>
+      <div id="phase-c" class="space-y-2"></div>
+
+      <div class="gate bg-emerald-50 border-l-4 border-emerald-600 rounded-r-lg p-4 mt-4 ml-10">
+        <div class="font-bold text-emerald-900 mb-2">🚪 GATE C — Critères de passage à la phase D (lancement public)</div>
+        <ul class="text-sm text-emerald-800 space-y-1">
+          <li>✓ <strong>5 clients payants actifs</strong> depuis au moins 30 jours</li>
+          <li>✓ MRR ≥ 150€/mois (5 × 30€ minimum)</li>
+          <li>✓ <strong>0 demande de remboursement</strong> les 30 premiers jours</li>
+          <li>✓ Au moins <strong>1 client recommande spontanément</strong> à un contact</li>
+          <li>✓ Tu sais en combien de temps tu peux installer un client (= ton coût en heure × ton tarif)</li>
+          <li>✓ <strong>3 témoignages</strong> écrits ou vidéo disponibles pour le site web</li>
+        </ul>
+        <div class="mt-3 text-xs text-emerald-700">
+          💡 <strong>Si churn > 20%</strong> sur 90j : le produit n'est pas ready pour le marché. Itère.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== PHASE D — LANCEMENT ============== -->
+  <section class="phase-card bg-white rounded-2xl border-2 border-pink-300 shadow-md overflow-hidden">
+    <div class="bg-pink-600 text-white px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-xs uppercase tracking-widest opacity-80">Phase D · à partir du mois 5</div>
+          <h2 class="text-2xl font-bold mt-1">🚀 Lancement public</h2>
+        </div>
+        <div class="text-right">
+          <div class="text-xs opacity-80">Budget</div>
+          <div class="text-2xl font-bold">variable</div>
+        </div>
+      </div>
+      <p class="text-pink-100 text-sm mt-2"><strong>Seulement quand les gates A+B+C sont validés.</strong> Là tu peux ouvrir les vannes : ads, prospection, salons, content marketing.</p>
+    </div>
+
+    <div class="p-6 space-y-3">
+      <h3 class="font-semibold text-sm text-slate-600 uppercase tracking-wider mb-2">Étapes</h3>
+      <div id="phase-d" class="space-y-2"></div>
+
+      <div class="bg-pink-50 border-l-4 border-pink-600 rounded-r-lg p-4 mt-4 ml-10">
+        <div class="font-bold text-pink-900 mb-2">📈 Objectifs réalistes phase D</div>
+        <ul class="text-sm text-pink-800 space-y-1">
+          <li>• Mois 6 : 15-20 clients payants → ~700-1000€ MRR</li>
+          <li>• Mois 9 : 40-60 clients → ~2000-3000€ MRR</li>
+          <li>• Mois 12 : 80-120 clients → ~4000-6000€ MRR</li>
+          <li>• Mois 18 : potentiel 1ère embauche (commercial)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== CHECKLIST CE QUI MANQUE VRAIMENT ============== -->
+  <section class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-6">
+    <h2 class="text-xl font-bold mb-3">⚠️ Ce qui manque VRAIMENT pour démarrer phase A</h2>
+    <p class="text-amber-900 text-sm mb-4">Inventaire honnête de ce qui doit être bouclé avant la 1ère étape :</p>
+
+    <div class="space-y-2" id="missing-list"></div>
+  </section>
+
+  <!-- ============== CTA ============== -->
+  <section class="bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-2xl p-6 shadow-xl">
+    <h2 class="text-xl font-bold mb-3">🎯 Démarrer la phase A maintenant</h2>
+    <p class="text-blue-100 text-sm mb-4">
+      Le seul prochain pas : commande 1 ESP32 LilyGO T-SIM7600E (~50€ sur AliExpress) et tu attaques la POC.
+    </p>
+    <div class="flex flex-col sm:flex-row gap-3">
+      <a href="https://www.aliexpress.com/w/wholesale-LilyGO-T-SIM7600E.html" target="_blank" class="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-6 py-2.5 rounded-xl">
+        🛒 Commander l'ESP32
+      </a>
+      <a href="docs/ESP32_SETUP.md" class="bg-white/10 hover:bg-white/20 border border-white/30 text-white font-semibold px-6 py-2.5 rounded-xl">
+        📖 Guide ESP32
+      </a>
+      <a href="QUICKSTART_MAC.md" class="bg-white/10 hover:bg-white/20 border border-white/30 text-white font-semibold px-6 py-2.5 rounded-xl">
+        💻 Tester le backend
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<script>
+const PHASES = {
+  'phase-a': [
+    { id:'a1', text:'Commander 1 ESP32 LilyGO T-SIM7600E + 1 SIM 1NCE + capteurs (DS18B20, reed, LDR)', cost:'80€', time:'30 min commande + 2 sem livraison' },
+    { id:'a2', text:'Installer Node.js sur ton Mac + tester le backend en local (QUICKSTART_MAC.md)', cost:'0€', time:'30 min' },
+    { id:'a3', text:'Tester le simulateur — 3 fausses machines doivent apparaître dans le dashboard', cost:'0€', time:'15 min' },
+    { id:'a4', text:'Faire un faux paiement Stripe mode TEST (CB 4242 4242 4242 4242)', cost:'0€', time:'30 min' },
+    { id:'a5', text:'Recevoir le matos → flasher firmware avec ton DEVICE_ID + DEVICE_TOKEN', cost:'0€', time:'2h' },
+    { id:'a6', text:'Brancher capteurs sur une machine chez toi (cafetière, frigo, sèche-linge…)', cost:'0€', time:'1h' },
+    { id:'a7', text:'Voir les données arriver en temps réel dans ton dashboard local', cost:'0€', time:'30 min' },
+    { id:'a8', text:'Déployer le backend sur VPS Hetzner CCX13 (suivre HEBERGEMENT.md)', cost:'14€/mois', time:'2h' },
+    { id:'a9', text:'Configurer un domaine + HTTPS Caddy auto', cost:'10€/an', time:'1h' },
+    { id:'a10', text:'⏰ Laisser tourner 30 jours sans toucher. Noter dans un fichier toute coupure/bug', cost:'0€', time:'attendre' },
+    { id:'a11', text:'Tester volontairement les pannes : coupe l\'alim 5 min → vérifie que l\'alerte arrive', cost:'0€', time:'1h' },
+    { id:'a12', text:'Vérifier les backups automatiques en restaurant un fichier .db.gz.gpg', cost:'0€', time:'30 min' },
+  ],
+  'phase-b': [
+    { id:'b1', text:'Identifier 2-3 connaissances avec une vraie machine (resto, café, garage, salon…)', cost:'0€', time:'1h' },
+    { id:'b2', text:'Proposer un deal : "Je t\'offre 3 mois gratuits + kit complet, tu me donnes des retours détaillés"', cost:'0€', time:'tel/visio' },
+    { id:'b3', text:'Commander 3 kits ESP32 supplémentaires + pré-configurer chacun', cost:'~250€', time:'2h' },
+    { id:'b4', text:'Installer chez les 3 béta-testeurs (toi présent — c\'est aussi du R&D)', cost:'40€ transport', time:'3h × 3 install' },
+    { id:'b5', text:'Créer un canal Slack/WhatsApp privé pour récupérer leurs retours', cost:'0€', time:'15 min' },
+    { id:'b6', text:'1 fois par semaine : appel 15 min avec chaque béta-testeur ("qu\'est-ce qui manque ?")', cost:'0€', time:'1h/sem' },
+    { id:'b7', text:'Corriger les bugs critiques en moins de 48h (sinon ils abandonnent)', cost:'0€', time:'variable' },
+    { id:'b8', text:'Activer Stripe en mode LIVE (KYC ~24h) — pas encore facturer mais prêt', cost:'0€', time:'30 min' },
+    { id:'b9', text:'À la fin du mois : demander "tu paierais combien pour ce service ?"', cost:'0€', time:'15 min × 3' },
+    { id:'b10', text:'Récupérer 1 témoignage vidéo (90 sec sur smartphone) de chaque béta-testeur satisfait', cost:'0€', time:'30 min × 3' },
+  ],
+  'phase-c': [
+    { id:'c1', text:'Mettre à jour le site web avec les vrais témoignages vidéo', cost:'0€', time:'2h' },
+    { id:'c2', text:'Définir le pricing pilote : 29€/mois × 6 mois minimum (au lieu de 49€)', cost:'0€', time:'30 min' },
+    { id:'c3', text:'Préparer un contrat simple "Pilote 6 mois" (1 page A4, sans avocat)', cost:'0€', time:'1h' },
+    { id:'c4', text:'Cibler 20 prospects "warm" : recommandations béta-testeurs, ton réseau, LinkedIn 1er degré', cost:'0€', time:'2h' },
+    { id:'c5', text:'Contacter chacun personnellement (pas d\'email auto) — explique : "tu es dans les 5 premiers"', cost:'0€', time:'4h sur 2 semaines' },
+    { id:'c6', text:'Faire 5 démos visio (Zoom partage d\'écran de demo-pro-v3.html)', cost:'0€', time:'5h' },
+    { id:'c7', text:'Closer 5 clients (à 29€/mois × 6 mois = 870€ MRR validé)', cost:'0€', time:'~30j' },
+    { id:'c8', text:'Pour chacun : installation gratuite par toi, ou expédition + visio install', cost:'~500€ kits + transport', time:'2-3h × 5'},
+    { id:'c9', text:'Tracker tous les incidents/bugs sur les 5 clients en parallèle', cost:'0€', time:'continu' },
+    { id:'c10', text:'1 appel hebdomadaire avec chaque client le 1er mois (pour customer success)', cost:'0€', time:'30 min × 5 × 4 sem' },
+    { id:'c11', text:'À 60 jours : enquête NPS — est-ce qu\'ils recommanderaient ?', cost:'0€', time:'30 min' },
+    { id:'c12', text:'Au mois 3 : passer le tarif à 49€/mois pour les nouveaux clients', cost:'0€', time:'5 min' },
+  ],
+  'phase-d': [
+    { id:'d1', text:'Activer l\'agent IA Customer Success en prod (script Python livré)', cost:'0€', time:'1h' },
+    { id:'d2', text:'Lancer 4 articles SEO/mois avec l\'agent Marketing (livré en spec)', cost:'~5€/mois IA', time:'1h × 4' },
+    { id:'d3', text:'Démarrer Google Ads sur "télémétrie distributeur" + "supervision machine café"', cost:'500€/mois', time:'2h setup + suivi' },
+    { id:'d4', text:'Outbound LinkedIn (50 messages/sem vers DG société de distrib auto)', cost:'80€/mois Sales Nav', time:'5h/sem' },
+    { id:'d5', text:'Présence au Sirha Lyon (janvier) ou Equipotel (novembre)', cost:'~3000€', time:'4j salon' },
+    { id:'d6', text:'Affiliation partenaires (Tolt ou Rewardful, 50€/mois)', cost:'50€/mois', time:'4h setup' },
+    { id:'d7', text:'Suivre les KPI hebdo : MRR, churn, CAC, LTV', cost:'0€', time:'30 min/sem' },
+    { id:'d8', text:'À 30 clients : envisager 1ère embauche (commercial junior ou alternant)', cost:'3500€/mois', time:'décision' },
+  ],
+};
+
+const MISSING = [
+  { id:'m1', text:'Le PCB n\'est pas encore fabriqué — pour le POC, utiliser le LilyGO seul + breadboard', critical:false },
+  { id:'m2', text:'Le firmware n\'a jamais été flashé sur un vrai ESP32 — possible que ça plante, prévoir 2-5 jours debug', critical:true },
+  { id:'m3', text:'Aucune carte SIM n\'a été testée avec ton APN — vérifier en phase A', critical:true },
+  { id:'m4', text:'L\'antenne 4G externe est obligatoire pour signal dans une carcasse machine', critical:true },
+  { id:'m5', text:'Backend pas testé en charge réelle (>50 machines simultanées)', critical:false },
+  { id:'m6', text:'"Mot de passe oublié" pas implémenté côté backend — bloquant dès 3 clients', critical:true },
+  { id:'m7', text:'Emails transactionnels (welcome, alerte, facture) pas codés — à brancher Resend', critical:true },
+  { id:'m8', text:'Page de status publique pas configurée (Uptime Kuma livré mais pas branché)', critical:false },
+  { id:'m9', text:'CGU/CGV/Politique confidentialité pas générées — bloquant pour Stripe LIVE', critical:true },
+  { id:'m10', text:'TVA intracommunautaire pas mentionnée sur les factures Stripe', critical:true },
+  { id:'m11', text:'Pas de logiciel de compta encore — prévoir Pennylane ou Sellsy mois 3', critical:false },
+  { id:'m12', text:'Process SAV hardware pas défini (qui remplace un kit cassé ?)', critical:false },
+];
+
+function loadProgress() {
+  try { return JSON.parse(localStorage.getItem('validation_progress') || '{}'); }
+  catch { return {}; }
+}
+function saveProgress(p) { localStorage.setItem('validation_progress', JSON.stringify(p)); }
+
+window.toggle = function(id, checked) {
+  const p = loadProgress();
+  if (checked) p[id] = 1; else delete p[id];
+  saveProgress(p);
+  render();
+};
+
+window.resetProgress = function() {
+  if (confirm('Effacer toute ta progression ?')) {
+    localStorage.removeItem('validation_progress');
+    render();
+  }
+};
+
+function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);}
+
+function renderPhase(containerId, steps) {
+  const p = loadProgress();
+  const el = document.getElementById(containerId);
+  el.innerHTML = steps.map((s, i) => {
+    const done = !!p[s.id];
+    return `
+      <div class="check-item ${done?'done':''} border border-slate-200 rounded-lg p-3 flex items-start gap-3">
+        <input type="checkbox" ${done?'checked':''} onchange="toggle('${s.id}', this.checked)" class="mt-0.5 w-4 h-4 accent-emerald-600 cursor-pointer flex-shrink-0" />
+        <div class="flex-1 min-w-0">
+          <div class="item-text text-sm">${i+1}. ${escapeHtml(s.text)}</div>
+          <div class="text-[10px] text-slate-400 mt-1 flex gap-3">
+            <span>⏱ ${escapeHtml(s.time)}</span>
+            <span>💰 ${escapeHtml(s.cost)}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderMissing() {
+  const p = loadProgress();
+  const el = document.getElementById('missing-list');
+  el.innerHTML = MISSING.map(m => {
+    const done = !!p[m.id];
+    const badge = m.critical ? '<span class="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-semibold">CRITIQUE</span>' : '<span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">à corriger</span>';
+    return `
+      <div class="check-item ${done?'done':''} bg-white border border-amber-200 rounded-lg p-3 flex items-start gap-3">
+        <input type="checkbox" ${done?'checked':''} onchange="toggle('${m.id}', this.checked)" class="mt-0.5 w-4 h-4 accent-emerald-600 cursor-pointer flex-shrink-0" />
+        <div class="flex-1 min-w-0">
+          <div class="item-text text-sm flex items-center gap-2 flex-wrap">${escapeHtml(m.text)} ${badge}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function render() {
+  for (const [id, steps] of Object.entries(PHASES)) renderPhase(id, steps);
+  renderMissing();
+}
+
+render();
+</script>
+</body>
+</html>
