@@ -78,12 +78,15 @@ app.post('/api/stripe/webhook',
 app.use(express.json({ limit: '256kb' }));
 
 // ----- Statique -----
-const webDir       = path.resolve(__dirname, '..', '..', 'web');        // landing publique
-const dashboardDir = path.resolve(__dirname, '..', '..', 'dashboard');  // espace client
-const demosDir     = path.resolve(__dirname, '..', '..', 'demos');       // 7 démos visuelles
+const webDir       = path.resolve(__dirname, '..', '..', 'web');             // landing publique
+const dashboardDir = path.resolve(__dirname, '..', '..', 'dashboard');       // espace client
+// IMPORTANT : on sert UNIQUEMENT demos-public/ en prod (la démo pro pour prospects)
+// Les démos internes (apps mobiles, etc.) sont dans demos/ et ne sont PAS exposées
+const demosDir     = path.resolve(__dirname, '..', '..', 'demos-public');
 app.use('/', express.static(webDir));
 app.use('/app', express.static(dashboardDir));
-app.use('/demos', express.static(demosDir));
+app.use('/demo', express.static(demosDir));      // URL plus jolie : /demo plutôt que /demos
+app.use('/demos', express.static(demosDir));     // alias pour compat
 
 // ----- API publique (pas d'auth) -----
 app.get('/api/health', (req, res) => res.json({ ok: true, ts: Date.now() }));
