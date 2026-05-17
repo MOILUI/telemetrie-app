@@ -1,252 +1,922 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Télémétrie — Tableau de bord</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-  <style>
-    body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-    .pulse-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-    .online  { background:#10b981; box-shadow:0 0 0 0 rgba(16,185,129,0.6); animation:pulse 2s infinite; }
-    .offline { background:#9ca3af; }
-    .stale   { background:#f59e0b; }
-    @keyframes pulse {
-      0%   { box-shadow: 0 0 0 0 rgba(16,185,129,0.6); }
-      70%  { box-shadow: 0 0 0 10px rgba(16,185,129,0); }
-      100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Télémétrie Pro v4 — Best-in-class</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<style>
+  body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+  .sidebar-link.active { background: rgb(30 41 59); color: white; }
+  .sidebar-link.active .icon { color: rgb(96 165 250); }
+  .pulse-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .online{background:#10b981;animation:pulse 2s infinite}.offline{background:#9ca3af}.warn{background:#f59e0b}.error{background:#ef4444}
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.5} }
+  .page { display: none; }
+  .page.active { display: block; }
+  #map { height: calc(100vh - 64px); }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+  /* Planogram */
+  .slot { cursor: grab; transition: all 0.15s; }
+  .slot:hover { transform: scale(1.05); z-index: 10; }
+  .slot.dragging { opacity: 0.5; }
+  .slot.empty { background: #f1f5f9; border: 2px dashed #cbd5e1; }
+  .stock-bar { height: 4px; border-radius: 2px; }
+  /* NEW badge */
+  .new-badge { animation: shine 2s infinite; }
+  @keyframes shine { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+  /* Drag visual */
+  .drag-over { background: #dbeafe !important; border-color: #2563eb !important; }
+</style>
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-800">
+<body class="bg-slate-100 text-slate-800 antialiased">
 
-<!-- =================== LOGIN =================== -->
-<div id="login" class="hidden min-h-screen flex items-center justify-center px-4">
-  <form id="loginForm" class="bg-white shadow-xl rounded-2xl p-8 w-full max-w-sm space-y-4 border border-slate-200">
+<!-- ============ LOGIN OVERLAY ============ -->
+<div id="loginOverlay" class="hidden fixed inset-0 bg-slate-100 z-50 flex items-center justify-center px-4">
+  <form id="loginForm" class="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-sm space-y-4 border border-slate-200">
     <div class="text-center">
       <div class="text-3xl">📡</div>
       <h1 class="text-2xl font-bold mt-2">Espace client</h1>
-      <p class="text-sm text-slate-500">Connecte-toi à ton compte</p>
+      <p class="text-sm text-slate-500">Connecte-toi à ton compte Télémétrie</p>
     </div>
     <div>
-      <label class="block text-sm font-medium text-slate-700 mb-1">Email</label>
-      <input id="email" type="email" required class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+      <label class="block text-sm font-medium mb-1">Email</label>
+      <input id="loginEmail" type="email" required class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
     </div>
     <div>
-      <label class="block text-sm font-medium text-slate-700 mb-1">Mot de passe</label>
-      <input id="password" type="password" required class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+      <label class="block text-sm font-medium mb-1">Mot de passe</label>
+      <input id="loginPwd" type="password" required class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
     </div>
     <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition">
       Se connecter
     </button>
-    <div id="loginError" class="hidden text-sm text-red-600 text-center"></div>
+    <div id="loginErr" class="hidden text-sm text-red-600 text-center"></div>
     <div class="text-center text-sm text-slate-600 pt-2 border-t border-slate-200">
-      Pas encore de compte ? <a href="/signup.html" class="text-blue-600 hover:underline">S'inscrire</a>
+      Pas encore de compte ? <a href="/signup.html" class="text-blue-600 hover:underline">S'inscrire (essai gratuit 14j)</a>
     </div>
   </form>
 </div>
 
-<!-- =================== APP =================== -->
-<div id="app" class="hidden">
-  <!-- Header -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-10">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="text-2xl">📡</div>
+<div id="appWrapper" class="hidden flex min-h-screen">
+
+  <!-- SIDEBAR -->
+  <aside class="w-60 bg-slate-900 text-slate-300 flex flex-col flex-shrink-0">
+    <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">📡</div>
         <div>
-          <div class="font-bold">Télémétrie</div>
-          <div class="text-xs text-slate-500" id="connStatus">Connexion…</div>
+          <div class="text-white font-semibold text-sm">Télémétrie</div>
+          <div class="text-xs text-slate-500">v4.0 · best-in-class</div>
         </div>
       </div>
-      <div class="flex items-center gap-3">
-        <button onclick="openAIChat()" class="px-3 py-1.5 text-sm bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg">
-          🤖 Demander à l'IA
-        </button>
-        <button id="billingBtn" class="hidden px-3 py-1.5 text-sm bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg border border-emerald-200">
-          💳 <span id="planBadge">Plan</span>
-        </button>
-        <button id="alertsBtn" class="relative px-3 py-1.5 text-sm bg-slate-100 hover:bg-slate-200 rounded-lg">
-          🔔 Alertes <span id="alertCount" class="hidden ml-1 inline-flex items-center justify-center w-5 h-5 text-xs bg-red-500 text-white rounded-full">0</span>
-        </button>
-        <button id="logoutBtn" class="text-sm text-slate-600 hover:text-slate-900">Se déconnecter</button>
-      </div>
-    </div>
-  </header>
-
-  <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
-    <!-- Banner abonnement -->
-    <div id="trialBanner" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center justify-between">
-      <div>
-        <div class="font-semibold text-amber-900">🎁 <span id="trialText">Essai en cours</span></div>
-        <div class="text-sm text-amber-800" id="trialSub">—</div>
-      </div>
-      <button id="upgradeBtn" class="bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
-        Choisir un plan →
-      </button>
+      <select class="bg-slate-800 text-white text-xs rounded px-1 py-0.5" title="Langue">
+        <option>🇫🇷 FR</option><option>🇬🇧 EN</option><option>🇩🇪 DE</option><option>🇪🇸 ES</option>
+      </select>
     </div>
 
-    <!-- Token MQTT (pour configurer les ESP32) -->
-    <details class="bg-blue-50 border border-blue-200 rounded-xl p-4">
-      <summary class="cursor-pointer font-semibold text-blue-900">🔑 Connecter un nouvel ESP32 — voir le token</summary>
-      <div class="mt-3 text-sm text-blue-900 space-y-2">
-        <p>Dans le fichier <code class="bg-blue-100 px-1 rounded">firmware/config.h</code> de ton ESP32, mets :</p>
-        <pre class="bg-white rounded p-2 text-xs overflow-x-auto"><code id="configSnippet">— charge en cours —</code></pre>
-        <p class="text-xs text-blue-700">Chaque ESP32 doit avoir un <code>DEVICE_ID</code> unique. Le <code>MQTT_PASSWORD</code> ci-dessus est celui de ton compte (ne le partage pas).</p>
-      </div>
-    </details>
+    <nav class="flex-1 p-3 space-y-1 text-sm overflow-y-auto">
+      <div class="px-3 text-[10px] text-slate-500 uppercase mb-1 mt-1">Pilotage</div>
+      <a class="sidebar-link active flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer" data-page="overview"><span class="icon">⊞</span> Vue d'ensemble</a>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="ai"><span class="icon">🤖</span> IA Insights</a>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="map"><span class="icon">🌍</span> Carte</a>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="machines"><span class="icon">🏷️</span> Machines</a>
 
-    <!-- KPIs -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
-        <div class="text-xs text-slate-500 uppercase">Machines</div>
-        <div class="text-2xl font-bold" id="kpiTotal">0</div>
-      </div>
-      <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
-        <div class="text-xs text-slate-500 uppercase">En ligne</div>
-        <div class="text-2xl font-bold text-emerald-600" id="kpiOnline">0</div>
-      </div>
-      <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
-        <div class="text-xs text-slate-500 uppercase">Hors ligne</div>
-        <div class="text-2xl font-bold text-slate-600" id="kpiOffline">0</div>
-      </div>
-      <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
-        <div class="text-xs text-slate-500 uppercase">Alertes actives</div>
-        <div class="text-2xl font-bold text-red-600" id="kpiAlerts">0</div>
-      </div>
-    </div>
+      <div class="px-3 text-[10px] text-slate-500 uppercase mb-1 mt-3">Inventaire</div>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="planogram"><span class="icon">📐</span> Planogrammes <span class="ml-auto new-badge bg-pink-600 text-white text-[9px] px-1.5 py-0.5 rounded-full">NEW</span></a>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="picklists"><span class="icon">📋</span> Picklists <span class="ml-auto new-badge bg-pink-600 text-white text-[9px] px-1.5 py-0.5 rounded-full">NEW</span></a>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="inventory"><span class="icon">📦</span> Stocks</a>
 
-    <!-- Devices grid -->
-    <section>
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="text-lg font-bold">Machines</h2>
-        <input id="search" type="text" placeholder="Rechercher…" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm" />
-      </div>
-      <div id="devicesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <!-- Cards générées dynamiquement -->
-      </div>
-      <div id="emptyState" class="hidden text-center py-16 text-slate-500">
-        Aucune machine n'a encore envoyé de données. Configure un ESP32 avec le firmware pour le voir apparaître ici.
-      </div>
-    </section>
-  </main>
+      <div class="px-3 text-[10px] text-slate-500 uppercase mb-1 mt-3">Opérations</div>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="tickets"><span class="icon">🎫</span> Tickets service <span class="ml-auto bg-amber-600 text-white text-[9px] px-1.5 py-0.5 rounded-full">5</span></a>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="encashment"><span class="icon">💰</span> Encaissements <span class="ml-auto new-badge bg-pink-600 text-white text-[9px] px-1.5 py-0.5 rounded-full">NEW</span></a>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="routes"><span class="icon">🗺️</span> Routes</a>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="alerts"><span class="icon">🔔</span> Alertes <span class="ml-auto bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full">6</span></a>
 
-  <!-- =================== DETAIL MODAL =================== -->
-  <div id="detailModal" class="hidden fixed inset-0 bg-black/50 z-20 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-      <div class="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
-        <div>
-          <h3 class="text-lg font-bold" id="dmName">—</h3>
-          <p class="text-sm text-slate-500" id="dmMeta">—</p>
+      <div class="px-3 text-[10px] text-slate-500 uppercase mb-1 mt-3">Commerce</div>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="sales"><span class="icon">💰</span> Ventes</a>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="loyalty"><span class="icon">⭐</span> Fidélité <span class="ml-auto new-badge bg-pink-600 text-white text-[9px] px-1.5 py-0.5 rounded-full">NEW</span></a>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="vouchers"><span class="icon">🎟️</span> Free Vend &amp; Vouchers <span class="ml-auto new-badge bg-pink-600 text-white text-[9px] px-1.5 py-0.5 rounded-full">NEW</span></a>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="surveys"><span class="icon">📝</span> Sondages conso <span class="ml-auto new-badge bg-pink-600 text-white text-[9px] px-1.5 py-0.5 rounded-full">NEW</span></a>
+
+      <div class="px-3 text-[10px] text-slate-500 uppercase mb-1 mt-3">Compte</div>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="branding"><span class="icon">🎨</span> Branding white-label <span class="ml-auto new-badge bg-pink-600 text-white text-[9px] px-1.5 py-0.5 rounded-full">NEW</span></a>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="audit"><span class="icon">📜</span> Audit log <span class="ml-auto new-badge bg-pink-600 text-white text-[9px] px-1.5 py-0.5 rounded-full">NEW</span></a>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="developer"><span class="icon">⚡</span> API</a>
+      <a class="sidebar-link flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-800" data-page="team"><span class="icon">👥</span> Équipe</a>
+    </nav>
+
+    <div class="p-3 border-t border-slate-800">
+      <div class="flex items-center gap-2 p-2 rounded-lg">
+        <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs">SR</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-xs text-white truncate">Salih R.</div>
+          <div class="text-[10px] text-slate-500">Plan Business</div>
         </div>
-        <button id="dmClose" class="text-slate-400 hover:text-slate-600 text-2xl">×</button>
       </div>
-      <div class="p-6 space-y-6">
-        <!-- Status + edit -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="bg-slate-50 rounded-xl p-4">
-            <div class="text-xs text-slate-500 uppercase">État</div>
-            <div class="flex items-center gap-2 mt-1">
-              <span id="dmStatusDot" class="pulse-dot offline"></span>
-              <span class="font-semibold" id="dmStatus">—</span>
-              <span class="text-xs text-slate-500" id="dmLastSeen">—</span>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="flex-1 flex flex-col min-w-0">
+
+    <header class="bg-white border-b border-slate-200 h-16 flex items-center px-6 justify-between flex-shrink-0">
+      <div class="flex items-center gap-4">
+        <h1 class="text-lg font-semibold" id="pageTitle">Vue d'ensemble</h1>
+        <span class="text-xs text-slate-500 hidden md:inline" id="pageSubtitle">Tableau de bord</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="text-sm bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-3 py-1.5 rounded-lg">📱 Voir l'app driver</button>
+        <button class="bg-purple-100 text-purple-700 text-sm font-medium px-3 py-1.5 rounded-lg">🤖 Demander à l'IA</button>
+        <button class="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg">+ Ajouter machine</button>
+        <button id="logoutBtnHeader" class="text-sm text-slate-600 hover:text-red-600 px-3 py-1.5">Se déconnecter</button>
+      </div>
+    </header>
+
+    <!-- ====== OVERVIEW (réutilise + amélioré v3) ====== -->
+    <div id="page-overview" class="page active flex-1 overflow-y-auto p-6 bg-slate-100">
+      <!-- Banner concurrence -->
+      <div class="bg-gradient-to-r from-slate-900 to-blue-900 rounded-2xl p-5 text-white mb-6 shadow-lg">
+        <div class="flex items-start justify-between">
+          <div>
+            <div class="text-xs opacity-80 uppercase tracking-wider">🚀 v4 — best-in-class</div>
+            <div class="font-semibold mt-1 text-lg">Toutes les features Nayax + Vendon + ce qu'ils n'ont pas</div>
+            <div class="text-sm opacity-90 mt-1">Planogrammes drag-drop, picklists auto, app driver/consumer, audit log, branding white-label, multi-langue</div>
+          </div>
+          <div class="bg-white/10 backdrop-blur rounded-lg px-4 py-2 text-sm">
+            <div class="text-xs opacity-80">vs Nayax</div>
+            <div class="font-bold text-emerald-300">−40% prix · +12 features</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-6">
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-[11px] text-slate-500 uppercase">Revenus 24h</div><div class="text-2xl font-bold mt-1">1 247€</div><div class="text-[11px] text-emerald-600 mt-0.5">↗ +12,4%</div></div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-[11px] text-slate-500 uppercase">Ventes</div><div class="text-2xl font-bold mt-1">524</div></div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-[11px] text-slate-500 uppercase">Machines</div><div class="text-2xl font-bold mt-1">11<span class="text-sm text-slate-400">/12</span></div></div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-[11px] text-slate-500 uppercase">Tickets ouverts</div><div class="text-2xl font-bold mt-1 text-amber-600">5</div></div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-[11px] text-slate-500 uppercase">Stock global</div><div class="text-2xl font-bold mt-1">68%</div></div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-[11px] text-slate-500 uppercase">Wallet conso</div><div class="text-2xl font-bold mt-1">1 409</div></div>
+      </div>
+
+      <!-- Quick actions cards -->
+      <div class="grid md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white rounded-xl p-4 border-2 border-pink-200">
+          <div class="flex items-center gap-2 mb-2"><span class="text-2xl">📐</span><h3 class="font-semibold">Planogrammes</h3></div>
+          <p class="text-xs text-slate-600">Drag-drop des produits dans tes machines. Update prix en 1 clic, sur 100 machines à la fois.</p>
+          <button onclick="goTo('planogram')" class="mt-3 text-sm text-blue-600 hover:underline">Ouvrir →</button>
+        </div>
+        <div class="bg-white rounded-xl p-4 border-2 border-emerald-200">
+          <div class="flex items-center gap-2 mb-2"><span class="text-2xl">📋</span><h3 class="font-semibold">Picklist auto</h3></div>
+          <p class="text-xs text-slate-600">Pour la tournée de demain : 5 machines, 87 produits, prêt en 1 PDF/CSV.</p>
+          <button onclick="goTo('picklists')" class="mt-3 text-sm text-blue-600 hover:underline">Générer →</button>
+        </div>
+        <div class="bg-white rounded-xl p-4 border-2 border-amber-200">
+          <div class="flex items-center gap-2 mb-2"><span class="text-2xl">🎫</span><h3 class="font-semibold">Tickets service</h3></div>
+          <p class="text-xs text-slate-600">3 tickets ouverts urgents. Assigne à un tech, suit en temps réel.</p>
+          <button onclick="goTo('tickets')" class="mt-3 text-sm text-blue-600 hover:underline">Voir →</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div class="lg:col-span-2 bg-white rounded-xl p-5 border border-slate-200">
+          <h3 class="font-semibold mb-3">Revenus & prédiction IA (30j + 7j)</h3>
+          <canvas id="chartRevenue" height="100"></canvas>
+        </div>
+        <div class="bg-white rounded-xl p-5 border border-slate-200">
+          <h3 class="font-semibold mb-2">Heatmap géographique 🆕</h3>
+          <p class="text-xs text-slate-500 mb-3">Zones les + rentables</p>
+          <div class="grid grid-cols-3 gap-1 text-[10px]">
+            <div class="bg-red-500 text-white rounded p-2 text-center"><div class="font-semibold">Paris</div><div>2 320€</div></div>
+            <div class="bg-orange-500 text-white rounded p-2 text-center"><div class="font-semibold">Lyon</div><div>1 850€</div></div>
+            <div class="bg-amber-500 text-white rounded p-2 text-center"><div class="font-semibold">Marseille</div><div>1 420€</div></div>
+            <div class="bg-yellow-500 text-white rounded p-2 text-center"><div class="font-semibold">Bordeaux</div><div>1 105€</div></div>
+            <div class="bg-lime-500 text-white rounded p-2 text-center"><div class="font-semibold">Toulouse</div><div>980€</div></div>
+            <div class="bg-emerald-500 text-white rounded p-2 text-center"><div class="font-semibold">Nice</div><div>720€</div></div>
+            <div class="bg-cyan-500 text-white rounded p-2 text-center"><div class="font-semibold">Strasbourg</div><div>540€</div></div>
+            <div class="bg-blue-500 text-white rounded p-2 text-center"><div class="font-semibold">Lille</div><div>320€</div></div>
+            <div class="bg-slate-300 text-slate-700 rounded p-2 text-center"><div class="font-semibold">Autres</div><div>—</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Comparatif Nayax/Vendon -->
+      <div class="bg-white rounded-xl p-5 border border-slate-200">
+        <h3 class="font-semibold mb-3">📊 vs Nayax / Vendon (features)</h3>
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 text-xs uppercase text-slate-600">
+            <tr><th class="py-2 px-3 text-left">Feature</th><th class="text-center">Nous</th><th class="text-center">Nayax</th><th class="text-center">Vendon</th></tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr><td class="py-2 px-3">IA prédictive maintenance</td><td class="text-center text-emerald-600">✓</td><td class="text-center text-amber-600">~</td><td class="text-center text-red-500">✗</td></tr>
+            <tr><td class="py-2 px-3">Planogrammes drag-drop</td><td class="text-center text-emerald-600">✓</td><td class="text-center text-emerald-600">✓</td><td class="text-center text-emerald-600">✓</td></tr>
+            <tr><td class="py-2 px-3">App driver dédiée mobile</td><td class="text-center text-emerald-600">✓</td><td class="text-center text-emerald-600">✓ (MoMa)</td><td class="text-center text-emerald-600">✓</td></tr>
+            <tr><td class="py-2 px-3">App fidélité consommateur</td><td class="text-center text-emerald-600">✓</td><td class="text-center text-emerald-600">✓ (Monyx)</td><td class="text-center text-red-500">✗</td></tr>
+            <tr><td class="py-2 px-3">Audit log RGPD complet</td><td class="text-center text-emerald-600">✓</td><td class="text-center text-amber-600">~</td><td class="text-center text-red-500">✗</td></tr>
+            <tr><td class="py-2 px-3">Hébergement France 🇫🇷</td><td class="text-center text-emerald-600">✓</td><td class="text-center text-red-500">✗ (Israël)</td><td class="text-center text-red-500">✗ (Lettonie)</td></tr>
+            <tr><td class="py-2 px-3">Support français natif</td><td class="text-center text-emerald-600">✓</td><td class="text-center text-red-500">✗</td><td class="text-center text-red-500">✗</td></tr>
+            <tr><td class="py-2 px-3">Prix /machine/mois</td><td class="text-center text-emerald-600">2,45€</td><td class="text-center text-amber-600">5-7€</td><td class="text-center text-amber-600">4-5€</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ====== PLANOGRAM (FEATURE PHARE) ====== -->
+    <div id="page-planogram" class="page flex-1 overflow-y-auto p-6 bg-slate-100">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="text-2xl font-bold">📐 Planogrammes interactifs</h2>
+          <p class="text-sm text-slate-500">Drag-drop des produits dans les slots. Update prix sur toutes les machines en 1 clic.</p>
+        </div>
+        <div class="flex gap-2">
+          <select class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm bg-white">
+            <option>Distri Lyon Part-Dieu</option>
+            <option>Distri Paris Gare du Nord</option>
+            <option>Distri Marseille Vieux-Port</option>
+          </select>
+          <button class="bg-blue-600 text-white text-sm px-4 py-1.5 rounded-lg">💾 Sauvegarder</button>
+          <button class="bg-purple-600 text-white text-sm px-4 py-1.5 rounded-lg">📤 Appliquer à 12 machines</button>
+        </div>
+      </div>
+
+      <div class="grid lg:grid-cols-3 gap-4">
+        <!-- VENDING MACHINE GRID -->
+        <div class="lg:col-span-2 bg-white rounded-xl p-5 border border-slate-200">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold">Distributeur — vue colonnes</h3>
+            <div class="text-xs text-slate-500">42 slots · 38 actifs · 4 vides</div>
+          </div>
+          <div class="bg-gradient-to-b from-slate-700 to-slate-800 rounded-xl p-4 shadow-2xl">
+            <div class="grid grid-cols-7 gap-1.5" id="planogramGrid"></div>
+            <div class="mt-3 bg-slate-900 rounded p-3 text-xs text-slate-400 text-center font-mono">
+              📺 ÉCRAN MACHINE · 💳 TPE NFC · 🎫 INSERT JETON
             </div>
           </div>
-          <div class="bg-slate-50 rounded-xl p-4">
-            <div class="text-xs text-slate-500 uppercase">Identifiant</div>
-            <div class="font-mono text-sm mt-1" id="dmId">—</div>
+        </div>
+
+        <!-- PRODUCT LIBRARY -->
+        <div class="bg-white rounded-xl p-5 border border-slate-200">
+          <h3 class="font-semibold mb-3">Bibliothèque produits</h3>
+          <p class="text-xs text-slate-500 mb-3">Drag depuis ici vers une colonne →</p>
+          <div class="space-y-2 max-h-[500px] overflow-y-auto" id="productLibrary"></div>
+          <button class="mt-3 w-full bg-slate-100 hover:bg-slate-200 text-sm py-2 rounded-lg">+ Ajouter un produit</button>
+        </div>
+      </div>
+
+      <div class="mt-6 grid md:grid-cols-3 gap-4">
+        <div class="bg-white rounded-xl p-5 border border-slate-200">
+          <div class="text-xs text-slate-500 uppercase">Stock total dans cette machine</div>
+          <div class="text-2xl font-bold mt-1">238 unités</div>
+          <div class="text-xs text-emerald-600 mt-1">68% rempli</div>
+        </div>
+        <div class="bg-white rounded-xl p-5 border border-slate-200">
+          <div class="text-xs text-slate-500 uppercase">Valeur stock</div>
+          <div class="text-2xl font-bold mt-1">412€</div>
+        </div>
+        <div class="bg-white rounded-xl p-5 border border-slate-200">
+          <div class="text-xs text-slate-500 uppercase">Prochain réassort</div>
+          <div class="text-2xl font-bold mt-1">Jeudi 14h</div>
+          <div class="text-xs text-slate-500 mt-1">prédiction IA</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== PICKLISTS ====== -->
+    <div id="page-picklists" class="page flex-1 overflow-y-auto p-6 bg-slate-100">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="text-2xl font-bold">📋 Picklists — listes de réassort</h2>
+          <p class="text-sm text-slate-500">Génération auto : pour chaque tournée, la liste exacte de produits à amener.</p>
+        </div>
+        <button class="bg-blue-600 text-white text-sm px-4 py-1.5 rounded-lg">📄 Générer picklist du jour</button>
+      </div>
+
+      <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
+        <div class="bg-blue-50 border-b border-blue-200 p-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="font-semibold">Tournée du 15 mai 2026 — 5 machines</h3>
+              <p class="text-xs text-slate-600 mt-1">Total : 87 unités · Valeur : 142,60€ · Capacité véhicule : 200 unités max</p>
+            </div>
+            <div class="flex gap-2">
+              <button class="bg-white border border-slate-300 text-sm px-3 py-1.5 rounded-lg">📥 Export CSV</button>
+              <button class="bg-white border border-slate-300 text-sm px-3 py-1.5 rounded-lg">📱 Envoyer à l'app driver</button>
+            </div>
+          </div>
+        </div>
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 text-xs uppercase text-slate-600">
+            <tr>
+              <th class="py-2 px-4 text-left">Produit</th>
+              <th class="text-right">Stock entrepôt</th>
+              <th class="text-right">À charger</th>
+              <th class="text-right">Coût</th>
+              <th class="text-left">Pour quelles machines</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100" id="picklistTable"></tbody>
+        </table>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <div class="text-xs text-amber-700 uppercase">⚠️ Stock entrepôt bas</div>
+          <div class="font-semibold mt-1">3 produits</div>
+          <ul class="text-xs text-amber-800 mt-2 space-y-1">
+            <li>• Coca 33cl : 12 restantes</li>
+            <li>• KitKat 4F : 8 restantes</li>
+            <li>• Twix : 15 restantes</li>
+          </ul>
+        </div>
+        <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+          <div class="text-xs text-emerald-700 uppercase">⏱ Temps tournée estimé</div>
+          <div class="font-semibold mt-1">2h45</div>
+          <div class="text-xs text-emerald-700 mt-1">Optimisé par IA · trafic Google Maps inclus</div>
+        </div>
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+          <div class="text-xs text-blue-700 uppercase">💰 CA récupérable</div>
+          <div class="font-semibold mt-1">~580€</div>
+          <div class="text-xs text-blue-700 mt-1">Si toutes les machines remplies, ventes prévues 7j</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== TICKETS SERVICE ====== -->
+    <div id="page-tickets" class="page flex-1 overflow-y-auto p-6 bg-slate-100">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="text-2xl font-bold">🎫 Tickets de service</h2>
+          <p class="text-sm text-slate-500">Workflow complet : création → assignation → intervention → photo before/after → signature</p>
+        </div>
+        <button class="bg-blue-600 text-white text-sm px-4 py-1.5 rounded-lg">+ Créer ticket</button>
+      </div>
+
+      <div class="grid md:grid-cols-4 gap-3 mb-4">
+        <div class="bg-white rounded-xl p-3 border-l-4 border-red-500 border border-slate-200">
+          <div class="text-xs text-slate-500">Critiques</div>
+          <div class="text-xl font-bold text-red-600">2</div>
+        </div>
+        <div class="bg-white rounded-xl p-3 border-l-4 border-amber-500 border border-slate-200">
+          <div class="text-xs text-slate-500">En cours</div>
+          <div class="text-xl font-bold text-amber-600">3</div>
+        </div>
+        <div class="bg-white rounded-xl p-3 border-l-4 border-blue-500 border border-slate-200">
+          <div class="text-xs text-slate-500">Programmés</div>
+          <div class="text-xl font-bold text-blue-600">4</div>
+        </div>
+        <div class="bg-white rounded-xl p-3 border-l-4 border-emerald-500 border border-slate-200">
+          <div class="text-xs text-slate-500">Résolus 7j</div>
+          <div class="text-xl font-bold text-emerald-600">12</div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 text-xs uppercase text-slate-600">
+            <tr>
+              <th class="py-2 px-3 text-left">#</th>
+              <th class="text-left">Machine</th>
+              <th class="text-left">Type</th>
+              <th class="text-left">Description</th>
+              <th class="text-left">Assigné à</th>
+              <th class="text-left">Statut</th>
+              <th class="text-left">Créé</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100" id="ticketsTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ====== ENCAISSEMENTS ====== -->
+    <div id="page-encashment" class="page flex-1 overflow-y-auto p-6 bg-slate-100">
+      <h2 class="text-2xl font-bold mb-1">💰 Encaissements — vidange caisses</h2>
+      <p class="text-sm text-slate-500 mb-4">Suivi des collectes d'espèces · réconciliation auto vente vs cash · tube refill</p>
+
+      <div class="grid md:grid-cols-4 gap-3 mb-6">
+        <div class="bg-white rounded-xl p-4 border border-slate-200">
+          <div class="text-xs text-slate-500 uppercase">Cash en attente collecte</div>
+          <div class="text-2xl font-bold">2 412€</div>
+          <div class="text-xs text-slate-500 mt-1">Sur 12 machines</div>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200">
+          <div class="text-xs text-slate-500 uppercase">Collectes 30j</div>
+          <div class="text-2xl font-bold">8 745€</div>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200">
+          <div class="text-xs text-slate-500 uppercase">Écart moyen</div>
+          <div class="text-2xl font-bold text-amber-600">-1,8%</div>
+          <div class="text-xs text-slate-500 mt-1">vs ventes attendues</div>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200">
+          <div class="text-xs text-slate-500 uppercase">Prochaine collecte</div>
+          <div class="text-2xl font-bold">Demain</div>
+          <div class="text-xs text-slate-500 mt-1">3 machines</div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mb-4">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 text-xs uppercase text-slate-600">
+            <tr>
+              <th class="py-2 px-3 text-left">Machine</th>
+              <th class="text-right">Cash actuel</th>
+              <th class="text-right">Vente totale depuis dernière collecte</th>
+              <th class="text-right">Écart</th>
+              <th class="text-left">Dernière collecte</th>
+              <th class="text-left">Statut</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr><td class="py-2 px-3 font-medium">Distri Lyon Part-Dieu</td><td class="text-right">487,50€</td><td class="text-right">487,50€</td><td class="text-right text-emerald-600">0,00€</td><td>12 mai</td><td><span class="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded-full">À collecter</span></td></tr>
+            <tr><td class="py-2 px-3 font-medium">Distri Marseille</td><td class="text-right">312,00€</td><td class="text-right">315,50€</td><td class="text-right text-amber-600">-3,50€</td><td>8 mai</td><td><span class="bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded-full">À vérifier</span></td></tr>
+            <tr><td class="py-2 px-3 font-medium">Distri Toulouse</td><td class="text-right">298,75€</td><td class="text-right">317,00€</td><td class="text-right text-red-600">-18,25€</td><td>11 mai</td><td><span class="bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-full">Investigation</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="bg-white rounded-xl p-5 border border-slate-200">
+        <h3 class="font-semibold mb-3">🪙 Tube refill — niveau de monnaie pour rendre</h3>
+        <p class="text-xs text-slate-500 mb-3">Pour les distributeurs avec monnayeur — éviter le "no change"</p>
+        <div class="grid md:grid-cols-3 gap-3">
+          <div class="border border-slate-200 rounded-lg p-3"><div class="flex justify-between mb-1"><span class="text-sm font-medium">Tube 5cts</span><span class="text-xs text-amber-600">38%</span></div><div class="h-2 bg-slate-100 rounded"><div class="h-full bg-amber-500 rounded" style="width:38%"></div></div></div>
+          <div class="border border-slate-200 rounded-lg p-3"><div class="flex justify-between mb-1"><span class="text-sm font-medium">Tube 10cts</span><span class="text-xs text-emerald-600">72%</span></div><div class="h-2 bg-slate-100 rounded"><div class="h-full bg-emerald-500 rounded" style="width:72%"></div></div></div>
+          <div class="border border-slate-200 rounded-lg p-3"><div class="flex justify-between mb-1"><span class="text-sm font-medium">Tube 50cts</span><span class="text-xs text-red-600">12%</span></div><div class="h-2 bg-slate-100 rounded"><div class="h-full bg-red-500 rounded" style="width:12%"></div></div></div>
+        </div>
+        <div class="mt-3 text-xs text-red-700">⚠️ Tube 50cts presque vide — refill urgent ou risque "no change available"</div>
+      </div>
+    </div>
+
+    <!-- ====== LOYALTY (CONSUMER) ====== -->
+    <div id="page-loyalty" class="page flex-1 overflow-y-auto p-6 bg-slate-100">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="text-2xl font-bold">⭐ Programme fidélité consommateurs</h2>
+          <p class="text-sm text-slate-500">Concurrence Monyx Wallet · app mobile dédiée pour tes utilisateurs finaux</p>
+        </div>
+        <a href="06-consumer-app.html" target="_blank" class="bg-purple-600 text-white text-sm px-4 py-1.5 rounded-lg">📱 Voir l'app conso</a>
+      </div>
+
+      <div class="grid md:grid-cols-4 gap-3 mb-6">
+        <div class="bg-gradient-to-br from-purple-600 to-pink-600 text-white rounded-xl p-4">
+          <div class="text-xs opacity-80 uppercase">Membres actifs</div>
+          <div class="text-3xl font-bold mt-1">1 409</div>
+          <div class="text-xs opacity-90 mt-1">+128 (30j)</div>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200">
+          <div class="text-xs text-slate-500 uppercase">CA moyen/membre</div>
+          <div class="text-2xl font-bold mt-1">14,80€</div>
+          <div class="text-xs text-emerald-600 mt-1">+22% vs anonyme</div>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200">
+          <div class="text-xs text-slate-500 uppercase">Points distribués</div>
+          <div class="text-2xl font-bold mt-1">38 412</div>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200">
+          <div class="text-xs text-slate-500 uppercase">Récompenses échangées</div>
+          <div class="text-2xl font-bold mt-1">312</div>
+          <div class="text-xs text-slate-500 mt-1">28% taux conv.</div>
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="bg-white rounded-xl p-5 border border-slate-200">
+          <h3 class="font-semibold mb-3">Programmes actifs</h3>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+              <div class="flex items-center gap-3"><div class="text-2xl">☕</div><div><div class="font-medium">10 cafés = 1 offert</div><div class="text-xs text-slate-500">312 cartes actives</div></div></div>
+              <button class="text-xs text-blue-600 hover:underline">Modifier</button>
+            </div>
+            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+              <div class="flex items-center gap-3"><div class="text-2xl">🥤</div><div><div class="font-medium">5e achat à -50%</div><div class="text-xs text-slate-500">128 cartes actives</div></div></div>
+              <button class="text-xs text-blue-600 hover:underline">Modifier</button>
+            </div>
+            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+              <div class="flex items-center gap-3"><div class="text-2xl">🎂</div><div><div class="font-medium">Anniversaire : café gratuit</div><div class="text-xs text-slate-500">Mensuel — 47 utilisés ce mois</div></div></div>
+              <button class="text-xs text-blue-600 hover:underline">Modifier</button>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl p-5 border border-slate-200">
+          <h3 class="font-semibold mb-3">Top fidèles (VIP)</h3>
+          <div class="space-y-2 text-sm">
+            <div class="flex items-center justify-between"><span>👤 Marie L. (Café Paris)</span><span class="font-semibold">87 achats · 248€</span></div>
+            <div class="flex items-center justify-between"><span>👤 Jean D. (Distri Lyon)</span><span class="font-semibold">62 achats · 162€</span></div>
+            <div class="flex items-center justify-between"><span>👤 Sophie M. (Distri Lyon)</span><span class="font-semibold">54 achats · 138€</span></div>
+            <div class="flex items-center justify-between"><span>👤 Pierre G. (Distri Marseille)</span><span class="font-semibold">48 achats · 124€</span></div>
+            <div class="flex items-center justify-between"><span>👤 Lucie B. (Café Paris)</span><span class="font-semibold">41 achats · 108€</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== VOUCHERS ====== -->
+    <div id="page-vouchers" class="page flex-1 overflow-y-auto p-6 bg-slate-100">
+      <h2 class="text-2xl font-bold mb-1">🎟️ Free Vend &amp; Vouchers</h2>
+      <p class="text-sm text-slate-500 mb-4">Distribuer des produits gratuits ou des codes promo (événements marketing, employés...)</p>
+
+      <div class="grid md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-xs text-slate-500 uppercase">Codes actifs</div><div class="text-2xl font-bold">142</div></div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-xs text-slate-500 uppercase">Utilisés (30j)</div><div class="text-2xl font-bold">68</div></div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-xs text-slate-500 uppercase">Valeur distribuée</div><div class="text-2xl font-bold">174€</div></div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
+        <h3 class="font-semibold mb-3">Créer une campagne</h3>
+        <div class="grid md:grid-cols-2 gap-3">
+          <input type="text" placeholder="Nom campagne (ex: Journée portes ouvertes)" class="border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+          <select class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+            <option>Free Vend (produit gratuit)</option>
+            <option>Réduction %</option>
+            <option>Réduction € fixe</option>
+            <option>Buy 1 Get 1 Free</option>
+          </select>
+          <input type="number" placeholder="Nb de codes à générer" class="border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+          <input type="date" class="border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+        </div>
+        <div class="mt-3 flex gap-2">
+          <button class="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg">🎟️ Générer les codes</button>
+          <button class="bg-slate-100 text-sm px-4 py-2 rounded-lg">📥 Export CSV</button>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 text-xs uppercase text-slate-600">
+            <tr><th class="py-2 px-3 text-left">Campagne</th><th class="text-left">Type</th><th class="text-right">Générés</th><th class="text-right">Utilisés</th><th class="text-left">Période</th></tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr><td class="py-2 px-3 font-medium">Journée portes ouvertes 25 avril</td><td>Free Vend</td><td class="text-right">100</td><td class="text-right">47</td><td>25 avril 2026</td></tr>
+            <tr><td class="py-2 px-3 font-medium">Promo employés Acme Corp</td><td>-30%</td><td class="text-right">50</td><td class="text-right">21</td><td>mai 2026</td></tr>
+            <tr><td class="py-2 px-3 font-medium">Bienvenue nouveaux membres</td><td>-50% premier achat</td><td class="text-right">200</td><td class="text-right">68</td><td>continu</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ====== SURVEYS ====== -->
+    <div id="page-surveys" class="page flex-1 overflow-y-auto p-6 bg-slate-100">
+      <h2 class="text-2xl font-bold mb-1">📝 Sondages consommateurs</h2>
+      <p class="text-sm text-slate-500 mb-4">Mini-questionnaires affichés sur l'écran de la machine après l'achat</p>
+
+      <div class="grid md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-xs text-slate-500 uppercase">Sondages actifs</div><div class="text-2xl font-bold">3</div></div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-xs text-slate-500 uppercase">Réponses 30j</div><div class="text-2xl font-bold">487</div></div>
+        <div class="bg-white rounded-xl p-4 border border-slate-200"><div class="text-xs text-slate-500 uppercase">Taux de réponse</div><div class="text-2xl font-bold">12,4%</div></div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="bg-white rounded-xl p-5 border border-slate-200">
+          <h3 class="font-semibold mb-3">"Vous avez aimé ce produit ?"</h3>
+          <p class="text-xs text-slate-500 mb-3">214 réponses · 3 machines</p>
+          <div class="space-y-2 text-sm">
+            <div class="flex items-center gap-3"><span class="w-12">😊 Oui</span><div class="flex-1 h-2 bg-slate-100 rounded"><div class="h-full bg-emerald-500 rounded" style="width:72%"></div></div><span class="text-xs">72%</span></div>
+            <div class="flex items-center gap-3"><span class="w-12">😐 OK</span><div class="flex-1 h-2 bg-slate-100 rounded"><div class="h-full bg-amber-500 rounded" style="width:22%"></div></div><span class="text-xs">22%</span></div>
+            <div class="flex items-center gap-3"><span class="w-12">😞 Non</span><div class="flex-1 h-2 bg-slate-100 rounded"><div class="h-full bg-red-500 rounded" style="width:6%"></div></div><span class="text-xs">6%</span></div>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl p-5 border border-slate-200">
+          <h3 class="font-semibold mb-3">"Quel produit aimeriez-vous voir ?"</h3>
+          <p class="text-xs text-slate-500 mb-3">128 réponses · texte libre</p>
+          <div class="space-y-2 text-sm">
+            <div class="flex items-center justify-between p-2 bg-slate-50 rounded"><span>🥤 Sirop bio</span><span class="text-xs">42 votes</span></div>
+            <div class="flex items-center justify-between p-2 bg-slate-50 rounded"><span>🍫 KitKat blanc</span><span class="text-xs">31 votes</span></div>
+            <div class="flex items-center justify-between p-2 bg-slate-50 rounded"><span>🥗 Salades</span><span class="text-xs">22 votes</span></div>
+            <div class="flex items-center justify-between p-2 bg-slate-50 rounded"><span>🥪 Sandwich végé</span><span class="text-xs">18 votes</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== AUDIT LOG ====== -->
+    <div id="page-audit" class="page flex-1 overflow-y-auto p-6 bg-slate-100">
+      <h2 class="text-2xl font-bold mb-1">📜 Audit log</h2>
+      <p class="text-sm text-slate-500 mb-4">Qui a fait quoi et quand · obligatoire RGPD pour clients grands comptes</p>
+
+      <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div class="bg-slate-50 p-3 flex items-center justify-between border-b border-slate-200">
+          <div class="flex gap-2">
+            <select class="border border-slate-300 rounded px-3 py-1 text-sm bg-white">
+              <option>Tous utilisateurs</option><option>Salih R.</option><option>Jean D.</option>
+            </select>
+            <select class="border border-slate-300 rounded px-3 py-1 text-sm bg-white">
+              <option>Toutes actions</option><option>Modifications</option><option>Logins</option><option>Suppressions</option>
+            </select>
+          </div>
+          <button class="bg-white border border-slate-300 text-sm px-3 py-1 rounded">📥 Export CSV</button>
+        </div>
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 text-xs uppercase text-slate-600">
+            <tr><th class="py-2 px-3 text-left">Date</th><th class="text-left">Utilisateur</th><th class="text-left">Action</th><th class="text-left">Objet</th><th class="text-left">Détails</th><th class="text-left">IP</th></tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 font-mono text-xs">
+            <tr><td class="py-2 px-3">15 mai 14:32:18</td><td>salih@…</td><td><span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded">UPDATE</span></td><td>device:cafe-paris-01</td><td>Prix Coca 2,00€ → 2,20€</td><td>92.184.x.x</td></tr>
+            <tr><td class="py-2 px-3">15 mai 14:28:05</td><td>jean@…</td><td><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded">CREATE</span></td><td>ticket:#234</td><td>Réassort Distri Lyon</td><td>78.119.x.x</td></tr>
+            <tr><td class="py-2 px-3">15 mai 14:12:44</td><td>salih@…</td><td><span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded">LOGIN</span></td><td>session</td><td>Login successful</td><td>92.184.x.x</td></tr>
+            <tr><td class="py-2 px-3">15 mai 13:55:01</td><td>marie@…</td><td><span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded">DOWNLOAD</span></td><td>report:HACCP_avril.pdf</td><td>—</td><td>193.51.x.x</td></tr>
+            <tr><td class="py-2 px-3">15 mai 11:22:38</td><td>salih@…</td><td><span class="bg-red-100 text-red-700 px-2 py-0.5 rounded">DELETE</span></td><td>device:test-01</td><td>Suppression machine (cascade : 142 télémétrie)</td><td>92.184.x.x</td></tr>
+            <tr><td class="py-2 px-3">15 mai 09:18:12</td><td>jean@…</td><td><span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded">COMMAND</span></td><td>device:cafe-paris-01</td><td>Reboot envoyé</td><td>78.119.x.x</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="text-xs text-slate-500 mt-3">📌 Conservation 1 an minimum (RGPD article 30). Logs immuables et horodatés.</p>
+    </div>
+
+    <!-- ====== BRANDING WHITE-LABEL ====== -->
+    <div id="page-branding" class="page flex-1 overflow-y-auto p-6 bg-slate-100">
+      <h2 class="text-2xl font-bold mb-1">🎨 Branding white-label</h2>
+      <p class="text-sm text-slate-500 mb-4">Pour les revendeurs / grands comptes : ton propre look complet</p>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="bg-white rounded-xl p-5 border border-slate-200">
+          <h3 class="font-semibold mb-3">Identité visuelle</h3>
+          <div class="space-y-3">
+            <div>
+              <label class="text-xs text-slate-600 uppercase">Logo (PNG/SVG)</label>
+              <div class="mt-1 border-2 border-dashed border-slate-300 rounded-lg p-6 text-center text-sm text-slate-500">
+                📁 Drag-drop ton logo ici ou clique
+              </div>
+            </div>
+            <div>
+              <label class="text-xs text-slate-600 uppercase">Couleur principale</label>
+              <div class="mt-1 flex gap-2">
+                <input type="color" value="#2563eb" class="w-10 h-10 rounded cursor-pointer" />
+                <input type="text" value="#2563eb" class="border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono flex-1" />
+              </div>
+            </div>
+            <div>
+              <label class="text-xs text-slate-600 uppercase">Sous-domaine custom</label>
+              <input type="text" value="monitoring.macompagnie.com" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-600 uppercase">Nom commercial</label>
+              <input type="text" value="MaCompagnie Connect" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+            </div>
+            <button class="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg">💾 Appliquer le branding</button>
           </div>
         </div>
 
-        <!-- Edit form -->
-        <details class="bg-slate-50 rounded-xl p-4">
-          <summary class="cursor-pointer font-semibold text-sm">⚙️ Modifier la machine</summary>
-          <form id="dmEditForm" class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
-            <input id="dmEditName"     placeholder="Nom" class="border border-slate-300 rounded-lg px-3 py-2 text-sm" />
-            <input id="dmEditType"     placeholder="Type (ex: espresso)" class="border border-slate-300 rounded-lg px-3 py-2 text-sm" />
-            <input id="dmEditLocation" placeholder="Emplacement" class="border border-slate-300 rounded-lg px-3 py-2 text-sm" />
-            <button type="submit" class="md:col-span-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 rounded-lg">Enregistrer</button>
-          </form>
-        </details>
-
-        <!-- Live metrics -->
-        <div>
-          <h4 class="font-semibold mb-2">Métriques en direct</h4>
-          <div id="dmMetrics" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
-        </div>
-
-        <!-- Chart -->
-        <div>
-          <h4 class="font-semibold mb-2">Historique (dernières 24h)</h4>
-          <select id="dmMetricSelect" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm mb-2"></select>
-          <div class="bg-slate-50 rounded-xl p-4">
-            <canvas id="dmChart" height="120"></canvas>
+        <div class="bg-white rounded-xl p-5 border border-slate-200">
+          <h3 class="font-semibold mb-3">Aperçu live</h3>
+          <div class="bg-slate-900 rounded-xl overflow-hidden">
+            <div class="bg-slate-800 text-white px-4 py-2 text-xs">monitoring.macompagnie.com</div>
+            <div class="bg-white p-5">
+              <div class="flex items-center gap-2 mb-3">
+                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white text-xs">M</div>
+                <div class="font-bold text-slate-900">MaCompagnie Connect</div>
+              </div>
+              <div class="text-xs text-slate-600 mb-3">Votre flotte de machines connectées</div>
+              <div class="grid grid-cols-2 gap-2">
+                <div class="bg-slate-50 rounded p-2 text-xs"><div class="text-slate-500">Revenus</div><div class="font-bold">1 247€</div></div>
+                <div class="bg-slate-50 rounded p-2 text-xs"><div class="text-slate-500">En ligne</div><div class="font-bold">11/12</div></div>
+              </div>
+              <div class="text-[10px] text-slate-400 text-center mt-3">Powered by MaCompagnie · Hébergé en France</div>
+            </div>
           </div>
-        </div>
-
-        <!-- Events -->
-        <div>
-          <h4 class="font-semibold mb-2">Évènements récents</h4>
-          <div id="dmEvents" class="space-y-2 max-h-64 overflow-y-auto"></div>
-        </div>
-
-        <!-- Commands -->
-        <div>
-          <h4 class="font-semibold mb-2">Envoyer une commande</h4>
-          <form id="dmCmdForm" class="flex gap-2">
-            <input id="dmCmdName"   placeholder="ex: restart, refill, set_threshold" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm" />
-            <input id="dmCmdParams" placeholder='Paramètres JSON (ex: {"val":5})' class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono" />
-            <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white text-sm font-medium px-4 rounded-lg">Envoyer</button>
-          </form>
-          <p class="text-xs text-slate-500 mt-1">La commande est transmise à la machine via MQTT.</p>
-        </div>
-
-        <div class="pt-3 border-t border-slate-200">
-          <button id="dmDelete" class="text-sm text-red-600 hover:underline">Supprimer cette machine</button>
+          <p class="text-xs text-slate-500 mt-3">📌 Ton client final ne saura jamais que Télémétrie est derrière. Tu deviens la marque.</p>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- =================== AI CHAT MODAL =================== -->
-  <div id="aiChatModal" class="hidden fixed bottom-4 right-4 w-96 bg-white rounded-2xl shadow-2xl z-40 flex flex-col" style="max-height: 600px;">
-    <div class="bg-gradient-to-r from-purple-600 to-indigo-700 text-white px-4 py-3 rounded-t-2xl flex items-center justify-between">
-      <div><div class="font-semibold text-sm">🤖 Assistant IA</div><div class="text-[10px] opacity-80">Mistral · Powered by AI</div></div>
-      <button onclick="document.getElementById('aiChatModal').classList.add('hidden')" class="text-white/70 hover:text-white text-xl">×</button>
+    <!-- ====== Pages réutilisées du v3 (à compléter si besoin) ====== -->
+    <div id="page-ai" class="page p-6 bg-slate-100 flex-1 overflow-y-auto">
+      <h2 class="text-2xl font-bold mb-3">🤖 IA Insights</h2>
+      <p class="text-slate-600 text-sm mb-4">Voir version complète dans <code class="bg-slate-200 px-2 py-1 rounded">demo-pro-v3-ia.html</code></p>
     </div>
-    <div id="aiChatLog" class="flex-1 overflow-y-auto p-4 text-sm" style="min-height: 250px;">
-      <div class="text-left my-2"><span class="bg-slate-100 rounded-2xl rounded-tl-sm px-3 py-2 inline-block">Bonjour ! Posez-moi une question sur vos machines.</span></div>
-    </div>
-    <form onsubmit="event.preventDefault(); const v=this.q.value.trim(); if(v){sendAIQuestion(v); this.q.value='';}" class="border-t border-slate-200 p-3 flex gap-2">
-      <input name="q" type="text" placeholder="ex: machines en alerte ?" class="flex-1 border border-slate-300 rounded-xl px-3 py-2 text-sm" />
-      <button class="bg-purple-600 text-white px-4 py-2 rounded-xl text-sm">→</button>
-    </form>
-  </div>
+    <div id="page-map" class="page flex-1"><div id="map"></div></div>
+    <div id="page-machines" class="page p-6 bg-slate-100 flex-1 overflow-y-auto"><h2 class="text-2xl font-bold mb-3">🏷️ Machines</h2><p class="text-slate-600">Liste détaillée dans v3</p></div>
+    <div id="page-inventory" class="page p-6 bg-slate-100 flex-1 overflow-y-auto"><h2 class="text-2xl font-bold mb-3">📦 Inventaire</h2></div>
+    <div id="page-routes" class="page p-6 bg-slate-100 flex-1 overflow-y-auto"><h2 class="text-2xl font-bold mb-3">🗺️ Routes</h2></div>
+    <div id="page-alerts" class="page p-6 bg-slate-100 flex-1 overflow-y-auto"><h2 class="text-2xl font-bold mb-3">🔔 Alertes</h2></div>
+    <div id="page-sales" class="page p-6 bg-slate-100 flex-1 overflow-y-auto"><h2 class="text-2xl font-bold mb-3">💰 Ventes</h2></div>
+    <div id="page-developer" class="page p-6 bg-slate-100 flex-1 overflow-y-auto"><h2 class="text-2xl font-bold mb-3">⚡ API</h2></div>
+    <div id="page-team" class="page p-6 bg-slate-100 flex-1 overflow-y-auto"><h2 class="text-2xl font-bold mb-3">👥 Équipe</h2></div>
 
-  <!-- =================== UPGRADE MODAL =================== -->
-  <div id="upgradeModal" class="hidden fixed inset-0 bg-black/50 z-30 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-      <div class="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
-        <h3 class="text-lg font-bold">Choisis ton plan</h3>
-        <button id="upgradeClose" class="text-slate-400 hover:text-slate-600 text-2xl">×</button>
-      </div>
-      <div id="plansContainer" class="p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <!-- généré -->
-      </div>
-    </div>
-  </div>
-
-  <!-- =================== ALERTS DRAWER =================== -->
-  <div id="alertsDrawer" class="hidden fixed top-0 right-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-30 overflow-y-auto">
-    <div class="sticky top-0 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
-      <h3 class="font-bold">🔔 Alertes</h3>
-      <button id="alertsClose" class="text-slate-400 hover:text-slate-600 text-2xl">×</button>
-    </div>
-    <div id="alertsList" class="divide-y divide-slate-200"></div>
   </div>
 </div>
 
-<script src="app.js"></script>
+<script>
+// ============ AUTH (login + logout) ============
+const TOKEN_KEY = 'tlm_token';
+
+function showLogin() {
+  document.getElementById('loginOverlay').classList.remove('hidden');
+  document.getElementById('appWrapper').classList.add('hidden');
+}
+function showApp() {
+  document.getElementById('loginOverlay').classList.add('hidden');
+  document.getElementById('appWrapper').classList.remove('hidden');
+  document.getElementById('appWrapper').classList.add('flex');
+}
+function logout() {
+  localStorage.removeItem(TOKEN_KEY);
+  showLogin();
+}
+async function tryLogin(email, password) {
+  const r = await fetch('/api/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+  const data = await r.json();
+  if (!r.ok || !data.token) throw new Error(data.error || 'Identifiants invalides');
+  localStorage.setItem(TOKEN_KEY, data.token);
+  return data;
+}
+
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const errEl = document.getElementById('loginErr');
+  errEl.classList.add('hidden');
+  try {
+    await tryLogin(
+      document.getElementById('loginEmail').value,
+      document.getElementById('loginPwd').value
+    );
+    showApp();
+    // Pour le moment on garde les données simulées (la suite : brancher /api/me et /api/devices)
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.classList.remove('hidden');
+  }
+});
+
+document.getElementById('logoutBtnHeader')?.addEventListener('click', logout);
+
+// Vérifie le token au démarrage
+async function checkAuth() {
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (!token) { showLogin(); return; }
+  try {
+    const r = await fetch('/api/me', { headers: { 'Authorization': `Bearer ${token}` } });
+    if (!r.ok) throw new Error('Token expired');
+    showApp();
+  } catch (_) {
+    logout();
+  }
+}
+checkAuth();
+
+// ============ DATA ============
+const PRODUCTS = [
+  { id:'coca', icon:'🥤', name:'Coca-Cola 33cl', price:2.00, stock:42, color:'#ef4444' },
+  { id:'cocazero', icon:'🥤', name:'Coca Zero 33cl', price:2.00, stock:18, color:'#1e293b' },
+  { id:'orangina', icon:'🥤', name:'Orangina 33cl', price:2.00, stock:24, color:'#f59e0b' },
+  { id:'eau', icon:'💧', name:'Cristaline 50cl', price:1.20, stock:38, color:'#0ea5e9' },
+  { id:'kitkat', icon:'🍫', name:'KitKat 4 fingers', price:1.80, stock:22, color:'#dc2626' },
+  { id:'twix', icon:'🍫', name:'Twix double', price:1.80, stock:14, color:'#fbbf24' },
+  { id:'snickers', icon:'🍫', name:'Snickers', price:1.80, stock:9, color:'#854d0e' },
+  { id:'chips', icon:'🥨', name:'Chips Lays', price:2.50, stock:30, color:'#fde047' },
+  { id:'tuc', icon:'🧈', name:'TUC crackers', price:1.50, stock:11, color:'#f59e0b' },
+  { id:'sandwich', icon:'🥪', name:'Sandwich poulet', price:4.20, stock:6, color:'#84cc16' },
+  { id:'salade', icon:'🥗', name:'Salade chèvre', price:5.50, stock:4, color:'#22c55e' },
+  { id:'fruit', icon:'🍎', name:'Pomme bio', price:1.20, stock:0, color:'#dc2626' },
+];
+
+// 42 slots pour planogram (6 rangées × 7 colonnes)
+const PLANOGRAM = [
+  'coca','coca','cocazero','orangina','eau','eau','kitkat',
+  'kitkat','twix','twix','snickers','chips','chips','tuc',
+  'sandwich','sandwich','salade','fruit',null,null,'kitkat',
+  'coca','orangina','eau','kitkat','chips','twix','snickers',
+  null,null,'kitkat','coca','eau','orangina','chips',
+  'sandwich','tuc','twix','snickers','chips','coca','eau',
+];
+
+function renderPlanogramGrid() {
+  const el = document.getElementById('planogramGrid');
+  el.innerHTML = PLANOGRAM.map((pid, i) => {
+    if (!pid) {
+      return `<div class="slot empty rounded-lg p-2 text-center text-xs text-slate-400" data-slot="${i}" ondragover="event.preventDefault(); this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="onDrop(event, ${i})">
+        <div>vide</div>
+      </div>`;
+    }
+    const p = PRODUCTS.find(x => x.id === pid);
+    const stockPct = Math.min(100, (p.stock / 50) * 100);
+    return `<div class="slot bg-white rounded-lg p-2 text-center cursor-grab" draggable="true" data-slot="${i}" data-product="${pid}" ondragstart="onDragStart(event, '${pid}', ${i})" ondragend="this.classList.remove('dragging')">
+      <div class="text-2xl">${p.icon}</div>
+      <div class="text-[9px] font-medium truncate" title="${p.name}">${p.name.split(' ')[0]}</div>
+      <div class="text-[10px] text-slate-500">${p.price.toFixed(2).replace('.',',')}€</div>
+      <div class="stock-bar bg-slate-100 mt-1"><div class="stock-bar" style="width:${stockPct}%;background:${stockPct < 20 ? '#ef4444' : stockPct < 50 ? '#f59e0b' : '#10b981'}"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderProductLibrary() {
+  document.getElementById('productLibrary').innerHTML = PRODUCTS.map(p => `
+    <div class="border border-slate-200 rounded-lg p-2 flex items-center gap-2 cursor-grab" draggable="true" ondragstart="onDragStart(event, '${p.id}', -1)">
+      <div class="text-xl">${p.icon}</div>
+      <div class="flex-1 min-w-0">
+        <div class="text-sm font-medium truncate">${p.name}</div>
+        <div class="text-xs text-slate-500">${p.price.toFixed(2).replace('.',',')}€ · stock ${p.stock}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+window.onDragStart = function(e, pid, fromSlot) {
+  e.dataTransfer.setData('product', pid);
+  e.dataTransfer.setData('fromSlot', fromSlot);
+};
+window.onDrop = function(e, toSlot) {
+  e.preventDefault();
+  const pid = e.dataTransfer.getData('product');
+  const from = parseInt(e.dataTransfer.getData('fromSlot'));
+  if (from >= 0) PLANOGRAM[from] = PLANOGRAM[toSlot];
+  PLANOGRAM[toSlot] = pid;
+  renderPlanogramGrid();
+};
+
+function renderPicklist() {
+  const items = [
+    { product:'Coca-Cola 33cl', icon:'🥤', stock:142, charger:24, cost:'24,00€', machines:'Lyon, Marseille, Toulouse' },
+    { product:'Cristaline 50cl', icon:'💧', stock:88, charger:18, cost:'12,60€', machines:'Lyon, Bordeaux' },
+    { product:'KitKat 4F', icon:'🍫', stock:8, charger:12, cost:'8,40€', machines:'Lyon, Toulouse' },
+    { product:'Chips Lays', icon:'🥨', stock:45, charger:10, cost:'15,00€', machines:'Marseille' },
+    { product:'Twix double', icon:'🍫', stock:32, charger:8, cost:'5,60€', machines:'Bordeaux, Toulouse' },
+    { product:'Sandwich poulet', icon:'🥪', stock:28, charger:8, cost:'18,40€', machines:'Lyon' },
+    { product:'Salade chèvre', icon:'🥗', stock:14, charger:5, cost:'14,75€', machines:'Lyon' },
+    { product:'Snickers', icon:'🍫', stock:22, charger:2, cost:'1,40€', machines:'Marseille' },
+  ];
+  document.getElementById('picklistTable').innerHTML = items.map(i => `
+    <tr>
+      <td class="py-2 px-4 font-medium">${i.icon} ${i.product}</td>
+      <td class="text-right ${i.stock < 20 ? 'text-amber-600 font-semibold' : ''}">${i.stock}</td>
+      <td class="text-right font-bold">${i.charger}</td>
+      <td class="text-right">${i.cost}</td>
+      <td class="text-xs text-slate-600">${i.machines}</td>
+    </tr>
+  `).join('');
+}
+
+function renderTickets() {
+  const tickets = [
+    { num:'#234', machine:'Distri Lyon Part-Dieu', type:'🔧 Réassort', desc:'Stock < 15%, urgence', assigned:'Jean D.', status:'En cours', color:'bg-amber-100 text-amber-700', created:'il y a 2h' },
+    { num:'#233', machine:'Frigo Marseille #3', type:'🔥 Panne', desc:'Température > 8°C depuis 30 min', assigned:'Jean D.', status:'Critique', color:'bg-red-100 text-red-700', created:'il y a 45 min' },
+    { num:'#232', machine:'Cafetière Paris #1', type:'⚙️ Maintenance', desc:'Détartrage programmé', assigned:'Pierre M.', status:'Programmé', color:'bg-blue-100 text-blue-700', created:'hier' },
+    { num:'#231', machine:'Distri Toulouse #4', type:'💸 Encaissement', desc:'Vidange caisse + recharge tubes', assigned:'Marie L.', status:'En cours', color:'bg-amber-100 text-amber-700', created:'il y a 4h' },
+    { num:'#230', machine:'Indus Strasbourg #7', type:'🤖 IA prédictive', desc:'Roulement HS dans 8-12j (IA)', assigned:'Pierre M.', status:'Programmé', color:'bg-blue-100 text-blue-700', created:'il y a 1j' },
+  ];
+  document.getElementById('ticketsTable').innerHTML = tickets.map(t => `
+    <tr class="hover:bg-slate-50">
+      <td class="py-2 px-3 font-mono text-xs">${t.num}</td>
+      <td class="py-2 px-3 font-medium">${t.machine}</td>
+      <td class="py-2 px-3">${t.type}</td>
+      <td class="py-2 px-3 text-slate-600 text-xs">${t.desc}</td>
+      <td class="py-2 px-3"><span class="text-xs bg-slate-100 px-2 py-0.5 rounded">${t.assigned}</span></td>
+      <td class="py-2 px-3"><span class="text-xs ${t.color} px-2 py-0.5 rounded-full">${t.status}</span></td>
+      <td class="py-2 px-3 text-xs text-slate-500">${t.created}</td>
+    </tr>
+  `).join('');
+}
+
+// ============ NAV ============
+window.goTo = function(page) {
+  document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+  document.querySelector(`[data-page="${page}"]`)?.classList.add('active');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.getElementById('pageTitle').textContent = ({
+    overview:"Vue d'ensemble", ai:'IA Insights', map:'Carte', machines:'Machines',
+    planogram:'Planogrammes', picklists:'Picklists', inventory:'Stocks',
+    tickets:'Tickets service', encashment:'Encaissements', routes:'Routes', alerts:'Alertes',
+    sales:'Ventes', loyalty:'Fidélité', vouchers:'Free Vend & Vouchers', surveys:'Sondages',
+    branding:'Branding white-label', audit:'Audit log', developer:'API', team:'Équipe',
+  }[page] || page);
+};
+document.querySelectorAll('.sidebar-link').forEach(l => l.addEventListener('click', () => goTo(l.dataset.page)));
+
+// ============ CHARTS ============
+function initCharts() {
+  const days = Array.from({length:37}, (_,i) => i < 30 ? `J-${29-i}` : `J+${i-29}`);
+  const rev = Array.from({length:30}, () => Math.floor(Math.random()*800)+800);
+  const futR = Array.from({length:7}, () => Math.floor(Math.random()*200)+1100);
+  new Chart(document.getElementById('chartRevenue'), {
+    type: 'line',
+    data: { labels: days, datasets: [
+      { label:'Réel', data:[...rev, ...Array(7).fill(null)], borderColor:'#2563eb', backgroundColor:'rgba(37,99,235,0.1)', fill:true, tension:0.3, pointRadius:0 },
+      { label:'IA', data:[...Array(30).fill(null), ...futR], borderColor:'#a855f7', borderDash:[5,5], fill:false, tension:0.3, pointRadius:0 },
+    ]},
+    options: { plugins:{legend:{display:false}}, scales:{x:{ticks:{maxTicksLimit:8}}} },
+  });
+}
+
+let map = null;
+function initMap() {
+  if (map) return;
+  map = L.map('map').setView([46.7, 2.5], 6);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'© OSM' }).addTo(map);
+}
+
+renderPlanogramGrid();
+renderProductLibrary();
+renderPicklist();
+renderTickets();
+initCharts();
+setTimeout(initMap, 200);
+</script>
 </body>
 </html>
