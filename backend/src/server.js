@@ -328,6 +328,22 @@ adminApi.post('/users/:id/reset-password', async (req, res) => {
   res.json({ ok: info.changes > 0 });
 });
 
+adminApi.get('/organizations/:id/devices', (req, res) => {
+  const devices = db.prepare(`
+    SELECT d.*,
+      (SELECT MAX(ts) FROM telemetry WHERE device_id = d.id) AS last_telemetry,
+      (SELECT COUNT(*) FROM events WHERE device_id = d.id AND acked = 0) AS open_alerts
+    FROM devices d WHERE d.org_id = ?
+    ORDER BY d.last_seen DESC
+  `).all(req.params.id);
+  res.json(devices);
+});
+
+adminApi.get('/organizations/:id/users', (req, res) => {
+  const users = db.prepare('SELECT id, email, role, created_at FROM users WHERE org_id = ?').all(req.params.id);
+  res.json(users);
+});
+
 adminApi.post('/organizations/:id/plan', (req, res) => {
   const { plan } = req.body || {};
   const { planById } = require('./plans');
