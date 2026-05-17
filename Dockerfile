@@ -16,12 +16,14 @@ COPY backend/package.json ./backend/package.json
 WORKDIR /app/backend
 RUN npm install --omit=dev
 
-# Copie tout le projet (backend + dashboard + web + demos)
+# Copie tout le projet (backend + dashboard + web + demos + admin)
 WORKDIR /app
 COPY backend ./backend
 COPY dashboard ./dashboard
 COPY web ./web
 COPY demos ./demos
+COPY demos-public ./demos-public
+COPY admin ./admin
 
 # Cloud Run injecte PORT (par défaut 8080). On crée un volume éphémère pour SQLite.
 ENV NODE_ENV=production
