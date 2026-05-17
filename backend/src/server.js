@@ -169,6 +169,35 @@ api.get('/devices', (req, res) => {
   res.json(devices);
 });
 
+// Création manuelle d'une machine (sans attendre un message MQTT)
+api.post('/devices', (req, res) => {
+  const { id, name, machine_type, location } = req.body || {};
+  if (!id || !id.trim()) return res.status(400).json({ error: 'id requis (identifiant unique de la machine)' });
+  const cleanId = id.trim().replace(/[^a-zA-Z0-9_-]/g, '-');
+  // Vérifie quota
+  const org = stmts.getOrg.get(req.user.org_id);
+  const count = stmts.countDevicesForOrg.get(req.user.org_id).n;
+  if (org && count >= org.max_devices) {
+    return res.status(403).json({ error: `Quota atteint (${count}/${org.max_devices} machines). Passe au plan supérieur.` });
+  }
+  // Vérifie qu'elle n'existe pas déjà (autre org)
+  const existing = stmts.getDevice.get(cleanId);
+  if (existing) return res.status(409).json({ error: 'Cet identifiant est déjà pris. Choisis-en un autre.' });
+  const now = Date.now();
+  stmts.upsertDeviceOrg.run({
+    id: cleanId,
+    org_id: req.user.org_id,
+    name: name || cleanId,
+    machine_type: machine_type || null,
+    location: location || null,
+    status: 'offline',
+    last_seen: null,
+    metadata_json: null,
+    created_at: now,
+  });
+  res.json({ ok: true, id: cleanId });
+});
+
 api.get('/devices/:id', (req, res) => {
   const d = stmts.getDeviceForOrg.get(req.params.id, req.user.org_id);
   if (!d) return res.status(404).json({ error: 'Device introuvable' });
