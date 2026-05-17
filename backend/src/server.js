@@ -80,13 +80,14 @@ app.use(express.json({ limit: '256kb' }));
 // ----- Statique -----
 const webDir       = path.resolve(__dirname, '..', '..', 'web');             // landing publique
 const dashboardDir = path.resolve(__dirname, '..', '..', 'dashboard');       // espace client
+const adminDir     = path.resolve(__dirname, '..', '..', 'admin');           // backoffice superadmin
 // IMPORTANT : on sert UNIQUEMENT demos-public/ en prod (la démo pro pour prospects)
-// Les démos internes (apps mobiles, etc.) sont dans demos/ et ne sont PAS exposées
 const demosDir     = path.resolve(__dirname, '..', '..', 'demos-public');
 app.use('/', express.static(webDir));
 app.use('/app', express.static(dashboardDir));
-app.use('/demo', express.static(demosDir));      // URL plus jolie : /demo plutôt que /demos
-app.use('/demos', express.static(demosDir));     // alias pour compat
+app.use('/admin', express.static(adminDir));     // backoffice — protégé côté frontend par login + role
+app.use('/demo', express.static(demosDir));
+app.use('/demos', express.static(demosDir));
 
 // ----- API publique (pas d'auth) -----
 app.get('/api/health', (req, res) => res.json({ ok: true, ts: Date.now() }));
@@ -238,6 +239,77 @@ api.post('/devices/:id/cmd', (req, res) => {
 });
 
 app.use('/api', api);
+
+// =========================================================
+// ADMIN ROUTES (superadmin only)
+// =========================================================
+const adminApi = express.Router();
+adminApi.use(auth.requireAuth, auth.requireSuperadmin);
+
+adminApi.get('/stats', (req, res) => {
+  const orgs = db.prepare('SELECT * FROM organizations').all();
+  const users = db.prepare('SELECT COUNT(*) as n FROM users').get();
+  const devicesCount = db.prepare('SELECT COUNT(*) as n FROM devices').get();
+  const planPrices = { trial: 0, starter: 19, pro: 49, business: 149 };
+  const mrr = orgs.reduce((sum, o) => sum + (planPrices[o.plan] || 0), 0);
+  const since30d = Date.now() - 30 * 86400000;
+  const since7d  = Date.now() - 7 * 86400000;
+  const since24h = Date.now() - 86400000;
+  res.json({
+    organizations: orgs.length,
+    users: users.n,
+    devices: devicesCount.n,
+    mrr_eur: mrr,
+    arr_eur: mrr * 12,
+    by_plan: ['trial','starter','pro','business','canceled'].map(p => ({
+      plan: p, count: orgs.filter(o => o.plan === p).length,
+    })),
+    signups_30d: orgs.filter(o => o.created_at > since30d).length,
+    signups_7d:  orgs.filter(o => o.created_at > since7d).length,
+    signups_24h: orgs.filter(o => o.created_at > since24h).length,
+  });
+});
+
+adminApi.get('/organizations', (req, res) => {
+  const rows = db.prepare(`
+    SELECT o.id, o.name, o.plan, o.max_devices, o.trial_ends_at, o.created_at,
+      (SELECT email FROM users WHERE org_id = o.id AND role IN ('owner','admin','superadmin') ORDER BY created_at ASC LIMIT 1) AS owner_email,
+      (SELECT id FROM users WHERE org_id = o.id AND role IN ('owner','admin','superadmin') ORDER BY created_at ASC LIMIT 1) AS owner_id,
+      (SELECT COUNT(*) FROM devices WHERE org_id = o.id) AS device_count,
+      (SELECT COUNT(*) FROM users WHERE org_id = o.id) AS user_count,
+      (SELECT MAX(d.last_seen) FROM devices d WHERE d.org_id = o.id) AS last_activity
+    FROM organizations o
+    ORDER BY o.created_at DESC
+  `).all();
+  res.json(rows);
+});
+
+adminApi.delete('/organizations/:id', (req, res) => {
+  const info = db.prepare('DELETE FROM organizations WHERE id = ?').run(req.params.id);
+  res.json({ ok: info.changes > 0 });
+});
+
+adminApi.post('/users/:id/reset-password', async (req, res) => {
+  const { newPassword } = req.body || {};
+  if (!newPassword || newPassword.length < 8) {
+    return res.status(400).json({ error: 'Mot de passe trop court (8+ chars)' });
+  }
+  const hash = await auth.hashPassword(newPassword);
+  const info = db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hash, req.params.id);
+  res.json({ ok: info.changes > 0 });
+});
+
+adminApi.post('/organizations/:id/plan', (req, res) => {
+  const { plan } = req.body || {};
+  const { planById } = require('./plans');
+  const planDef = planById(plan);
+  if (!planDef) return res.status(400).json({ error: 'Plan inconnu' });
+  db.prepare('UPDATE organizations SET plan = ?, max_devices = ? WHERE id = ?')
+    .run(plan, planDef.max_devices, req.params.id);
+  res.json({ ok: true });
+});
+
+app.use('/api/admin', adminApi);
 
 // =========================================================
 // HTTP + Socket.io
