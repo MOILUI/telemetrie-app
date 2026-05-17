@@ -114,6 +114,29 @@
   </main>
 </div>
 
+<!-- ============ DRILL-DOWN MODAL: VOIR MACHINES D'UN CLIENT ============ -->
+<div id="orgDetailModal" class="hidden fixed inset-0 bg-black/50 z-30 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+    <div class="sticky top-0 bg-white border-b border-slate-200 p-5 flex items-center justify-between">
+      <div>
+        <h3 class="text-lg font-bold" id="orgDetailTitle">—</h3>
+        <p class="text-xs text-slate-500" id="orgDetailSub">—</p>
+      </div>
+      <button onclick="document.getElementById('orgDetailModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 text-2xl">×</button>
+    </div>
+    <div class="p-5 space-y-5">
+      <div>
+        <h4 class="font-semibold text-sm text-slate-600 uppercase mb-2">👥 Utilisateurs</h4>
+        <div id="orgDetailUsers" class="space-y-1 text-sm"></div>
+      </div>
+      <div>
+        <h4 class="font-semibold text-sm text-slate-600 uppercase mb-2">🏷️ Machines</h4>
+        <div id="orgDetailDevices" class="overflow-x-auto"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ============ ACTION MODAL ============ -->
 <div id="actionModal" class="hidden fixed inset-0 bg-black/50 z-30 flex items-center justify-center p-4">
   <div class="bg-white rounded-2xl p-6 w-full max-w-md">
@@ -231,6 +254,7 @@ function renderOrgs() {
         <td class="px-5 py-3 text-xs text-slate-600">${date}</td>
         <td class="px-5 py-3 text-xs text-slate-600">${trialEnd}</td>
         <td class="px-5 py-3 text-right space-x-1">
+          <button onclick="viewOrgDetails('${o.id}','${(o.name||'').replace(/'/g,'')}')" class="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded">👁 Voir</button>
           <button onclick="actionChangePlan('${o.id}','${o.name||''}','${o.plan}')" class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Plan</button>
           <button onclick="actionResetPwd('${o.owner_id}','${o.owner_email||''}')" class="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded">🔑 Reset MDP</button>
           ${!isSuper ? `<button onclick="actionDelete('${o.id}','${o.name||''}')" class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">🗑</button>` : ''}
@@ -242,6 +266,59 @@ function renderOrgs() {
 
 $('#searchOrgs').addEventListener('input', renderOrgs);
 $('#filterPlan').addEventListener('change', renderOrgs);
+
+// ============ DRILL-DOWN : voir les machines d'un client ============
+window.viewOrgDetails = async function(orgId, orgName) {
+  $('#orgDetailTitle').textContent = orgName || orgId;
+  $('#orgDetailSub').textContent = 'ID : ' + orgId;
+  $('#orgDetailUsers').innerHTML = '<div class="text-xs text-slate-400">Chargement…</div>';
+  $('#orgDetailDevices').innerHTML = '<div class="text-xs text-slate-400">Chargement…</div>';
+  $('#orgDetailModal').classList.remove('hidden');
+  try {
+    const [users, devices] = await Promise.all([
+      api(`/admin/organizations/${orgId}/users`),
+      api(`/admin/organizations/${orgId}/devices`),
+    ]);
+    $('#orgDetailUsers').innerHTML = users.length === 0
+      ? '<div class="text-xs text-slate-400">Aucun utilisateur</div>'
+      : users.map(u => `
+        <div class="flex items-center justify-between p-2 bg-slate-50 rounded">
+          <div><span class="font-medium">${escapeHtml(u.email)}</span> <span class="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">${u.role}</span></div>
+          <div class="text-xs text-slate-500">${new Date(u.created_at).toLocaleDateString('fr-FR')}</div>
+        </div>
+      `).join('');
+    $('#orgDetailDevices').innerHTML = devices.length === 0
+      ? '<div class="text-sm text-slate-400 italic p-4 text-center">Aucune machine encore connectée par ce client.</div>'
+      : `<table class="w-full text-sm">
+          <thead class="bg-slate-50 text-xs uppercase text-slate-600">
+            <tr>
+              <th class="py-2 px-3 text-left">Nom</th>
+              <th class="py-2 px-3 text-left">Identifiant</th>
+              <th class="py-2 px-3 text-left">Type</th>
+              <th class="py-2 px-3 text-left">Emplacement</th>
+              <th class="py-2 px-3 text-center">État</th>
+              <th class="py-2 px-3 text-right">Alertes</th>
+              <th class="py-2 px-3 text-right">Vu</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            ${devices.map(d => `<tr>
+              <td class="py-2 px-3 font-medium">${escapeHtml(d.name || d.id)}</td>
+              <td class="py-2 px-3 font-mono text-xs text-slate-500">${escapeHtml(d.id)}</td>
+              <td class="py-2 px-3 text-xs">${escapeHtml(d.machine_type || '—')}</td>
+              <td class="py-2 px-3 text-xs">${escapeHtml(d.location || '—')}</td>
+              <td class="py-2 px-3 text-center">
+                <span class="text-xs px-2 py-0.5 rounded-full ${d.status === 'online' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">${d.status === 'online' ? '🟢 En ligne' : '⚫ Hors ligne'}</span>
+              </td>
+              <td class="py-2 px-3 text-right ${d.open_alerts > 0 ? 'text-red-600 font-bold' : 'text-slate-400'}">${d.open_alerts || 0}</td>
+              <td class="py-2 px-3 text-right text-xs text-slate-500">${d.last_seen ? new Date(d.last_seen).toLocaleString('fr-FR') : 'Jamais'}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>`;
+  } catch (e) {
+    $('#orgDetailUsers').innerHTML = '<div class="text-red-600 text-sm">Erreur : ' + e.message + '</div>';
+  }
+};
 
 // ============ ACTIONS ============
 window.actionDelete = function(orgId, name) {
